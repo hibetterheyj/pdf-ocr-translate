@@ -1,0 +1,24 @@
+\usepackage[fontset=none]{ctex}
+\usepackage{fontspec}
+
+\IfFontExistsTF{Source Han Serif CN}
+{\setCJKmainfont{Source Han Serif CN}\setCJKmonofont{Source Han Serif CN}}
+{\IfFontExistsTF{Noto Serif CJK SC}
+  {\setCJKmainfont{Noto Serif CJK SC}\setCJKmonofont{Noto Serif CJK SC}}
+  {\IfFontExistsTF{PingFang SC}
+    {\setCJKmainfont{PingFang SC}\setCJKmonofont{PingFang SC}}
+    {\IfFontExistsTF{SimSun}
+      {\setCJKmainfont{SimSun}\setCJKmonofont{SimSun}}
+      {\IfFontExistsTF{FangSong}
+        {\setCJKmainfont{FangSong}\setCJKmonofont{FangSong}}
+        {\setCJKmainfont{Arial Unicode MS}\setCJKmonofont{Arial Unicode MS}}
+}}}}
+
+\IfFontExistsTF{Times New Roman}
+{\setmainfont{Times New Roman}}
+{\IfFontExistsTF{Liberation Serif}
+  {\setmainfont{Liberation Serif}}
+  {\IfFontExistsTF{DejaVu Serif}
+    {\setmainfont{DejaVu Serif}}
+    {\setmainfont{Arial}}
+}}
