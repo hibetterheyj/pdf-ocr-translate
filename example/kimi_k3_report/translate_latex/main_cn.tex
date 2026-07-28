@@ -107,13 +107,15 @@
 
 \pandocbounded{\includegraphics[keepaspectratio,alt={image}]{images/158fb68a657c2516b24b137b935b8d6f48a0d31f828efbcfd42cd83969a982d9.jpg}}
 
-\section{KIMI K3: 开放前沿智能}\label{kimi-k3-open-frontier-intelligence}
-
-KIMI K3 技术报告
-
+\begin{center}
+{\LARGE KIMI K3：开放前沿智能\par}
+\vspace{0.4em}
+{\Large KIMI K3 技术报告\par}
+\vspace{0.8em}
 Kimi 团队
+\end{center}
 
-\subsection{摘要}\label{abstract}
+\section*{摘要}\label{abstract}
 
 我们提出 Kimi K3，一个拥有 2.8 万亿参数的 Mixture-of-Experts 模型，激活参数为 1040 亿，具备原生视觉能力和 100 万 token 的上下文窗口。Kimi K3 基于 Kimi Delta Attention [63] 和 Attention Residuals [57]，这两项技术分别改善了沿序列长度和模型深度的信息流动。结合 Stable LatentMoE（每个 token 在 896 个路由专家中有效激活 16 个）以及经过优化的训练和数据方案，这些进展使整体扩展效率相比 Kimi K2 [58] 提升了约 2.5 倍。后训练方面，重点介绍了在通用、智能体和编程领域的强化学习，以及多个推理努力级别，从而实现了组合泛化和稳健的长期执行能力。在 2.8T 规模下，Kimi K3 得到了多个领域基础设施进步的支持：面向 KDA 的算法--系统协同设计、具有高效内存管理的完美均衡专家并行训练、支持持久化 rollout 和沙箱状态的百万 token 智能体强化学习，以及部署创新。
 
@@ -1346,7 +1348,7 @@ train\_gpt 收敛 --- minitriton vs torch eager
 \section{结论}\label{conclusion}
 
 我们提出了 Kimi K3，一个开放的 2.8 万亿参数混合专家模型，具备原生视觉能力和 100 万 token 上下文窗口，基于 Kimi Delta Attention 和 Attention Residuals 构建。作为全球首个开放的三万亿级模型，Kimi K3 在长周期编程、智能体、知识、推理和视觉任务中展现了前沿级性能。尽管与最强闭源模型之间仍存在差距，但 Kimi K3 在每个人都触手可及的范围内建立了一个新的开放前沿。我们希望它能赋能更广泛的社区进行研究、部署和创新。
-\subsection{参考文献}\label{references}
+\section*{参考文献}\label{references}
 
 {[}1{]} $\tau$3-Banking. Sierra. 2026. URL:
 https://taubench.com/blog/tau-knowledge.html.
