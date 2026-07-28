@@ -26,14 +26,21 @@ These are user-policy dependent. Clarify when needed.
 
 ## Heading Mapping Rules
 
-Treat numbering as structure metadata, not display text.
+OCR output (MinerU/Nougat) typically flattens all headings to `\subsection{}` with number prefixes merged into the title text. After translation, run `scripts/normalize_heading_levels.py --write -v` to restore proper hierarchy. The script applies five rules:
 
-- `1. 引言` -> `\section{引言}`
-- `2.1. 继承自...` -> `\subsection{继承自...}`
-- `2.3.4. 效率讨论` -> `\subsubsection{效率讨论}`
-- Unnumbered structural summaries such as `核心评测结果摘要` are often better as inline bold headings, not numbered section commands.
+| Rule | OCR Input | Correct Output | When |
+|------|-----------|---------------|------|
+| **Title** | `\section{KIMI K3：开放前沿智能}` | `\begin{center}{\LARGE ...\par}\end{center}` | First `\section` near document top, no number prefix |
+| **Abstract/Refs** | `\subsection{摘要}` / `\subsection{参考文献}` | `\section*{摘要}` / `\section*{参考文献}` | Unnumbered, should not appear in TOC |
+| **Numbered** | `\subsection{1 引言}` | `\section{引言}` | Single digit → section |
+| | `\subsection{2.1 Hybrid Attention}` | `\subsection{Hybrid Attention}` | N.M → subsection |
+| | `\subsection{2.1.1 KDA}` | `\subsubsection{KDA}` | N.M.K → subsubsection |
+| **Appendix** | `\subsection{A 贡献者名单}` | `\section{贡献者名单}` | Letter A-F stripped from title, kept in `\label{}` |
+| **Inline bold** | `\subsection{核心评测结果摘要}` | `\noindent\textbf{核心评测结果摘要}` | Pass via `--inline-bold` flag |
 
-Use `scripts/normalize_heading_levels.py` for deterministic cleanup, then manually review special unnumbered headings.
+The depth is determined by the count of dots in the number prefix: 0 dots → section, 1 dot → subsection, 2 dots → subsubsection.
+
+Reference [assets/heading_examples.tex](../assets/heading_examples.tex) for before/after examples, and `example/kimi_k3_report/` for the full working result.
 
 ## Consistency Checklist
 

@@ -1,9 +1,57 @@
-% Numbered headings should become structural commands, not literal numbered text.
-\section{引言}
-\subsection{继承自 DeepSeek-V3 的设计}
-\subsubsection{效率讨论}
+% ==========================================
+% Heading normalization — all five rules
+% ==========================================
+% OCR output (MinerU/Nougat) typically flattens ALL headings to
+% \subsection{} with number prefixes merged into the title text.
+% Run: python3 scripts/normalize_heading_levels.py main.tex --write -v
 
-% Unnumbered summaries can stay inline and bold.
-\medskip
-\phantomsection\label{summary-of-core-evaluation-results}
-\noindent\textbf{核心评测结果摘要}
+% ---- Rule 0: Title → centered block ----
+% BEFORE:
+\section{KIMI K3：开放前沿智能}\label{kimi-k3}
+% AFTER (first \section near top → centered title):
+% \begin{center}
+% {\LARGE KIMI K3：开放前沿智能\par}
+% \end{center}
+
+% ---- Rule 1: Abstract / References → \section* ----
+% BEFORE:
+\subsection{摘要}\label{abstract}
+\subsection{参考文献}\label{references}
+% AFTER:
+% \section*{摘要}
+% \section*{参考文献}
+
+% ---- Rule 2: Numbered headings → correct level by dot count ----
+% Single digit → \section
+% BEFORE:
+\subsection{1 引言}\label{introduction}
+% AFTER:
+% \section{引言}
+
+% Digit.Digit → \subsection
+% BEFORE:
+\subsection{2.1 Hybrid Attention}\label{hybrid-attention}
+% AFTER:
+% \subsection{Hybrid Attention}
+
+% Digit.Digit.Digit → \subsubsection
+% BEFORE:
+\subsection{2.1.1 Kimi Delta Attention}\label{kimi-delta-attention}
+% AFTER:
+% \subsubsection{Kimi Delta Attention}
+
+% ---- Rule 3: Appendix letters A-F → \section ----
+% Letter stripped from title, preserved in \label for ordering
+% BEFORE:
+\subsection{A 贡献者名单}\label{a-contributions}
+% AFTER:
+% \section{贡献者名单}
+
+% ---- Rule 4: Inline bold demotion ----
+% Pass via --inline-bold flag for unnumbered structural summaries
+% BEFORE:
+\subsection{核心评测结果摘要}
+% AFTER (with --inline-bold "核心评测结果摘要"):
+% \medskip
+% \phantomsection\label{summary-of-core-evaluation-results}
+% \noindent\textbf{核心评测结果摘要}

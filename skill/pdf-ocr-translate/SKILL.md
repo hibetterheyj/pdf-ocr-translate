@@ -80,6 +80,53 @@ Merge all chunks (preamble + translated body parts) into a single `main_cn.tex`.
 - macOS system fonts: Songti SC (serif), Heiti SC (sans), PingFang SC (modern) are available without additional installs
 - Reference: [assets/font_preamble_snippet.tex](assets/font_preamble_snippet.tex)
 
+### 5.5. Normalize Heading Levels
+
+OCR output flattens all headings to `\subsection{}` with number prefixes merged into the title text. After merge, run the heading normalizer to restore proper hierarchy:
+
+```bash
+python3 scripts/normalize_heading_levels.py main_cn.tex --write -v
+```
+
+This applies five rules (in order):
+
+**Rule 0 — Title → centered block.** The first `\section{...}` near the top of the document (no number prefix) is converted to a centered title block:
+```latex
+% Before:
+\section{KIMI K3：开放前沿智能}
+
+% After:
+\begin{center}
+{\LARGE KIMI K3：开放前沿智能\par}
+\end{center}
+```
+
+**Rule 1 — Abstract / References → `\section*`.** Unnumbered special sections that should not appear in the table of contents:
+- `\subsection{摘要}` / `\subsection{Abstract}` → `\section*{摘要}`
+- `\subsection{参考文献}` / `\subsection{References}` → `\section*{参考文献}`
+
+**Rule 2 — Numbered headings → correct level.** Strip the OCR-merged number prefix and promote/demote by depth:
+| OCR Input | Correct Output |
+|---|---|
+| `\subsection{1 引言}` | `\section{引言}` |
+| `\subsection{2.1 Hybrid Attention}` | `\subsection{Hybrid Attention}` |
+| `\subsection{2.1.1 KDA}` | `\subsubsection{KDA}` |
+
+The depth is determined by the count of dots in the prefix: single digit → section, digit.digit → subsection, digit.digit.digit → subsubsection.
+
+**Rule 3 — Appendix letters → `\section`.** Strip the A-F prefix but preserve the appendix letter in the `\label{}` for ordering:
+```latex
+% Before:
+\subsection{A 贡献者名单}\label{a-contributions}
+
+% After:
+\section{贡献者名单}\label{a-contributions}
+```
+
+**Rule 4 — Inline bold demotion.** Specific unnumbered headings can be demoted to bold inline text (pass with `--inline-bold "标题文本"`). This is used for section summaries that shouldn't be numbered.
+
+Run the normalizer on both `main_cn.tex` and all `parts/*.tex` for consistency. Reference the DeepSeek V4 and Kimi K3 examples in `example/` for the expected output pattern.
+
 ### 6. Cross-Validate Against Source PDF
 
 Use pymupdf to extract text from the source PDF and verify key facts survived translation:
