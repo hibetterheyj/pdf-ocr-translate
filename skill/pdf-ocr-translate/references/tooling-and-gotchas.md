@@ -11,6 +11,45 @@ This skill should not duplicate generic PDF extraction advice. Reuse the local `
 
 This skill adds the OCR-LaTeX translation workflow on top.
 
+## Compilation Environment
+
+### XeLaTeX Installation
+
+macOS: `brew install --cask basictex` (~140MB download). After install, refresh PATH:
+```bash
+eval "$(/usr/libexec/path_helper)"
+```
+
+### Required LaTeX Packages
+
+BasicTeX is minimal. Install commonly needed packages:
+```bash
+sudo /Library/TeX/texbin/tlmgr install ctex adjustbox multirow footmisc
+```
+
+If compilation fails with `File 'X.sty' not found`:
+```bash
+kpsewhich X.sty           # check if installed
+sudo tlmgr install X       # install missing package
+```
+
+Common missing packages for OCR papers: `ctex`, `adjustbox`, `multirow`, `footmisc`, `mhchem`, `ucharclasses`, `stmaryrd`, `bbold`, `setspace`, `parskip`, `calc`.
+
+**Note**: Some packages (`calc`, `longtable`, `tabularx`, `booktabs`) are bundled in the `tools` collection and come with BasicTeX. The `tlmgr` won't find them as standalone packages.
+
+### Check Before Compiling
+
+First check which packages are missing to avoid iterative install loops:
+```bash
+for pkg in ctex multirow adjustbox footmisc; do
+  if kpsewhich ${pkg}.sty > /dev/null 2>&1; then
+    echo "OK: $pkg"
+  else
+    echo "MISSING: $pkg"
+  fi
+done
+```
+
 ## Prefer Native LaTeX Compilation
 
 Complex OCR-derived LaTeX often contains:
@@ -21,33 +60,62 @@ Complex OCR-derived LaTeX often contains:
 - custom font logic,
 - mixed English/CJK content.
 
-Direct `pandoc input.tex -o out.pdf` often breaks or rewrites the source in unstable ways.
+Direct `pandoc input.tex -o out.pdf` **requires a PDF engine** (xelatex/pdflatex/etc.) — pandoc alone only converts formats. The file's first line comment (`% This LaTeX document needs to be compiled with XeLaTeX.`) tells you which engine to use.
 
 Recommended order:
 
 1. Compile native TeX with `latexmk -xelatex` if available.
-2. Fall back to repeated `xelatex` runs.
+2. Fall back to repeated `xelatex -interaction=nonstopmode` runs (3 passes: content → cross-refs → TOC).
 3. If the user explicitly needs a pandoc-generated artifact, wrap the already compiled native PDF using `pdfpages`.
+
+**Expect errors on first pass.** OCR-derived LaTeX typically has 20-50 compilation errors. Use `-interaction=nonstopmode` (not `-halt-on-error`) to skip past them. Most errors are cosmetic and don't affect readability.
 
 ## Font Snippet
 
 If CJK font loading fails, start from [assets/font_preamble_snippet.tex](../assets/font_preamble_snippet.tex).
 
-Key lessons from a real run:
+Key lessons from real runs:
 
 - `\usepackage[fontset=none]{ctex}` is safer than relying on ctex defaults.
 - Explicitly set `\setCJKmainfont` and `\setmainfont`.
+- **macOS system fonts** (available without install): PingFang SC, Songti SC (宋体), Heiti SC (黑体), Kaiti SC (楷体).
+- **Windows fonts NOT on macOS**: SimSun, FangSong. Always include macOS fallbacks before these.
 - Use multiple fallbacks, for example:
-  - `Source Han Serif CN`
-  - `Noto Serif CJK SC`
-  - `PingFang SC`
-  - `SimSun`
-  - `FangSong`
-  - `Arial Unicode MS`
+  - `Source Han Serif CN` (best quality, may need install)
+  - `Noto Serif CJK SC` (open-source)
+  - `PingFang SC` (macOS system)
+  - `Songti SC` (macOS serif, good for body text)
+  - `Heiti SC` (macOS sans-serif, good for headings)
+  - `SimSun` (Windows only)
+  - `FangSong` (Windows only)
+  - `Arial Unicode MS` (last resort)
+
+## OCR Artifact Cleanup
+
+MinerU/Nougat/Mathpix output has predictable noise. Run `scripts/fix_ocr_artifacts.py` before translation and again on the merged file before compilation.
+
+### Common OCR Failures
+
+- **Escaped dollar signs**: `\$ \{ \boldsymbol { z } \} \_ \{ t \} \$` → should be `$\{ \boldsymbol { z } \} _ { t }$`. The `\$` produces a literal `$` in text mode, but the content needs math mode. This is the #1 source of `Missing $ inserted` errors.
+- **Unicode math chars**: ϕ (U+03D5), α (U+03B1), β (U+03B2), ∈ (U+2208), × (U+00D7) appearing outside math mode. XeLaTeX can't render these in text fonts.
+- **Control characters**: U+0001 (SOH), U+0016 (SYN) from OCR processing artifacts. Cause "invalid character" errors.
+- **section titles encoded as** `\section{2.3.4. ...}`
+- **literal `??` placeholders** from failed OCR recognition
+- **malformed math delimiters** such as `\$ ... \$` or unbalanced `$`
+- **literal escaped newlines** inside prose prompts
+- **special symbols replaced** by missing glyphs or invisible control characters
+- **source PDF screenshots** exported as tiny low-resolution OCR images
+
+### After Translation: Residual Errors
+
+Some errors survive OCR cleanup + translation. Common post-translation errors:
+- `\setcounter{enumi}{...}` without prior `\begin{enumerate}` — from OCR misreading of figure labels
+- Unicode characters re-introduced during translation — re-run `fix_ocr_artifacts.py`
+- `\mathbb{1}` requiring `bbold` package — replace with `\mathbf{1}` or ensure `bbold` installed
 
 ## Figure Extraction Heuristics
 
-Use `pdfimages -list` first.
+Use `pdfimages -list` first (requires poppler: `brew install poppler`).
 
 - If the source PDF has large embedded JPEG/PNG assets on the relevant page, extract them directly with `pdfimages`.
 - If the figure is mostly vector charts or OCR split it into many tiny fragments, render the full page at high DPI with `pdftocairo` and crop the panel you need.
@@ -60,14 +128,19 @@ python3 scripts/extract_hd_figures.py --pdf source.pdf --output-dir images_hi --
 python3 scripts/extract_hd_figures.py --pdf source.pdf --output-dir images_hi --render-pages 1 --crop page=1,x=520,y=3900,w=3900,h=2050,name=Figure1_hi.png
 ```
 
-## Common OCR Failures To Catch
+## Cross-Validation with Source PDF
 
-- section titles encoded as `\section{2.3.4. ...}`
-- literal `??` placeholders
-- malformed math delimiters such as `\$ ... \$`
-- literal escaped newlines inside prose prompts
-- special symbols replaced by missing glyphs or invisible control characters
-- source PDF screenshots exported as tiny low-resolution OCR images
+Use pymupdf (fitz) to extract text from the source PDF for fact verification:
+
+```python
+import fitz
+doc = fitz.open("source.pdf")
+for page in doc:
+    text = page.get_text('text')
+# Compare key facts against translated output
+```
+
+Verify: numerical values (parameter counts, percentages, scores), model names, benchmark results, citation keys. This catches OCR errors that silently corrupt data — e.g., "2.5×" becoming "2.5 倍" is fine, but "104B" becoming "10.4B" is a critical error.
 
 ## Packaging Strategy
 
@@ -76,4 +149,4 @@ When the user says "use pandoc", clarify whether they mean:
 - "compile the final PDF somehow", or
 - "the final artifact must be produced by pandoc".
 
-If the second requirement is strict, use the wrapper approach. That preserves the native XeLaTeX result while still producing a pandoc-authored PDF container.
+Pandoc alone cannot produce PDF — it delegates to a PDF engine (`--pdf-engine=xelatex`). If the second requirement is strict, use the wrapper approach. That preserves the native XeLaTeX result while still producing a pandoc-authored PDF container.
