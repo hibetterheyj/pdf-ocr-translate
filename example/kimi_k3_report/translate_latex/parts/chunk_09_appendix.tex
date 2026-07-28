@@ -1,4 +1,4 @@
-\subsection{A 贡献者名单}\label{a-contributions}
+\section{贡献者名单}\label{a-contributions}
 
 贡献者名单按姓氏字母顺序排列。
 
@@ -157,7 +157,7 @@ Zhou Ruozhang Zhou Xinyu Zhou Yiqiao Zhou Zaida Zhou Jinguo Zhu Liya Zhu
 Xinhao Zhu Yangjunfeng Zhu Yuxuan Zhu Zhen Zhu Chen Zhuang Weiyu Zhuang
 Xinxing Zu Kimi K3
 
-\subsection{B Sigmoid Tanh Unit GLU 细节}\label{b-details-of-sigmoid-tanh-unit-glu}
+\section{Sigmoid Tanh Unit GLU 细节}\label{b-details-of-sigmoid-tanh-unit-glu}
 
 SiTU-GLU（§2.3.2）的设计目标是在不丢弃 Swish 特征形状的前提下，对 SwiGLU 乘积进行有界约束：即在原点附近近似线性响应，且负尾部趋于零。图 4 展示了门控分支和上投影分支及其完整的标量响应。
 
@@ -182,7 +182,7 @@ SiTU-GLU（§2.3.2）的设计目标是在不丢弃 Swish 特征形状的前提�
 
 其中 \(\beta _ { 1 } = 4\)，\(\beta _ { 2 } = 2 5\)。与对门控预激活进行硬截断不同，平滑约束在远离饱和边界处保留了非零梯度，我们发现这能带来更好的训练行为。
 
-\subsection{C 分位数均衡的推导}\label{c-derivation-of-quantile-balancing}
+\section{分位数均衡的推导}\label{c-derivation-of-quantile-balancing}
 
 本附录从最优均衡分配出发，推导 §2.3 中使用的分位数均衡（Quantile Balancing, QB）更新，推导遵循 {[}111{]}；关于专家负载均衡的分配视角可追溯到 BASE Layers {[}67{]} 和 BIP {[}116{]}。令 \(\pmb { s } \in \mathbb { R } ^ { m \times n }\) 收集 m 个 token 在 n 个专家上的路由分数，其中每个 token 恰好选择 k 个专家，\(x _ { i , j } \in \{ 0 , 1 \}\) 指示 token i 是否分配给专家 j。最大分数均衡分配——即每个专家恰好服务 mk/n 个 token（假设为整数）——为
 
@@ -252,7 +252,7 @@ SiTU-GLU（§2.3.2）的设计目标是在不丢弃 Swish 特征形状的前提�
 
 即目标负载减去专家 j 的实际负载。在该目标上进行 SignSGD 步骤即可恢复辅助无损失均衡 {[}30{]} 的固定步长符号更新，除了符号约定 \(\boldsymbol { b } = - \boldsymbol { \beta }\)：符号更新只保留式 27 中负载误差的方向，而 QB 直接跳转到同一对偶目标的精确坐标极小点。这一视角既解释了为何 QB 无需类似学习率的超参数，也解释了为何它在即使接近 \(10^3\) 个专家时也能在几步更新内达到均衡。QB 同样与 BIP {[}116{]} 相关，后者以不等式约束 \(\textstyle \sum _ { j } x _ { i , j } \leq k\) 和 \(\textstyle \sum _ { i } x _ { i , j } \leq m k / n\) 求解同一分配问题；由此引入的 \(\alpha\) 和 \(\beta\) 上的非负性约束为两个更新增加了 max(0, ) 截断，这只能抑制被过度选择的专家而无法促进被不足选择的专家，并且在我们实验中显著减慢了均衡速度。最后，由此得到的固定 Top-k 路由与专家特定阈值路由相关，但不同于 Expert Threshold 路由——后者维护 EMA 阈值并允许每个 token 选择可变数量的专家 {[}112{]}。
 
-\subsection{D 基于直方图的分位数估计}\label{d-histogram-based-quantile-estimation}
+\section{基于直方图的分位数估计}\label{d-histogram-based-quantile-estimation}
 
 式 14 的 QB 更新需要在整个训练步上取分位数：对 n 个专家中的每一个，取 margin \(s _ { i , j } - \alpha _ { i }\) 的 \(( 1 - k / n )\) 分位数，其中 token 数量 m 跨越分布在数据并行 rank 和梯度累积步上的数百万 token。在训练循环内收集 \(O(mn)\) 个 margin 用于精确分位数计算是不切实际的。关键观察在于，更新从不需要 margin 本身，只需要它们每个专家的分布，而直方图可以以固定成本进行概括。因此，Kimi K3 为每个专家维护一个分箱直方图并从中读取分位数。具体地，我们对所需偏置 \(r _ { i , j } : = \alpha _ { i } - s _ { i , j }\)（即恰好将专家 j 置于 token i 的截止门槛的偏置）进行直方图统计；对 margin 取负反转了它们的顺序，因此式 14 的 QB 目标 \(\widehat { b } _ { j }\) 恰好是 \(r _ { : , j }\) 的 \((k/n)\) 分位数。
 
@@ -268,7 +268,7 @@ SiTU-GLU（§2.3.2）的设计目标是在不丢弃 Swish 特征形状的前提�
 
 性质 三个性质使得该估计器在大规模下切实可行。第一，精度高：累积计数在箱边界处是精确的，因此真实分位数与其估计值位于同一分箱中，误差以箱宽度 w 为界；当 \(B = 1000\) 时，这最多为几 \(10^{-3}\)，我们未观察到可测量的残余负载不均衡。第二，成本低：唯一的通信是每层每步一次 nB 个整数的 all-reduce，与 m 无关，在我们配置中低于在每微批次上跨进程组交换原始 margin 成本的 \(1\%\)，后者是自然替代方案。第三，估计正确的量：因为计数是可加的，全局直方图对 token 如何跨 rank 或累积步分区是完全不变的，估计值是汇总全局批次的分位数，而不是各 rank 分位数的平均值，后者通常不同。作为进一步改进，在各步之间维护估计分位数的指数移动平均可以减少批次间的采样噪声，并可能进一步改善负载均衡。
 
-\subsection{E MoonEP 通用上界证明}\label{e-moonep-general-upper-bound-proof}
+\section{MoonEP 通用上界证明}\label{e-moonep-general-upper-bound-proof}
 
 令 \(m _ { r } ( P )\) 表示在方案 P 下放置在 rank r 上的冗余专家数量。对路由器输出 \(I\)，规划目标是最小化任一 rank 上的最大冗余专家数，即 \(M ( I ) = \min _ { P } \max _ { r } \{ m _ { r } ( P ) \}\)。我们证明 \(M ( I ) \leq E / R\) 总是成立（定理 1），且该上界本质上是紧的：存在路由器输出使得 \(M = \lceil E ( R - 1 ) / R ^ { 2 } \rceil \approx E / R\)（定理 2）。
 
@@ -284,7 +284,7 @@ M (I) = \min _ {P} \max _ {r} \left\{m _ {r} (P) \right\} \leq \max _ {r} \left\
 
 定理 2 的证明（上界的紧性） 构造路由器输出 \(I^{*}\) 如下：EP rank 0 上的专家不接收任何 token，而其余 \(R-1\) 个 rank 上的所有专家均匀共享所有 token。则所有 \(S \times K \times R\) 个 token 均匀分配给 \(E(R-1)/R\) 个专家，因此每个专家接收 \(\frac{S K R^{2}}{E(R-1)}\) 个 token。在任意方案 \(P\) 下，rank 0 必须接收 \(S \times K\) 个 token，这些全是远程 token，且这些 token 至少涉及 \(\frac{S K}{\frac{S K R^{2}}{E(R-1)}} = \frac{E(R-1)}{R^{2}}\) 个不同专家；取上取整，rank 0 需要至少 \(\lceil \frac{E(R-1)}{R^{2}} \rceil\) 个冗余专家，因此 \(M(I^{*}) \geq \lceil \frac{E(R-1)}{R^{2}} \rceil\)。反之，通过使用定理 1 证明中的填充过程并优先按专家迁移 token 来构造方案，可以使每个 rank 上的冗余专家数保持在该值以内，因此等式成立。由于当 R 较大时 \(\lceil \frac{E(R-1)}{R^{2}} \rceil \approx \frac{E}{R}\)，定理 1 的上界本质上是紧的：不存在显著小于 \(E/R\) 的通用上界。
 
-\subsection{F 聊天模板}\label{f-chat-template}
+\section{聊天模板}\label{f-chat-template}
 
 Kimi K3 的聊天模板围绕三个目标重新设计。第一是可扩展性：新能力应通过向后兼容的消息格式而非模板修订来引入，使得单一模板服务于整个模型世代。第二是低对齐代价：格式应以最少的监督数据即可学习，支持经过轻度微调的预训练模型可直接进入强化学习的流水线。第三是解码友好性：结构应容纳简单的编码器、流式解析器和语法约束执行器。为此，模板采用 XTML（eXtensible Token Markup Language，可扩展 Token 标记语言），一种类 XML 标记语言，其中尖括号语法被三个保留特殊 token 替代：{[}open{]}、{[}sep{]} 和 {[}close{]}，另有额外的 {[}end\_of\_msg{]} token 作为生成停止标记。元素 {[}open{]}tag attr=``value''{[}sep{]} ... {[}close{]}tag{[}sep{]} 与其 XML 对应物同构，但每个结构边界都是显式的特殊 token，这消除了元素边界处的分词歧义并简化了约束解码。
 

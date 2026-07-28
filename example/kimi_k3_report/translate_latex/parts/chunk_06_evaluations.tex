@@ -1,8 +1,8 @@
-\subsection{6 评测}\label{evaluations}
+\section{评测}\label{evaluations}
 
-\subsection{6.1 主要结果}\label{main-results}
+\subsection{主要结果}\label{main-results}
 
-\subsection{6.1.1 基准测试}\label{benchmarks}
+\subsubsection{基准测试}\label{benchmarks}
 
 我们在四个核心能力维度上对 Kimi K3 进行全面评测：
 
@@ -30,7 +30,7 @@ Research Bench {[}65{]}。
 Math-Vision {[}128{]} 和 ZeroBenchmain {[}102{]}，各含/不含
 Python 工具增强。
 
-\subsection{6.1.2 基线模型}\label{baselines}
+\subsubsection{基线模型}\label{baselines}
 
 我们将 Kimi K3 与最先进的闭源和开源模型进行对比。闭源模型方面，我们
 对比 Claude Fable 5 {[}16{]}、GPT-5.6 Sol {[}39{]}、Claude Opus 4.8
@@ -39,7 +39,7 @@ GPT-5.6 Sol 的结果可能存在 cyberguard。开源模型方面，我们纳入
 GLM-5.2 {[}37{]}。除 GPT-5.5 使用 ``xhigh'' 设置外，所有模型均在
 最大推理努力下评测。
 
-\subsection{6.1.3 评测配置}\label{evaluation-configurations}
+\subsubsection{评测配置}\label{evaluation-configurations}
 
 所有 Kimi K3 评测均使用 reasoning effort max 和 temperature = 1.0。
 对于单步任务（如 GPQA Diamond、HLE-Full 和不含工具的视觉基准），
@@ -80,7 +80,7 @@ Claude Fable 5、Claude Opus 4.8 和 GLM-5.2 使用 Claude Code。
 Toolathlon-verified 和 JobBench 的分数引用自其官方排行榜 {[}119, 52{]}
 （截至 2026 年 7 月 24 日）。
 
-\subsection{6.1.4 结果}\label{results}
+\subsubsection{结果}\label{results}
 
 表 2 展示了 Kimi K3 与闭源和开源基线模型的全面对比。总体而言，Kimi K3 紧追
 最强的闭源模型 Claude Fable 5 和 GPT-5.6 Sol，同时在基准测试套件中一致
@@ -197,9 +197,9 @@ vs.~85.0\%），而其余更困难的计算机操作基准（OSWorld 2.0、SaaS-
 WorldVQA（51.0\%）上排名第二，仅次于 Claude Fable 5，领先于 GPT-5.6 Sol
 和 Claude Opus 4.8。
 
-\subsection{6.2 内部评测}\label{internal-evaluation}
+\subsection{内部评测}\label{internal-evaluation}
 
-\subsection{6.2.1 能力评测}\label{capability-evaluation}
+\subsubsection{能力评测}\label{capability-evaluation}
 
 除了公开基准测试套件外，我们还维护了一批内部基准测试，覆盖公开评测未充分
 涉及的能力领域，从而更全面地衡量模型和智能体的能力。这些基准测试会频繁
@@ -366,7 +366,7 @@ Agentic Vision Bench 和 KWV Bench 上落后领先模型。在其余已填充的
 （KAET、CLIF Bench、Online Experience、DECK Bench、Faithfulness 和 Chat
 All-in-One Bench）上，Kimi K3 排名第一或微弱的第二。
 
-\subsection{6.2.2 网络安全评测}\label{cyber-security-evaluation}
+\subsubsection{网络安全评测}\label{cyber-security-evaluation}
 
 我们按照操作风险递增的两层递进方式评测模型的网络安全能力：带概念验证开发
 的漏洞发现（第一层），以及端到端漏洞利用开发（第二层）。评测目标包括广泛
@@ -431,7 +431,7 @@ GLM-5.2（ExploitBench 上 32\% vs.~24\%；在模拟企业网络的 32 步任务
 我们视本次评测为能力下限。这些结果以当前模型版本和评测覆盖范围为准，
 我们将在每次重大模型更新时重新评估。
 
-\subsection{6.3 第三方评测}\label{third-party-evaluation}
+\subsection{第三方评测}\label{third-party-evaluation}
 
 Kimi K3 自发布以来也接受了第三方机构的独立评测。表 5 总结了截至 2026 年
 7 月 23 日的主要结果。
@@ -452,7 +452,7 @@ Arena 在众包人类偏好竞技场 {[}74{]} 上，Kimi K3 在 WebDev Arena 上
 目前在 37 个模型中排名第四（9.1），落后于 Claude Fable 5（12.7）、
 GPT-5.6 Sol（10.1）和 Claude Opus 4.8（9.8）。
 
-\subsection{6.4 成本效率}\label{cost-efficiency}
+\subsection{成本效率}\label{cost-efficiency}
 
 除了分数之外，我们还通过比较四个覆盖编程和智能体任务的套件（Kimi Code
 Bench 2.0、BrowseComp、GDPval-AA v2 和 AA-Briefcase）上的单任务成本来

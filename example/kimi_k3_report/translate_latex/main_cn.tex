@@ -127,7 +127,7 @@ Kimi 团队
 
 图 1: Kimi K3 主要结果。
 
-\subsection{1 引言}\label{introduction}
+\section{引言}\label{introduction}
 
 在大语言模型 (LLM) 发展的相当长一段时期里，扩展意味着在部署前投入更多计算资源，通过训练更大的模型处理更多数据 [54, 45]。推理模型的兴起将测试时计算确立为第二维度上的扩展：OpenAI 的 o 系列扩展了强化学习和测试时推理 [84, 83]；Anthropic 的扩展思考模型分配自适应思考预算，并将推理与工具使用交织进行 [6, 7]；DeepSeek-R1 [40] 和 Kimi K1.5 [118] 表明，大规模强化学习能够从强大的预训练模型中激发出复杂的推理行为；Kimi K2.5 Agent Swarm [59] 进一步将测试时扩展从顺序推理推进到并行智能体协同。这些进步使测试时扩展成为前沿研究的核心焦点。然而，虽然开源模型生态在第二维度上进展迅速，但在第一维度上却进展缓慢：许多近期模型仍处于或略高于 1T 级参数区间 [145, 29, 135, 120]。随着日益复杂的推理和智能体强化学习方法被应用于规模相近的预训练基座，开源进展面临趋同的风险，而与最强闭源系统之间的差距则在不断扩大。凭借 Kimi K3，我们同时沿两条扩展轴向前沿推进：将预训练基座扩展到前所未有的 3T 级参数规模，同时在 100 万上下文长度上扩展强化学习、推理努力和长期交互。
 
@@ -153,15 +153,15 @@ Kimi 团队
 
 图 2: Kimi K3 架构，围绕 token 混合、通道混合和层混合组织，输入端具有原生视觉通路。每个 block 包含三个 Kimi Delta Attention (KDA) 层，后跟一个 Gated MLA 层，每个注意力层与一个 Stable LatentMoE 前馈网络配对。Attention Residuals (AttnRes) 使用可学习的伪查询 (w) 推导出对嵌入和前置 block 输出的注意力权重 ($\alpha$)，实现跨深度的选择性信息流动。左上：Stable LatentMoE 模块，包含共享专家和路由专家。左下：KDA 模块。右下：原生视觉通路。
 
-\subsection{2 模型架构}\label{model-architecture}
+\section{模型架构}\label{model-architecture}
 
 Kimi K3 架构从三个互补维度扩展信息流动：序列长度、网络深度和模型宽度。在序列维度上，Hybrid Attention 在每个 block 中将三层 Kimi Delta Attention (KDA) {[}63{]} 与一层 Gated MLA 结合，为长上下文 token 混合提供高效机制，同时保留选择性的高容量注意力（§2.1）。在深度维度上，Attention Residuals (AttnRes) {[}57{]} 使每个模块能够从嵌入层、当前 block 以及之前 block 中有选择地检索表示，将信息访问范围扩展到传统的顺序残差累积之外（§2.2）。在宽度维度上，每个注意力层之后跟随一个 Stable LatentMoE 层进行稀疏通道混合，为每个 token 有效地激活 896 个路由专家中的 16 个（§2.3）。对于原生视觉，MoonViT-V2 编码图像和视频，轻量级投影器将得到的视觉特征映射到共享嵌入空间，然后再进行 backbone 处理（§2.4）。结合 Per-Head Muon（§2.5），这些组件提供了一个统一的架构，用于在 token、层和通道之间扩展信息流动。结合精炼的训练和数据配方，它们使整体扩展效率相比 Kimi K2 提升约 2.5 倍。图 2 提供了架构概览。
 
-\subsection{2.1 Hybrid Attention}\label{hybrid-attention}
+\subsection{Hybrid Attention}\label{hybrid-attention}
 
 Kimi K3 采用线性注意力与全局注意力的逐层混合，将 KDA {[}63{]} 与 Gated MLA 结合。每个 block 包含 3 个 KDA 层后接 1 个 Gated MLA 层，混合比例为 3:1。此模式在整个 backbone 中重复。两个注意力机制分别描述如下。在 backbone 末尾额外放置一个 Gated MLA 层，确保最后一层始终执行全局注意力。
 
-\subsection{2.1.1 Kimi Delta Attention}\label{kimi-delta-attention}
+\subsubsection{Kimi Delta Attention}\label{kimi-delta-attention}
 
 KDA 将 delta-rule 递推 {[}105, 138{]} 与逐通道遗忘门 {[}63{]} 结合。考虑隐藏状态序列 \(\pmb { x } _ { t } \in \mathbb { R } ^ { d }\)，其中 t 索引 token 位置，d 是模型隐藏维度。为清晰起见，我们先描述单个注意力头，其 query 和 key 向量为 \(\boldsymbol { q } _ { t } , \boldsymbol { k } _ { t } \in \mathbb { R } ^ { d _ { k } }\)，value 向量为 \(\pmb { v } _ { t } \in \mathbb { R } ^ { d _ { v } }\)，递推状态为 \(\mathbf { S } _ { t } \in \mathbb { R } ^ { d _ { k } \times d _ { v } }\)。KDA 在 delta-rule 更新之前应用逐通道衰减：
 
@@ -219,7 +219,7 @@ Kimi K3 通过改变从衰减 logit \(\boldsymbol { z } _ { t } ^ { h }\) 到每
 \boldsymbol {y} _ {t} = \mathbf {W} _ {o} [ \mathrm{Sigmoid} (\mathbf {W} _ {g} \boldsymbol {x} _ {t}) \odot \mathrm{RMSNorm} (\tilde {\boldsymbol {o}} _ {t}) ].\tag{6}
 \]
 
-\subsection{2.1.2 Gated MLA}\label{gated-mla}
+\subsubsection{Gated MLA}\label{gated-mla}
 
 Multi-head Latent Attention (MLA)，由 DeepSeek-V2 {[}28{]} 引入，将每个 token 的 key--value 表示压缩到低维 latent 向量 \(\pmb { c } _ { t } = \mathbf { W } _ { c } \pmb { x } _ { t }\)。MLA 不缓存完整的每头 key 和 value，而是缓存 \(c _ { t }\)，并在注意力计算过程中通过学习的升维投影重建内容 key 和 value。这种分解减少了 KV-cache 占用，同时保留了全局 token-to-token 注意力。MLA 随后被 Kimi K2 和 Kimi K2.5 {[}58, 59{]} 采用，Kimi K3 在周期性全局注意力层中保留它。
 
@@ -235,7 +235,7 @@ Multi-head Latent Attention (MLA)，由 DeepSeek-V2 {[}28{]} 引入，将每个 
 
 为纠正 flash attention 中出现的偏置舍入误差，我们采用 {[}98{]} 的方法，在训练期间将注意力输出保持在 FP32。此选择使输出 tile 的片上占用翻倍；因此我们重新设计了训练 kernel，将其与 KV staging buffer 而非 query tile 重叠，释放共享内存以支持更深的 KV 流水线和更高的训练吞吐量。
 
-\subsection{2.2 Attention Residuals}\label{attention-residuals}
+\subsection{Attention Residuals}\label{attention-residuals}
 
 标准残差连接 {[}43{]} 将所有先前信息压缩到深度上的单个状态 \(h _ { l }\) —— 这是一个类似 RNN 在时间上的瓶颈。对于序列建模，Transformer 用注意力取代了递推 {[}10, 125{]}，允许每个位置用数据依赖的权重有选择地访问所有先前位置。Attention Residuals (AttnRes) {[}57{]} 将相同的方法应用于深度：每一层有选择地从所有先前层检索表示，而不是均匀地累积它们。
 
@@ -263,7 +263,7 @@ key 和注意力权重遵循式 8 和式 9。最终输出层随后聚合所有 N
 
 经验上，\(N \approx { 8 }\) 在不同模型规模下恢复了大部分收益 {[}57{]}；对于 Kimi K3，我们将其层划分为 8 个 block，每个 block 12 层，形成不完整的最后一个 block 以及计入嵌入层后总共 9 个 block。
 
-\subsection{2.3 Stable LatentMoE}\label{stable-latentmoe}
+\subsection{Stable LatentMoE}\label{stable-latentmoe}
 
 增加专家池和活跃专家数量可以扩展专家特化的空间，但在传统 MoE 中，每个被选中的专家接收完整的 d 维 token 表示，因此通信和专家权重流量随路由多重度增长。LatentMoE {[}32{]} 通过将完整模型宽度与路由专家宽度分离，使这种扩展变得经济可行：共享专家保留全宽路径用于常见变换，而特化的路由专家在宽度为 $\ell$ 的紧凑 latent 空间中运行。这使得 Kimi K3 能够将通道混合扩展到 896 个路由专家，每个 token 激活 16 个，对应的稀疏度为 56。
 
@@ -293,11 +293,11 @@ SiTU-GLU & $\beta$1 tanh(x/$\beta$1)·$\sigma$(x) & $\beta$2 tanh(x/$\beta$2) \\
 
 其中 \(\mathbf { \boldsymbol { u } } \in \mathbb { R } ^ { \ell }\) 是聚合后的路由表示，\(E _ { i } ^ { \mathrm { s h a r e d } } : \mathbb { R } ^ { d }  \mathbb { R } ^ { d }\) 和 Erouted : \(\mathbb { R } ^ { \ell } \to \mathbb { R } ^ { \ell }\) 分别是共享和路由专家前馈网络，\(p _ { i }\) 是下文 Quantile Balancing 规则定义的路由权重。Kimi K3 在每层固定全宽共享专家的数量为 \(N _ { s } = 2\)。
 
-\subsection{2.3.1 Normalized LatentMoE}\label{normalized-latentmoe}
+\subsubsection{Normalized LatentMoE}\label{normalized-latentmoe}
 
 原始 LatentMoE 直接将 \(\mathbf { W } ^ { \uparrow }\) 应用于聚合后的路由表示 u，其尺度可能因所选专家及其路由权重而变化。如式 11 所示，Kimi K3 改为在专家聚合和升维投影之间插入 RMSNorm {[}146{]}。此归一化降低了路由分支对尺度变化的敏感性，使其在与全宽共享分支合并之前更加稳定。除了稳定训练外，额外的 RMSNorm 持续改善验证损失和下游基准。
 
-\subsection{2.3.2 Sigmoid Tanh Unit GLU}\label{sigmoid-tanh-unit-glu}
+\subsubsection{Sigmoid Tanh Unit GLU}\label{sigmoid-tanh-unit-glu}
 
 Gated Linear Units (GLUs) 用 sigmoid 激活的门调制线性 value 分支，计算 \(\mathrm { S i g m o i d } ( \mathbf { W } _ { g } \pmb { x } ) \odot\) \({ \mathbf W } _ { u } \mathbf x\) {[}26{]}。SwiGLU 将 sigmoid 门替换为 Swish \(( x ) = x { \bar { \mathrm { S i g m o i d } } } ( x )\)，在 Transformer 中取得了很强的经验性能 {[}107{]}。SwiGLU 随后成为大语言模型中广泛采用的 FFN 设计，但对其经验有效性的完整解释仍然未决。
 
@@ -317,7 +317,7 @@ Gated Linear Units (GLUs) 用 sigmoid 激活的门调制线性 value 分支，�
 
 § B 给出了局部展开、极限情况、形式化输出界以及与硬截断的比较。
 
-\subsection{2.3.3 Quantile Balancing}\label{quantile-balancing}
+\subsubsection{Quantile Balancing}\label{quantile-balancing}
 
 与基于辅助损失的路由 {[}33{]} 不同，Kimi K3 采用无辅助损失路由 {[}30{]}。负载均衡通过向用于 Top-k 选择的路由分数添加专家特定偏置 \(b _ { j }\) 实现。对于 token xi，路由计算 \(s _ { i } = \mathrm { S i g m o i d } ( \mathbf { W } _ { r } \mathbf { x } _ { i } )\) 并应用
 
@@ -343,7 +343,7 @@ margin 从原始分数 \(s _ { i , j }\) 中减去有偏截止值 \(\alpha _ { i
 
 直方图估计 在大规模下，式 14 中的分位数跨越整个全局批次，其 margin 数量达数百万并分布在多个 rank 和累积步骤中，因此在训练时收集它们进行精确分位数计算是不可行的。我们改为从每个专家的 margin 直方图中读取分位数：单次 all-reduce 汇总每 rank 的 bin 计数，分位数从汇总计数中恢复。由于计数是可加的，直方图表示汇聚后的全局批次，无论 token 如何分片，因此估计反映了全局批次分位数（精确到 bin 宽度），通信开销仅为每个专家几百个 bin。此直方图估计器是我们在实践中使用的方法；我们在 § D 中给出其详细描述及误差界。
 
-\subsection{2.4 原生视觉}\label{native-vision}
+\subsection{原生视觉}\label{native-vision}
 
 Kimi K3 是原生多模态的：文本、图像和视频在单个上下文中由单一共享 backbone 处理，无需后置模态对齐阶段。此设计是 §1 中描述的长时间视野、循环中视觉行为（vision-in-the-loop）的架构基础。渲染输出及其产生代码存在于同一 token 流中，模型可以编写代码、检查结果的截图或视频帧，并迭代优化视觉产物——用户界面、图形、视频——无需跨模型交接。
 
@@ -363,12 +363,12 @@ MoonViT-V2 Kimi K2.5 的一个关键不同之处在于，我们使用下一 toke
 
 架构 此训练方案建立在遵循 Kimi K2.5 {[}59, 61{]} 整体设计的视觉通路上：视觉输入首先由 MoonViT-V2 编码，然后通过轻量级 MLP 投影器映射到 LLM。MoonViT-V2 是一个 27 层的 vision transformer，参数约 0.4B，采用 RMSNorm 并从其线性和注意力投影中移除所有偏置项，这一设计进一步稳定了上述的从头优化。图像和视频以完全共享的参数处理，如 MoonViT-3D 中一样：注意力分解为帧内空间和帧间时间传递，时间池化进一步沿时间维度压缩 token。在投影之前，带有 2 2 下采样的 pixel-shuffle 操作将视觉 token 数量减少四倍，使高达 3584 3584 像素的输入在 1M-token 上下文中仍然可行。
 
-\subsection{2.5 Per-Head Muon}\label{per-head-muon}
+\subsection{Per-Head Muon}\label{per-head-muon}
 
 遵循 Kimi K2，Kimi K3 采用 Muon {[}53{]} 作为矩阵参数的优化器。对于注意力投影，我们将其进一步细化为 per-head 变体：不是将 Newton--Schulz 正交化应用于完整的 Q、K 和 V 投影矩阵，而是沿着 head 维度划分它们的动量矩阵，并分别对每个 head 的块进行正交化。其直觉是全矩阵正交化将所有 head 视为单一耦合块，因此梯度或动量尺度较大的 head 主导共享的更新方向，而尺度较小的 head 获得的归一化更新不足；per-head 正交化均衡了各 head 之间的更新尺度。在实践中，此设计产生了更均衡的跨 head 学习动态，并在更大规模上提高了训练稳定性。它还略微降低了优化器开销，因为在 tall per-head blocks 上的 Newton--Schulz 迭代比对完整投影矩阵计算更便宜。
-\subsection{3 预训练}\label{pre-training}
+\section{预训练}\label{pre-training}
 
-\subsection{3.1 预训练数据}\label{pre-training-data}
+\subsection{预训练数据}\label{pre-training-data}
 
 Kimi K3 在一个经过精心筛选的语料库上进行预训练，该语料库涵盖四大文本领域——网页文本、代码、数学和知识——以及一个大规模视觉语料库。视觉数据涵盖图像描述、图文交错文档、OCR、感知、视频和视觉编码数据。我们的数据流水线建立在为 Kimi K2 {[}58{]} 开发、并在 Kimi K2.5 {[}59{]} 中进一步优化的流水线基础之上。
 
@@ -376,7 +376,7 @@ Kimi K3 在一个经过精心筛选的语料库上进行预训练，该语料库
 
 视觉数据 视觉语料库遵循 Kimi K2.5 {[}59{]} 的分类体系，将开源数据集与内部过滤、合成和去重流水线相结合。在训练过程中，坐标监督同时以绝对格式和归一化（{[}0,1{]}）格式提供，从而实现精确且对分辨率鲁棒的定位。除了经典的文本标注图像外，我们还大幅扩展了程序化多模态数据，将代码片段与其渲染视觉效果配对，覆盖 SVG、3D 资产、网页、游戏和 CAD 示意图等特定领域格式。
 
-\subsection{3.2 缩放定律}\label{scaling-law}
+\subsection{缩放定律}\label{scaling-law}
 
 综合来看，前述各节所描述的架构、数据和训练改进共同定义了我们的新模型系列。由于这些变化也改变了最优训练范式，我们进行了专门的缩放定律研究，以重新调优关键超参数，包括批量大小、学习率、每参数 token 比（TPP）以及模型形状。在留出的 OOD 验证数据上评估，图 7 中的缩放定律曲线显示，这些改进整体上带来了相对于 Kimi K2 约 2.5 倍的缩放效率提升。表 1 提供了 Kimi K2 与 Kimi K3 之间详细的架构对比，突出展示了促成这一提升的结构性变化。
 
@@ -444,7 +444,7 @@ ViT 注意力头数 & - & 12 & - \\
 \end{longtable}
 }
 
-\subsection{3.3 训练配方}\label{training-recipe}
+\subsection{训练配方}\label{training-recipe}
 
 Kimi K3 采用原生多模态训练策略，语言和视觉从训练伊始就联合优化，而不是通过事后对齐阶段将视觉编码器嫁接到预训练语言模型上。在此范式下，视觉 token 和文本 token 在统一的下一 token 预测目标中交错排列，使共享主干网络能够从一开始就学习统一的多模态表示。
 
@@ -452,7 +452,7 @@ Kimi K3 采用原生多模态训练策略，语言和视觉从训练伊始就联
 
 我们的预训练从 8k token 的上下文长度开始，随后在后续训练阶段扩展到 64k token。
 
-\subsection{3.4 长上下文扩展}\label{long-context-extension}
+\subsection{长上下文扩展}\label{long-context-extension}
 
 位置编码 Kimi K3 不使用显式位置嵌入（NoPE），而是通过 KDA 的循环门控和衰减机制隐式编码位置信息。因此，模型可以直接外推到 1M token 上下文，而无需任何位置编码修改，例如 RoPE 重缩放或插值 {[}92{]}。
 
@@ -460,17 +460,17 @@ Kimi K3 采用原生多模态训练策略，语言和视觉从训练伊始就联
 
 渐进式上下文扩展 Kimi K3 支持高达 100 万 token 的上下文窗口。我们通过在训练过程中渐进式扩展上下文窗口来实现这一目标，遵循四阶段课程。窗口在预训练期间从 8K 扩展到 64K token，在冷却阶段从 256K 扩展到 1M token。将昂贵的长序列计算集中在整体训练预算的一小部分内，使得课程既经济高效，又能让模型逐步适应越来越长的依赖关系。使 KDA 层能够进行百万 token 训练的序列维度划分详见 §5.1.2。
 
-\subsection{4 后训练}\label{post-training}
+\section{后训练}\label{post-training}
 
-\subsection{4.1 方法}\label{method}
+\subsection{方法}\label{method}
 
 我们的后训练流水线遵循三阶段范式：通过监督微调（SFT）初始化基线智能体能力，通过强化学习（RL）在不同推理努力程度下培养领域专用专家，以及使用多教师在线策略蒸馏（MOPD）将这些领域专用策略整合到单一模型中。
 
-\subsection{4.1.1 监督微调}\label{supervised-fine-tuning}
+\subsubsection{监督微调}\label{supervised-fine-tuning}
 
 SFT 阶段为后续 RL 阶段建立一个高质量的冷启动策略。在先前 Kimi 模型 {[}58, 59{]} 的 SFT 流水线基础上，我们为 Kimi K3 扩展了 SFT 数据集，大幅拓宽了其对复杂智能体任务的覆盖范围。具体而言，我们使用来自先前 Kimi 系列的领域专用模型来合成数据轨迹，随后进行多阶段验证和人工参与（human-in-the-loop）标注。为一致地表示这些复杂的智能体轨迹，我们使用基于 XTML 的对话模板（可扩展 Token 标记语言；详见 § F）序列化所有数据。综合来看，这些步骤产出了一个大规模指令数据集，赋予 Kimi K3 自适应推理、精确工具调用以及在长周期智能体场景中稳健执行的能力。此外，我们从 SFT 阶段起即应用量化感知训练（QAT），采用 MXFP4 权重和 MXFP8 激活（§ 4.1.4）。
 
-\subsection{4.1.2 强化学习}\label{reinforcement-learning}
+\subsubsection{强化学习}\label{reinforcement-learning}
 
 虽然 SFT 提供了坚实的冷启动基础，但 RL 对于释放更高阶的推理和执行能力至关重要。我们没有为单个任务训练专用的 RL 模型，而是在三个广泛领域上扩展 RL——每个领域涵盖广泛的子任务——并在每个推理努力级别为每个领域训练一个单独的专家：（i）通用任务，涵盖通用经验、视觉、推理、忠实性、搜索能力和知识工作任务；（ii）通用智能体，涵盖长周期助手任务、深度研究（deep research）和段落级写作；以及（iii）编码智能体，涵盖软件工程（SWE）、编码经验、内核任务和 Web 开发。如图 8 所示，扩展 RL FLOPs 能够持续提升知识、推理、视觉、通用智能体和编码方面的多种能力。将这三个领域专家与低、高、最大三个推理努力级别交叉，共产生九个专家模型。
 
@@ -484,7 +484,7 @@ SFT 阶段为后续 RL 阶段建立一个高质量的冷启动策略。在先前
 
 智能体生成式奖励模型 对于不可验证的通用任务，我们采用智能体生成式奖励模型（GRM），保留了 Kimi K2.5 {[}58, 59{]} 中基于锦标赛风格、使用二值比较的群体奖励方法。除了增强判断所需的通用智能体能力外，智能体评判器还必须遵循一个强制协议：（1）阅读结果、产物或文本输出；（2）生成评分标准（rubric）；（3）对照评分标准给每个候选打分；以及（4）将评分标准分配的分数记录在评分板（scorepad）中。为缓解针对越来越冗长的输出的奖励黑客（reward hacking）行为，我们应用了与上述推理努力控制类似的基于预算的冗长度控制：给定从冷启动模型估计的初始冗长度 \(\ell _ { 0 }\) 和一个乘数 $\sigma$，输出长度超过 \(\sigma \cdot \ell _ { 0 }\) 的候选将自动输掉二值比较。
 
-\subsection{4.1.3 多教师在线策略蒸馏}\label{multi-teacher-on-policy-distillation}
+\subsubsection{多教师在线策略蒸馏}\label{multi-teacher-on-policy-distillation}
 
 我们采用多教师在线策略蒸馏（MOPD）将这些在不同推理努力程度下的领域专用能力整合到统一模型中 {[}75, 134, 29{]}。在训练过程中，对于给定的领域 d 和采样的推理努力级别 \(e \in \{ \mathrm { l o w } , \mathrm { h i g h } , \mathrm { m a x } \}\)，优化由九个专家中对应的教师模型 \(\pi _ { \mathrm { t e a c h e r } } ^ { ( d , e ) }\) 引导。给定输入查询 x 和前缀响应 \(y _ { < t }\)，在教师 \(\pi _ { \mathrm { t e a c h e r } } ^ { ( d , e ) }\) 和学生 \(\pi _ { \theta }\) 之间，在 \(y _ { t }\) 上评估的逐 token OPD 奖励定义为：
 
@@ -494,7 +494,7 @@ r _ {\mathrm{opd}} ^ {d} (y _ {t} \mid e, x, y _ {<   t}) = \operatorname{clip} 
 
 其中 \(\operatorname { s g } ( \cdot )\) 表示停止梯度算子，\(R _ { \operatorname* { m a x } } > 0\) 是用于约束极端优势信号的裁剪阈值，从而稳定 RL 训练。这一密集奖励信号无缝集成到我们的 RL 框架中，自然地支持基础设施级优化，例如针对长周期任务的部分 rollout 训练。虽然我们也实验了更细粒度的 top-k 蒸馏目标，但在我们的设置中，无论是在收敛速度还是最终性能方面，均未观察到明显优势。
 
-\subsection{4.1.4 部署感知的后训练}\label{deployment-aware-post-training}
+\subsubsection{部署感知的后训练}\label{deployment-aware-post-training}
 
 MXFP4 量化感知后训练 为在部署时减少内存占用和服务成本，我们将 MoE 专家权重——这些权重占据了模型参数内存的主要部分——量化到 MXFP4 {[}103{]}，激活值以 MXFP8 计算，而所有非专家组件（注意力投影、潜在 MoE 投影、共享专家和 MoE 路由器）保持更高精度。我们在整个后训练阶段（覆盖 SFT 和 RL）进行量化感知训练（QAT）{[}49{]}，使模型适应量化引入的精度损失。在 RL 过程中，rollout 和训练共享相同的量化方案——消除了训练与推理之间的不匹配。
 
@@ -510,15 +510,15 @@ MXFP4 量化感知后训练 为在部署时减少内存占用和服务成本，�
 
 其中 p 和 q 在温度 1 下评估，且不包含辅助的真实交叉熵项。草稿微调遵循后训练 QAT 配置 \(( \ S 4 . 1 . 4 )\)，MoE 专家权重采用 MXFP4，其输入激活采用 MXFP8，而非专家模块保持更高精度。
 
-\subsection{4.2 RL 任务合成与智能体环境}\label{rl-task-synthesis-and-agentic-environments}
+\subsection{RL 任务合成与智能体环境}\label{rl-task-synthesis-and-agentic-environments}
 
 我们的 RL 框架的有效性在很大程度上依赖于丰富、多样且可稳健验证的环境。为支持跨复杂长周期任务的可扩展训练，我们设计了一系列专用的白盒环境和任务合成范式。
 
-\subsection{4.2.1 统一白盒 RL 环境}\label{unified-white-box-rl-environment}
+\subsubsection{统一白盒 RL 环境}\label{unified-white-box-rl-environment}
 
 使用单一固定的智能体框架（harness）进行训练可能导致模型过拟合到特定的工具模式、系统提示、上下文管理机制或交互协议。为解决此问题，我们开发了一个统一白盒 RL 环境，将智能体框架表示为一组可配置、可组合的模块，包括工具接口、系统提示、上下文管理策略、技能、记忆、子智能体和其他组件。通过配置组合这些模块，该环境可以实例化主流框架，如 Kimi Code {[}56{]}、Claude Code {[}15{]}、Codex {[}20{]}、OpenClaw {[}86{]} 和 Hermes {[}44{]}，以及全新的框架。在 RL 训练过程中，我们为不同的任务组动态构建不同的框架配置，使 Kimi K3 暴露于这些模块的多样化组合，而非任何单一框架的惯例。同样的抽象也方便地支持跨各种任务领域的 RL，为训练更通用的智能体提供了可扩展的基础。
 
-\subsection{4.2.2 知识图谱引导的任务合成}\label{knowledge-graph-guided-task-synthesis}
+\subsubsection{知识图谱引导的任务合成}\label{knowledge-graph-guided-task-synthesis}
 
 动机与概览 后训练任务的质量和多样性在很大程度上取决于其源材料。由细粒度概念引导的检索能够发掘专业化和未被充分代表的知识，而跨多样化概念的采样则拓宽了领域覆盖范围。为在大规模下同时控制粒度和覆盖范围，我们构建了一个自演化、层次化组织的知识图谱，智能体通过在知识密集型和编码领域的 Web 规模探索持续扩展该图谱。图 9 展示了任务合成流水线。
 
@@ -530,23 +530,23 @@ MXFP4 量化感知后训练 为在部署时减少内存占用和服务成本，�
 
 材料检索与任务合成 为针对跨领域和任务类型的期望分布，系统在不同粒度级别采样节点，可以单独采样或按相关组合采样。从采样节点派生的关键词与来自知识图谱中其祖先节点的上下文信息相结合，以生成 Web 查询。检索到的真实世界材料被组合起来，由合成智能体生成各种任务类型的训练任务。
 
-\subsection{4.2.3 智能体环境中的可验证问题}\label{verifiable-problems-in-agentic-environments}
+\subsubsection{智能体环境中的可验证问题}\label{verifiable-problems-in-agentic-environments}
 
 我们在智能体环境中训练 Kimi K3 解决可验证问题；代表性示例包括：多步骤复杂信息搜索，其中模型规划研究过程、逐步从 Web 收集证据并产生可验证的答案；专业人士的真实日常工作，如投资银行、数据分析和法律实务，其中模型将复杂请求分解、在沙箱中操作领域工具，并在数十到数百个步骤中完成交付物；以及针对 STEM 问题、视觉谜题和图表理解的多步骤可验证视觉推理。每条视觉推理轨迹在配备 Python 解释器的隔离沙箱智能体环境中生成：模型迭代编写和执行代码来裁剪、缩放或变换输入图像，执行精确计算或验证中间结果，并在多个交互步骤中接收执行输出——包括生成的图像——作为新的观察。随着模型学会执行更多的图像操作并收集更多的观察，其在复杂视觉推理任务上的表现稳步提升。
 
-\subsection{4.2.4 内核优化任务}\label{kernel-optimization-tasks}
+\subsubsection{内核优化任务}\label{kernel-optimization-tasks}
 
 为增强 Kimi K3 的 GPU 内核优化能力，我们构建了一个大规模内核任务套件，涵盖从单算子内核到融合巨型内核的各种任务，其来源包括诸如 Flash Linear Attention {[}139{]} 等高质量 GitHub 仓库。该套件覆盖了多种 GPU 编程方法，如 CUDA、Triton、CuTe DSL、Gluon、ThunderKittens {[}110{]} 和 TileLang {[}129{]}，并涵盖了广泛使用的 GPU 架构和数值格式，包括 BF16、FP8 和 FP4。奖励同时评估正确性和性能：每个内核提供 PyTorch 参考实现，超出预定义数值误差阈值的解决方案获得零奖励。性能则相对于专家实现进行评分：与之匹敌获得 0.5 奖励，接近硬件理论峰值（roofline）则将奖励提高到接近 1。为确保奖励反映真实的优化，我们开发了一个黑客检测系统，惩罚诸如 CUDA 图重放、输入缓存和精度降低等奖励黑客策略，并在 Kimi K3 开发过程中观察到新的黑客策略时持续扩展新的防护措施。
 
-\subsection{4.2.5 个人助理任务}\label{personal-assistant-tasks}
+\subsubsection{个人助理任务}\label{personal-assistant-tasks}
 
 对于长周期个人助理任务，我们开发了广泛使用应用的真实模拟实现，如 Gmail、Notion、Slack 和 Canvas。这些模拟实现保留了其真实对应物的核心语义，同时支持可复现的大规模交互，无需外部 API 或频率限制。在这些模拟应用的基础上，我们设计了受真实世界专业工作流启发的复杂任务，场景涵盖人力资源、法律服务和金融等领域。在每个任务中，智能体在一个持久的、持续演化的环境中运作，跨越多个模拟天数，并遇到分布在各个应用中的数十个相互依赖的事件。单次 rollout 可能涉及多达数千次工具调用和数百万上下文 token。每个事件带有自己的评估标准，由确定性规则或基于 LLM 的评估器评判。初始工作空间由自主搜索 Web 获取参考材料并将其转换为连贯的、与任务相关环境的智能体构建。我们还扩展了 RL 框架以支持此类活环境（living environments），对复杂事件流及其引发的世界状态转换进行建模。
 
-\subsection{4.2.6 自主执行任务}\label{autonomous-execution-tasks}
+\subsubsection{自主执行任务}\label{autonomous-execution-tasks}
 
 我们引入自主执行任务（AET），这是一种通过验证闭环（verify-in-the-loop）优化训练长周期智能体智能的环境范式。每个任务指定初始状态、受约束的目标、基于工具的动作空间、执行预算以及一个独立的验证器。智能体仅看到目标、上下文、约束和验证接口，没有参考轨迹或预定义流程，必须自主执行任务分解、工具选择、规划、错误恢复和终止。奖励基于验证器对最终环境状态的评估，而非智能体自报的完成情况。我们设计了多种类型的验证器以支持多样化的环境，包括黑盒系统复现（图 10）、量化因子发现和税务审计。在每个环境中，智能体迭代提交解决方案、接收验证器反馈并优化策略，训练其假设、执行、分析反馈和适应的通用循环。通过将智能体与验证器隔离、将提供诊断反馈的公开验证器与评估留出场景的隐藏验证器配对，以及在有限提交预算下施加基于惩罚的奖励，来缓解奖励黑客行为。
 
-\subsection{4.2.7 Web 开发任务}\label{web-development-tasks}
+\subsubsection{Web 开发任务}\label{web-development-tasks}
 
 我们构建了一个多样化的、由专家精心策划的 Web 开发任务套件，覆盖典型场景。输入范围从单行场景描述到多段落规格说明；产物涵盖网站、交互式游戏、3D/WebGL 场景、数据可视化、SVG 和全栈应用。每个任务在容器化沙箱中运行，并在多样化智能体框架而非单一固定框架下 rollout，以促进跨框架泛化。奖励由两部分组成：确定性检查和由内部奖励模型进行的模型评判。确定性检查对应用行为进行功能测试，并对复现参考物的任务评分结构和像素级相似度。当项目构建失败、运行出错或伪造而非实现产物时，奖励清零。模型评判使用其他模型进行源代码检查，或查看并交互输出产物。
 
@@ -556,15 +556,15 @@ Camera Repair Management System 复现
 
 图 10: Camera Repair Management System 上的完成曲线，这是一个黑盒系统复现任务，智能体通过神谕（oracle）查询将一个隐藏的 3D 相机维修系统重建为 Web 应用。完成度表示验证器评估的任务进度。
 
-\subsection{5 基础设施}\label{infrastructure}
+\section{基础设施}\label{infrastructure}
 
 Kimi K3 在一个模型中同时应对了三类罕见叠加的系统挑战：混合 KDA 注意力、3T 级稀疏多模态训练与推理，以及百万 Token 的智能体工作负载。我们的基础设施围绕这些挑战，在模型全生命周期中进行了协同设计。在架构层面，高性能 KDA Kernel 和上下文并行性使得循环公式在设备内部和跨设备间都能高效执行，覆盖训练与推理。在预训练阶段，均衡的专家执行、降低的内存占用以及通信重叠调度保证了大尺度下的高利用率。在百万 Token 智能体强化学习阶段，分层状态管理和可恢复的沙箱执行在多次迭代间保留了长轨迹。最后，状态感知的 KDA 前缀缓存、专用推理 Kernel 以及缓存与预算感知的调度将这些效率优势转化为可预测的生产服务。
 
-\subsection{5.1 KDA 的算法-系统协同设计}\label{algorithm-system-co-design-for-kda}
+\subsection{KDA 的算法-系统协同设计}\label{algorithm-system-co-design-for-kda}
 
 KDA 将 softmax 注意力中不断增长的 key--value 缓存替换为固定大小的循环状态 \(\mathbf { S } \in \mathbb { R } ^ { d _ { k } \times d _ { v } }\)（§2.1.1），其串行更新在并行执行中带来挑战，但换来了一个传输和复用成本低廉的固定大小状态。以下设计在两个执行层面分别解决了前者并利用了后者：设备内部的融合 Kernel，以及跨设备的 KDA 上下文并行。
 
-\subsection{5.1.1 不同场景下的 KDA Kernel}\label{kda-kernels-across-regimes}
+\subsubsection{不同场景下的 KDA Kernel}\label{kda-kernels-across-regimes}
 
 KDA 状态的串行依赖与 GPU 对宽阔、均匀并行的偏好相矛盾，且在不同的执行场景中表现为不同的瓶颈。我们为每种场景设计了专用 Kernel。
 
@@ -574,7 +574,7 @@ KDA 状态的串行依赖与 GPU 对宽阔、均匀并行的偏好相矛盾，�
 
 KDA 解码带来了与训练和预填充截然不同的挑战。我们将在 §5.4.2 中详细讨论这些挑战。
 
-\subsection{5.1.2 KDA 上下文并行}\label{kda-context-parallelism}
+\subsubsection{KDA 上下文并行}\label{kda-context-parallelism}
 
 上下文并行的通信开销在 softmax 注意力和线性注意力之间有本质区别。Softmax 注意力要求各 rank 交换 key--value 块，其大小随序列长度增长 {[}72{]}。而线性注意力则通过固定大小的循环状态 \(\breve { \mathbf { S } } \in \mathbb { R } ^ { d _ { k } \times d _ { v } }\) 携带前述上下文。先前的上下文并行方法利用普通线性注意力的加性循环特性，在每个 rank 上计算本地 token 从 \(\mathbf { S } = \mathbf { 0 }\) 生成的状态，然后将这些本地状态在前述各 rank 之间求和，以恢复进入状态 {[}114, 113{]}。
 
@@ -592,7 +592,7 @@ KDA 解码带来了与训练和预填充截然不同的挑战。我们将在 §5
 
 公式 17 中的求和表明，每个状态完全由本地计算的片段组成。这些 rank 级更新满足结合律，因此每个 rank 的进入状态可以通过前缀扫描恢复 {[}77{]}。每个 rank 首先本地计算 \(\mathbf { M } _ { [ i ] } ^ { { \dot { T } } _ { i } \gets 1 }\) 和 \(\widetilde { \mathbf { S } } _ { [ i ] } ^ { T _ { i } }\)，然后通过一次 all-gather 交换这两个张量 \({[}1 3 9 ] . ^ { 2 }\)。在 all-gather 之后，rank \(i + 1\) 通过按顺序处理同一文档的前序片段，从 \(\mathbf { S } = \mathbf { 0 }\) 开始，在每个片段处应用 \(\mathbf { S } \gets \mathbf { M } _ { [ j ] } ^ { T _ { j }  \mathrm { i } } \mathbf { S } + \widetilde { \mathbf { S } } _ { [ j ] } ^ { T _ { j } }\)，从而重建 \(\dot { \mathbf { S } } _ { [ i ] } ^ { T _ { i } }\)。因此，KCP 仅需固定大小的 all-gather 用于循环状态同步，并实现线性计算扩展。
 
-\subsection{5.2 3T 级预训练基础设施}\label{infra-for-3t-class-pre-training}
+\subsection{3T 级预训练基础设施}\label{infra-for-3t-class-pre-training}
 
 Kimi K3 预训练结合了带有虚拟阶段（VP）的流水线并行 \(( \mathrm { P P } )\) {[}48, 81{]}、专家并行（EP）{[}66{]}、ZeRO-1 数据并行 {[}100{]}、流水线 ZeRO-2 梯度分片 {[}145{]} 以及上下文并行（CP，§5.1.2）{[}50{]}。
 
@@ -604,7 +604,7 @@ MoE 层采用跨 EP rank 复制的共享专家，专家分发和合并的 all-to
 
 3T 级的原生多模态预训练面临三个关键问题：（i）token 负载在 EP rank 之间不均衡；（ii）激活值、梯度和优化器状态超出内存预算；（iii）视觉编码器高度可变地计算暴露在关键路径上。以下小节依次解决这些问题：完美均衡的专家并行 MoE 训练（§5.2.1）、内存高效训练（§5.2.2）以及多模态编码器优化（§5.2.3）。图 11 展示了由此产生的执行调度。
 
-\subsection{5.2.1 完美均衡的专家并行 MoE 训练}\label{perfectly-balanced-expert-parallel-moe-training}
+\subsubsection{完美均衡的专家并行 MoE 训练}\label{perfectly-balanced-expert-parallel-moe-training}
 
 在传统 EP 方案中，token 负载在 rank 之间不均衡。由此产生的计算不均衡降低了训练吞吐量，而路由专家激活值的动态变化形状则导致严重的内存碎片。因此我们提出了 MoonEP3，一种通过动态冗余专家实现完美负载均衡的 EP 方案。MoonEP 保留了 DeepEP {[}147{]} 等传统方案的总体计算流程，同时额外引入了冗余专家的在线规划与迁移。在前向传播中，我们从当前 micro-batch 和层的路由器输出中规划冗余专家，并在路由专家计算之前预取它们。在后向传播中，我们将它们的梯度暂存到一个本地 reduce 缓冲区中，计算完成后将其 reduce 回其归属 rank 的梯度缓冲区。
 
@@ -618,7 +618,7 @@ MoE 层采用跨 EP rank 复制的共享专家，专家分发和合并的 all-to
 
 Expert-GEMM 调度与重叠。即使整体负载在 rank 间完美均衡，每个 rank 内部的各专家 token 数仍不均衡，固定顺序、对工作负载无感知的调度会将这种不均衡转化为 SM 工作器之间不均衡的 makespan。因此，我们采用工作负载感知的调度器来调度路由专家 GEMM，该调度器在启动前根据当前 token 分布自适应调整参数，并在执行期间保持固定。一个轻量级启发式方法使用硬件指标的分析成本模型来选择这些参数，关键系数通过离线自动调优进行标定。对于共享专家，我们将其 GEMM 分发到单独的流上，以便与其他 Kernel 重叠。
 
-\subsection{5.2.2 内存高效训练}\label{memory-efficient-training}
+\subsubsection{内存高效训练}\label{memory-efficient-training}
 
 统一激活值管理器。我们设计了一个统一的激活值存储抽象，其中为后向传播保存的每个张量与一个可插拔的存储后端关联。重计算、量化和卸载/远程卸载在此抽象下仅是存储策略，可在张量粒度上自由组合；策略通过张量上的轻量级注解声明，与模型代码完全解耦。重计算以函数粒度执行，支持跨层重计算。在我们的实现中，所有 GPU 内存都在主计算流上分配，并在单一内存池中管理，避免了多流碎片化和主机端开销；激活值按层粒度预取回来并与计算重叠，引入的额外开销可忽略不计。在 Kimi K3 中，大部分激活值使用块级 FP8 量化 {[}58, 30{]} 结合卸载/远程卸载，逐元素算子则配置为重计算。
 
@@ -632,17 +632,17 @@ Expert-GEMM 调度与重叠。即使整体负载在 rank 间完美均衡，每�
 
 基于 P2P 的 Muon 正交化。分布式优化器将参数在 DP rank 之间均匀分片，而 Muon 中的 Newton--Schulz 正交化需要完整的参数矩阵，因此在每次更新前需要一个通信步骤来收集完整参数。原始方法在每个 rank 上对整个参数缓冲区执行 all-gather {[}73{]}，这不仅产生了巨大的内存占用，更使通信成为大规模下的主要瓶颈。取而代之，每个 rank 通过与其对应归属 rank 的点对点（P2P）通信，仅获取其本地拥有参数的各个分片，消除了完整参数缓冲区，同时降低了内存使用和通信量。通信和计算进一步以模型块缓冲区的粒度流水线化，隐藏了通信开销。
 
-\subsection{5.2.3 多模态编码器优化}\label{multimodal-encoder-optimization}
+\subsubsection{多模态编码器优化}\label{multimodal-encoder-optimization}
 
 多模态编码器中的动态 CP。在长上下文多模态训练中，大尺寸图像和长视频显著增加了视觉编码器的计算时间，并导致设备间严重的负载不均衡。为解决此问题，我们将上下文并行扩展到这些大样本上。单张大图像沿 patch 维度跨多个设备划分，注意力通过跨 CP rank 收集 key--value 对（gather-KV）来计算。此外，我们将每个 CP 组划分为若干子 CP 组，并以负载均衡的方式在它们之间分发多张大图像，防止通信比例随规模增长。这同时降低了大视觉样本的编码器延迟和跨设备负载不均衡，使得剩余的编码器计算能够隐藏在流水线气泡中。
 
 PP 气泡中的编码器计算。在 Kimi K2.5 中，我们引入了分离编码器进程（DEP）{[}59{]}，将 ViT 和文本训练拆分为独立阶段，并在 PP 阶段之间平衡视觉的前向和后向传播。我们观察到，在交错 1F1B 流水线调度下，第一批 PP micro-batch 的文本前向传播全部在最开始调度，而最后一批 PP micro-batch 的文本后向传播在最末尾才完成。因此我们进一步分解 ViT 计算。第一批 PP micro-batch 的 ViT 前向传播在前期同步执行，其余前向传播被调度到流水线气泡中，后向传播也类似处理。结果，大部分 ViT 计算被隐藏在流水线气泡中，基本消除了视觉编码器的有效开销。
 
-\subsection{5.3 百万 Token 智能体强化学习基础设施}\label{infra-for-1m-agentic-rl}
+\subsection{百万 Token 智能体强化学习基础设施}\label{infra-for-1m-agentic-rl}
 
 在有限的计算预算下，为 Kimi K3 这样的大模型将智能体强化学习扩展到百万 Token 上下文，使得资源效率成为首要目标。这推动了两项互补的工作：1）高效的训练和 rollout，包括 KV 缓存管理、请求调度和训练状态放置；2）用于长时交互的高性能可恢复沙箱。
 
-\subsection{5.3.1 长上下文强化学习基础设施}\label{long-context-rl-infrastructure}
+\subsubsection{长上下文强化学习基础设施}\label{long-context-rl-infrastructure}
 
 我们采用共置 RL 训练 {[}58{]} 将每个百万 Token 上下文的 Kimi K3 RL 实验控制在数百张 GPU 以内，并使用 partial rollout {[}118{]} 来降低超长轨迹的尾部延迟。这一设计实现了良好的硬件利用率，但也引入了 rollout KV 缓存（需要为下一次迭代保留）与训练所需内存之间的占用竞争。这一挑战在长上下文 RL 中更为严峻。
 
@@ -658,7 +658,7 @@ Rollout 自动节流调度器。在多步 rollout 中，上下文随轨迹推进
 
 配合 ZeRO-2 梯度分片与卸载（§ 5.2.2），在 Kimi K3 RL 训练中，每个 GPU 仅为两个 VPP chunk 保留梯度缓冲区。我们将参考权重逐块流式加载到这些槽位中：一个槽位用于当前前向计算，另一个在预取下一个 chunk，从而在不增加 GPU 内存的情况下隐藏拷贝开销。
 
-\subsection{5.3.2 沙箱基础设施}\label{sandbox-infrastructure}
+\subsubsection{沙箱基础设施}\label{sandbox-infrastructure}
 
 我们部署了多个沙箱运行时来支持 Kimi K3 后训练和评估的多样化需求，包括传统的基于容器的运行时、GPU 沙箱运行时，以及最重要的一个——一种新的基于 microVM 的沙箱运行时 AgentENV。
 
@@ -672,11 +672,11 @@ AgentENV4 是与我们的合作伙伴联合开发的，专门为智能体 AI 工
 
 在 Kimi K3 的训练和评估过程中，共创建了 51,219,741 个沙箱，涉及 1,505,678 个镜像。
 
-\subsection{5.4 推理与在线服务}\label{inference-and-online-serving}
+\subsection{推理与在线服务}\label{inference-and-online-serving}
 
 为 Kimi K3 提供服务从生产侧暴露出同样的挑战：混合 KDA--MLA 架构维护两种本质不同的缓存，必须在百万 Token 上下文中联合管理；其新模块和高度稀疏的专家要求为每个模块定制 Kernel；而生产流量混合了单请求成本跨越三个数量级的请求。以下设计在三个层面应对这些挑战。在引擎层面，KDA 感知的前缀缓存将固定大小的循环状态打包到与 MLA KV 缓存相同的分页池中，并使长前缀可在请求间复用。在设备层面，为 KDA 解码、Block AttnRes 和稀疏潜在 MoE 定制的 Kernel 最小化每 token 延迟和内存流量。在集群层面，缓存感知的亲和调度和基于预算的准入控制将这些效率转化为可预测的服务。
 
-\subsection{5.4.1 KDA 感知的前缀缓存管理}\label{kda-aware-prefix-cache-management}
+\subsubsection{KDA 感知的前缀缓存管理}\label{kda-aware-prefix-cache-management}
 
 Kimi K3 中的混合架构使前缀缓存复杂化：KDA 循环状态和 MLA KV 缓存在大小和生命周期上有本质区别，但缓存的前缀只有在二者能在同一边界上一起恢复时才可复用。因此，我们设计了一个 KDA 感知的前缀缓存，将两种缓存类型联合管理——从统一的分页布局到细粒度前缀复用，再到并发调度下的一致性——使得百万 Token 前缀的保留成本低廉并可在请求间复用。
 
@@ -698,7 +698,7 @@ KDA 前缀缓存优化。基于块哈希的前缀缓存以一个物理块为粒�
 
 并发调度下的一致性。其余设计要点均由共享部分填充块的具体失败模式决定：在这种场景下，一个命中块既是共享缓存条目，又是私有请求的增长点；MLA 和 KDA 缓存组必须在每个命中边界上达成一致。首先，所有缓存组从一个共享的空闲列表中获取块，因此为一个组分配私有拷贝可能淘汰另一个组刚刚命中的块；因此，每个命中块在分配任何内容之前，都会在所有组之间被钉住。其次，向私有块的拷贝在当前调度步内紧接前向传播之前在 GPU 上执行，因此当前调度步内分配或注册的块仍可能将前一个拥有者的字节传递给读者；此类块在拷贝落地之前被排除在匹配之外。第三，一个 checkpoint 只有在每个 KDA 组都存在时才能恢复请求，因此淘汰一个组的 checkpoint 原子性地使其兄弟 checkpoint 无效——一个 checkpoint 要么在所有组都可命中，要么在任何一个组都不可命中。通过这些机制，每个已注册状态始终精确对应其声明的 token 前缀，混合 KDA--MLA 模型的前缀缓存达到了与全注意力模型同样的通用性：任何共享前缀在任何 512 token 边界处都可复用，与请求长度、分块或调度交叠无关。
 
-\subsection{5.4.2 高性能 Kernel}\label{high-performance-kernels}
+\subsubsection{高性能 Kernel}\label{high-performance-kernels}
 
 Kimi K3 引入了几个新的架构模块：KDA（§2.1.1）、Block AttnRes（§2.2）和 Stable LatentMoE（§2.3）。我们为每个模块优化了 Kernel 实现。
 
@@ -718,7 +718,7 @@ Stable LatentMoE。Stable LatentMoE 同时增加了专家的总数和每个 toke
 
 对于路由专家，在小批次下，分组 GEMM 退化为对权重矩阵的内存受限流式访问——对于这种场景，传统的以 tile 为中心的 Kernel 由于其面向计算的设计和预处理开销而不适用。我们改为基于 WarpDecode {[}12{]} 的以 token 为中心的设计构建 MoE 解码 Kernel，其中每个 warp 负责一个输出神经元，直接从内存流式读取相关权重。为进一步提高并行度，我们将每个 warp 细分为更细粒度的 lane 组，每组处理一个不相交的专家子集，随后进行 warp 级的部分结果归约。此外，权重布局通过一次性预处理代价进行离线置换，大幅降低了运行时的反量化开销。
 
-\subsection{5.4.3 集群级调度}\label{fleet-level-scheduling}
+\subsubsection{集群级调度}\label{fleet-level-scheduling}
 
 在单个推理实例之上，挑战从单请求效率转变为可预测性：一次前缀缓存未命中的代价比命中高出数个数量级，而百万 Token 请求的突发流量可能饿死短请求。我们提出两项集群级调度策略来应对：缓存感知的亲和调度将每个会话路由到持有其前缀缓存的集群，同时限制集群故障的代价；基于预算的准入控制为每个请求类分配各自的资源预算，使得突发的长上下文流量不会降低系统整体的 SLO。
 
@@ -726,11 +726,11 @@ Stable LatentMoE。Stable LatentMoE 同时增加了专家的总数和每个 toke
 
 基于预算的准入控制。生产流量混合了 2K token 以下的短请求与高达百万 Token 的超长请求，因此单请求成本跨越约三个数量级，任意固定数量的请求所产生的总负载高度不可预测。基于"平均请求"的容量规划、排队模型和速率限制配额在这种方差下全部失效。在一个典型故障模式中，一波长上下文请求突发流量耗尽可用计算资源，随后到达的短请求无法被及时调度，导致所有流量的首 token 延迟（TTFT）恶化。因此，我们采用基于预算的准入控制，为不同的请求类分配独立的资源预算，使得突发的长上下文流量最多消耗其自身的容量份额，而不会降低其他请求类所体验的系统级 SLO。
 
-\subsection{6 评测}\label{evaluations}
+\section{评测}\label{evaluations}
 
-\subsection{6.1 主要结果}\label{main-results}
+\subsection{主要结果}\label{main-results}
 
-\subsection{6.1.1 基准测试}\label{benchmarks}
+\subsubsection{基准测试}\label{benchmarks}
 
 我们在四个核心能力维度上对 Kimi K3 进行全面评测：
 
@@ -758,7 +758,7 @@ Research Bench {[}65{]}。
 Math-Vision {[}128{]} 和 ZeroBenchmain {[}102{]}，各含/不含
 Python 工具增强。
 
-\subsection{6.1.2 基线模型}\label{baselines}
+\subsubsection{基线模型}\label{baselines}
 
 我们将 Kimi K3 与最先进的闭源和开源模型进行对比。闭源模型方面，我们
 对比 Claude Fable 5 {[}16{]}、GPT-5.6 Sol {[}39{]}、Claude Opus 4.8
@@ -767,7 +767,7 @@ GPT-5.6 Sol 的结果可能存在 cyberguard。开源模型方面，我们纳入
 GLM-5.2 {[}37{]}。除 GPT-5.5 使用 ``xhigh'' 设置外，所有模型均在
 最大推理努力下评测。
 
-\subsection{6.1.3 评测配置}\label{evaluation-configurations}
+\subsubsection{评测配置}\label{evaluation-configurations}
 
 所有 Kimi K3 评测均使用 reasoning effort max 和 temperature = 1.0。
 对于单步任务（如 GPQA Diamond、HLE-Full 和不含工具的视觉基准），
@@ -808,7 +808,7 @@ Claude Fable 5、Claude Opus 4.8 和 GLM-5.2 使用 Claude Code。
 Toolathlon-verified 和 JobBench 的分数引用自其官方排行榜 {[}119, 52{]}
 （截至 2026 年 7 月 24 日）。
 
-\subsection{6.1.4 结果}\label{results}
+\subsubsection{结果}\label{results}
 
 表 2 展示了 Kimi K3 与闭源和开源基线模型的全面对比。总体而言，Kimi K3 紧追
 最强的闭源模型 Claude Fable 5 和 GPT-5.6 Sol，同时在基准测试套件中一致
@@ -925,9 +925,9 @@ vs.~85.0\%），而其余更困难的计算机操作基准（OSWorld 2.0、SaaS-
 WorldVQA（51.0\%）上排名第二，仅次于 Claude Fable 5，领先于 GPT-5.6 Sol
 和 Claude Opus 4.8。
 
-\subsection{6.2 内部评测}\label{internal-evaluation}
+\subsection{内部评测}\label{internal-evaluation}
 
-\subsection{6.2.1 能力评测}\label{capability-evaluation}
+\subsubsection{能力评测}\label{capability-evaluation}
 
 除了公开基准测试套件外，我们还维护了一批内部基准测试，覆盖公开评测未充分
 涉及的能力领域，从而更全面地衡量模型和智能体的能力。这些基准测试会频繁
@@ -1094,7 +1094,7 @@ Agentic Vision Bench 和 KWV Bench 上落后领先模型。在其余已填充的
 （KAET、CLIF Bench、Online Experience、DECK Bench、Faithfulness 和 Chat
 All-in-One Bench）上，Kimi K3 排名第一或微弱的第二。
 
-\subsection{6.2.2 网络安全评测}\label{cyber-security-evaluation}
+\subsubsection{网络安全评测}\label{cyber-security-evaluation}
 
 我们按照操作风险递增的两层递进方式评测模型的网络安全能力：带概念验证开发
 的漏洞发现（第一层），以及端到端漏洞利用开发（第二层）。评测目标包括广泛
@@ -1159,7 +1159,7 @@ GLM-5.2（ExploitBench 上 32\% vs.~24\%；在模拟企业网络的 32 步任务
 我们视本次评测为能力下限。这些结果以当前模型版本和评测覆盖范围为准，
 我们将在每次重大模型更新时重新评估。
 
-\subsection{6.3 第三方评测}\label{third-party-evaluation}
+\subsection{第三方评测}\label{third-party-evaluation}
 
 Kimi K3 自发布以来也接受了第三方机构的独立评测。表 5 总结了截至 2026 年
 7 月 23 日的主要结果。
@@ -1180,7 +1180,7 @@ Arena 在众包人类偏好竞技场 {[}74{]} 上，Kimi K3 在 WebDev Arena 上
 目前在 37 个模型中排名第四（9.1），落后于 Claude Fable 5（12.7）、
 GPT-5.6 Sol（10.1）和 Claude Opus 4.8（9.8）。
 
-\subsection{6.4 成本效率}\label{cost-efficiency}
+\subsection{成本效率}\label{cost-efficiency}
 
 除了分数之外，我们还通过比较四个覆盖编程和智能体任务的套件（Kimi Code
 Bench 2.0、BrowseComp、GDPval-AA v2 和 AA-Briefcase）上的单任务成本来
@@ -1283,7 +1283,7 @@ Claude Fable 5 的成本提供接近顶尖的分数。
 
 图 14: 案例研究：AttnRes 上的 GPU 内核优化。
 
-\subsection{7 案例研究}\label{case-studies}
+\section{案例研究}\label{case-studies}
 
 在本节中，我们展示代表 Kimi K3 在多种技术任务中能力的典型案例。
 
@@ -1343,7 +1343,7 @@ train\_gpt 收敛 --- minitriton vs torch eager
 
 视频剪辑与动态设计 利用其原生多模态架构，Kimi K3 创建了一个 3Blue1Brown 风格的动态图形解说视频来介绍其自身架构，并从 56 个源片段中剪辑了其预告片。这涉及片段选择、动匹配剪辑、逐帧节拍同步、音频处理以及多轮修改。制作一段类似水准的高密度短视频通常需要一位经验丰富的剪辑师一到两天。
 
-\subsection{8 结论}\label{conclusion}
+\section{结论}\label{conclusion}
 
 我们提出了 Kimi K3，一个开放的 2.8 万亿参数混合专家模型，具备原生视觉能力和 100 万 token 上下文窗口，基于 Kimi Delta Attention 和 Attention Residuals 构建。作为全球首个开放的三万亿级模型，Kimi K3 在长周期编程、智能体、知识、推理和视觉任务中展现了前沿级性能。尽管与最强闭源模型之间仍存在差距，但 Kimi K3 在每个人都触手可及的范围内建立了一个新的开放前沿。我们希望它能赋能更广泛的社区进行研究、部署和创新。
 \subsection{参考文献}\label{references}
@@ -1904,7 +1904,7 @@ in Multimodal Large Language Models. 2026. arXiv: 2602.02537
 End-to-End Business Spreadsheet Workflows''. In: (2026). arXiv:
 2606.29955 {[}cs.SE{]}.
 
-\subsection{A 贡献者名单}\label{a-contributions}
+\section{贡献者名单}\label{a-contributions}
 
 贡献者名单按姓氏字母顺序排列。
 
@@ -2063,7 +2063,7 @@ Zhou Ruozhang Zhou Xinyu Zhou Yiqiao Zhou Zaida Zhou Jinguo Zhu Liya Zhu
 Xinhao Zhu Yangjunfeng Zhu Yuxuan Zhu Zhen Zhu Chen Zhuang Weiyu Zhuang
 Xinxing Zu Kimi K3
 
-\subsection{B Sigmoid Tanh Unit GLU 细节}\label{b-details-of-sigmoid-tanh-unit-glu}
+\section{Sigmoid Tanh Unit GLU 细节}\label{b-details-of-sigmoid-tanh-unit-glu}
 
 SiTU-GLU（§2.3.2）的设计目标是在不丢弃 Swish 特征形状的前提下，对 SwiGLU 乘积进行有界约束：即在原点附近近似线性响应，且负尾部趋于零。图 4 展示了门控分支和上投影分支及其完整的标量响应。
 
@@ -2088,7 +2088,7 @@ SiTU-GLU（§2.3.2）的设计目标是在不丢弃 Swish 特征形状的前提�
 
 其中 \(\beta _ { 1 } = 4\)，\(\beta _ { 2 } = 2 5\)。与对门控预激活进行硬截断不同，平滑约束在远离饱和边界处保留了非零梯度，我们发现这能带来更好的训练行为。
 
-\subsection{C 分位数均衡的推导}\label{c-derivation-of-quantile-balancing}
+\section{分位数均衡的推导}\label{c-derivation-of-quantile-balancing}
 
 本附录从最优均衡分配出发，推导 §2.3 中使用的分位数均衡（Quantile Balancing, QB）更新，推导遵循 {[}111{]}；关于专家负载均衡的分配视角可追溯到 BASE Layers {[}67{]} 和 BIP {[}116{]}。令 \(\pmb { s } \in \mathbb { R } ^ { m \times n }\) 收集 m 个 token 在 n 个专家上的路由分数，其中每个 token 恰好选择 k 个专家，\(x _ { i , j } \in \{ 0 , 1 \}\) 指示 token i 是否分配给专家 j。最大分数均衡分配——即每个专家恰好服务 mk/n 个 token（假设为整数）——为
 
@@ -2158,7 +2158,7 @@ SiTU-GLU（§2.3.2）的设计目标是在不丢弃 Swish 特征形状的前提�
 
 即目标负载减去专家 j 的实际负载。在该目标上进行 SignSGD 步骤即可恢复辅助无损失均衡 {[}30{]} 的固定步长符号更新，除了符号约定 \(\boldsymbol { b } = - \boldsymbol { \beta }\)：符号更新只保留式 27 中负载误差的方向，而 QB 直接跳转到同一对偶目标的精确坐标极小点。这一视角既解释了为何 QB 无需类似学习率的超参数，也解释了为何它在即使接近 \(10^3\) 个专家时也能在几步更新内达到均衡。QB 同样与 BIP {[}116{]} 相关，后者以不等式约束 \(\textstyle \sum _ { j } x _ { i , j } \leq k\) 和 \(\textstyle \sum _ { i } x _ { i , j } \leq m k / n\) 求解同一分配问题；由此引入的 \(\alpha\) 和 \(\beta\) 上的非负性约束为两个更新增加了 max(0, ) 截断，这只能抑制被过度选择的专家而无法促进被不足选择的专家，并且在我们实验中显著减慢了均衡速度。最后，由此得到的固定 Top-k 路由与专家特定阈值路由相关，但不同于 Expert Threshold 路由——后者维护 EMA 阈值并允许每个 token 选择可变数量的专家 {[}112{]}。
 
-\subsection{D 基于直方图的分位数估计}\label{d-histogram-based-quantile-estimation}
+\section{基于直方图的分位数估计}\label{d-histogram-based-quantile-estimation}
 
 式 14 的 QB 更新需要在整个训练步上取分位数：对 n 个专家中的每一个，取 margin \(s _ { i , j } - \alpha _ { i }\) 的 \(( 1 - k / n )\) 分位数，其中 token 数量 m 跨越分布在数据并行 rank 和梯度累积步上的数百万 token。在训练循环内收集 \(O(mn)\) 个 margin 用于精确分位数计算是不切实际的。关键观察在于，更新从不需要 margin 本身，只需要它们每个专家的分布，而直方图可以以固定成本进行概括。因此，Kimi K3 为每个专家维护一个分箱直方图并从中读取分位数。具体地，我们对所需偏置 \(r _ { i , j } : = \alpha _ { i } - s _ { i , j }\)（即恰好将专家 j 置于 token i 的截止门槛的偏置）进行直方图统计；对 margin 取负反转了它们的顺序，因此式 14 的 QB 目标 \(\widehat { b } _ { j }\) 恰好是 \(r _ { : , j }\) 的 \((k/n)\) 分位数。
 
@@ -2174,7 +2174,7 @@ SiTU-GLU（§2.3.2）的设计目标是在不丢弃 Swish 特征形状的前提�
 
 性质 三个性质使得该估计器在大规模下切实可行。第一，精度高：累积计数在箱边界处是精确的，因此真实分位数与其估计值位于同一分箱中，误差以箱宽度 w 为界；当 \(B = 1000\) 时，这最多为几 \(10^{-3}\)，我们未观察到可测量的残余负载不均衡。第二，成本低：唯一的通信是每层每步一次 nB 个整数的 all-reduce，与 m 无关，在我们配置中低于在每微批次上跨进程组交换原始 margin 成本的 \(1\%\)，后者是自然替代方案。第三，估计正确的量：因为计数是可加的，全局直方图对 token 如何跨 rank 或累积步分区是完全不变的，估计值是汇总全局批次的分位数，而不是各 rank 分位数的平均值，后者通常不同。作为进一步改进，在各步之间维护估计分位数的指数移动平均可以减少批次间的采样噪声，并可能进一步改善负载均衡。
 
-\subsection{E MoonEP 通用上界证明}\label{e-moonep-general-upper-bound-proof}
+\section{MoonEP 通用上界证明}\label{e-moonep-general-upper-bound-proof}
 
 令 \(m _ { r } ( P )\) 表示在方案 P 下放置在 rank r 上的冗余专家数量。对路由器输出 \(I\)，规划目标是最小化任一 rank 上的最大冗余专家数，即 \(M ( I ) = \min _ { P } \max _ { r } \{ m _ { r } ( P ) \}\)。我们证明 \(M ( I ) \leq E / R\) 总是成立（定理 1），且该上界本质上是紧的：存在路由器输出使得 \(M = \lceil E ( R - 1 ) / R ^ { 2 } \rceil \approx E / R\)（定理 2）。
 
@@ -2190,7 +2190,7 @@ M (I) = \min _ {P} \max _ {r} \left\{m _ {r} (P) \right\} \leq \max _ {r} \left\
 
 定理 2 的证明（上界的紧性） 构造路由器输出 \(I^{*}\) 如下：EP rank 0 上的专家不接收任何 token，而其余 \(R-1\) 个 rank 上的所有专家均匀共享所有 token。则所有 \(S \times K \times R\) 个 token 均匀分配给 \(E(R-1)/R\) 个专家，因此每个专家接收 \(\frac{S K R^{2}}{E(R-1)}\) 个 token。在任意方案 \(P\) 下，rank 0 必须接收 \(S \times K\) 个 token，这些全是远程 token，且这些 token 至少涉及 \(\frac{S K}{\frac{S K R^{2}}{E(R-1)}} = \frac{E(R-1)}{R^{2}}\) 个不同专家；取上取整，rank 0 需要至少 \(\lceil \frac{E(R-1)}{R^{2}} \rceil\) 个冗余专家，因此 \(M(I^{*}) \geq \lceil \frac{E(R-1)}{R^{2}} \rceil\)。反之，通过使用定理 1 证明中的填充过程并优先按专家迁移 token 来构造方案，可以使每个 rank 上的冗余专家数保持在该值以内，因此等式成立。由于当 R 较大时 \(\lceil \frac{E(R-1)}{R^{2}} \rceil \approx \frac{E}{R}\)，定理 1 的上界本质上是紧的：不存在显著小于 \(E/R\) 的通用上界。
 
-\subsection{F 聊天模板}\label{f-chat-template}
+\section{聊天模板}\label{f-chat-template}
 
 Kimi K3 的聊天模板围绕三个目标重新设计。第一是可扩展性：新能力应通过向后兼容的消息格式而非模板修订来引入，使得单一模板服务于整个模型世代。第二是低对齐代价：格式应以最少的监督数据即可学习，支持经过轻度微调的预训练模型可直接进入强化学习的流水线。第三是解码友好性：结构应容纳简单的编码器、流式解析器和语法约束执行器。为此，模板采用 XTML（eXtensible Token Markup Language，可扩展 Token 标记语言），一种类 XML 标记语言，其中尖括号语法被三个保留特殊 token 替代：{[}open{]}、{[}sep{]} 和 {[}close{]}，另有额外的 {[}end\_of\_msg{]} token 作为生成停止标记。元素 {[}open{]}tag attr=``value''{[}sep{]} ... {[}close{]}tag{[}sep{]} 与其 XML 对应物同构，但每个结构边界都是显式的特殊 token，这消除了元素边界处的分词歧义并简化了约束解码。
 

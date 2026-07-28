@@ -1,12 +1,12 @@
-\subsection{5 基础设施}\label{infrastructure}
+\section{基础设施}\label{infrastructure}
 
 Kimi K3 在一个模型中同时应对了三类罕见叠加的系统挑战：混合 KDA 注意力、3T 级稀疏多模态训练与推理，以及百万 Token 的智能体工作负载。我们的基础设施围绕这些挑战，在模型全生命周期中进行了协同设计。在架构层面，高性能 KDA Kernel 和上下文并行性使得循环公式在设备内部和跨设备间都能高效执行，覆盖训练与推理。在预训练阶段，均衡的专家执行、降低的内存占用以及通信重叠调度保证了大尺度下的高利用率。在百万 Token 智能体强化学习阶段，分层状态管理和可恢复的沙箱执行在多次迭代间保留了长轨迹。最后，状态感知的 KDA 前缀缓存、专用推理 Kernel 以及缓存与预算感知的调度将这些效率优势转化为可预测的生产服务。
 
-\subsection{5.1 KDA 的算法-系统协同设计}\label{algorithm-system-co-design-for-kda}
+\subsection{KDA 的算法-系统协同设计}\label{algorithm-system-co-design-for-kda}
 
 KDA 将 softmax 注意力中不断增长的 key--value 缓存替换为固定大小的循环状态 \(\mathbf { S } \in \mathbb { R } ^ { d _ { k } \times d _ { v } }\)（§2.1.1），其串行更新在并行执行中带来挑战，但换来了一个传输和复用成本低廉的固定大小状态。以下设计在两个执行层面分别解决了前者并利用了后者：设备内部的融合 Kernel，以及跨设备的 KDA 上下文并行。
 
-\subsection{5.1.1 不同场景下的 KDA Kernel}\label{kda-kernels-across-regimes}
+\subsubsection{不同场景下的 KDA Kernel}\label{kda-kernels-across-regimes}
 
 KDA 状态的串行依赖与 GPU 对宽阔、均匀并行的偏好相矛盾，且在不同的执行场景中表现为不同的瓶颈。我们为每种场景设计了专用 Kernel。
 
@@ -16,7 +16,7 @@ KDA 状态的串行依赖与 GPU 对宽阔、均匀并行的偏好相矛盾，�
 
 KDA 解码带来了与训练和预填充截然不同的挑战。我们将在 §5.4.2 中详细讨论这些挑战。
 
-\subsection{5.1.2 KDA 上下文并行}\label{kda-context-parallelism}
+\subsubsection{KDA 上下文并行}\label{kda-context-parallelism}
 
 上下文并行的通信开销在 softmax 注意力和线性注意力之间有本质区别。Softmax 注意力要求各 rank 交换 key--value 块，其大小随序列长度增长 {[}72{]}。而线性注意力则通过固定大小的循环状态 \(\breve { \mathbf { S } } \in \mathbb { R } ^ { d _ { k } \times d _ { v } }\) 携带前述上下文。先前的上下文并行方法利用普通线性注意力的加性循环特性，在每个 rank 上计算本地 token 从 \(\mathbf { S } = \mathbf { 0 }\) 生成的状态，然后将这些本地状态在前述各 rank 之间求和，以恢复进入状态 {[}114, 113{]}。
 
@@ -34,7 +34,7 @@ KDA 解码带来了与训练和预填充截然不同的挑战。我们将在 §5
 
 公式 17 中的求和表明，每个状态完全由本地计算的片段组成。这些 rank 级更新满足结合律，因此每个 rank 的进入状态可以通过前缀扫描恢复 {[}77{]}。每个 rank 首先本地计算 \(\mathbf { M } _ { [ i ] } ^ { { \dot { T } } _ { i } \gets 1 }\) 和 \(\widetilde { \mathbf { S } } _ { [ i ] } ^ { T _ { i } }\)，然后通过一次 all-gather 交换这两个张量 \({[}1 3 9 ] . ^ { 2 }\)。在 all-gather 之后，rank \(i + 1\) 通过按顺序处理同一文档的前序片段，从 \(\mathbf { S } = \mathbf { 0 }\) 开始，在每个片段处应用 \(\mathbf { S } \gets \mathbf { M } _ { [ j ] } ^ { T _ { j }  \mathrm { i } } \mathbf { S } + \widetilde { \mathbf { S } } _ { [ j ] } ^ { T _ { j } }\)，从而重建 \(\dot { \mathbf { S } } _ { [ i ] } ^ { T _ { i } }\)。因此，KCP 仅需固定大小的 all-gather 用于循环状态同步，并实现线性计算扩展。
 
-\subsection{5.2 3T 级预训练基础设施}\label{infra-for-3t-class-pre-training}
+\subsection{3T 级预训练基础设施}\label{infra-for-3t-class-pre-training}
 
 Kimi K3 预训练结合了带有虚拟阶段（VP）的流水线并行 \(( \mathrm { P P } )\) {[}48, 81{]}、专家并行（EP）{[}66{]}、ZeRO-1 数据并行 {[}100{]}、流水线 ZeRO-2 梯度分片 {[}145{]} 以及上下文并行（CP，§5.1.2）{[}50{]}。
 
@@ -46,7 +46,7 @@ MoE 层采用跨 EP rank 复制的共享专家，专家分发和合并的 all-to
 
 3T 级的原生多模态预训练面临三个关键问题：（i）token 负载在 EP rank 之间不均衡；（ii）激活值、梯度和优化器状态超出内存预算；（iii）视觉编码器高度可变地计算暴露在关键路径上。以下小节依次解决这些问题：完美均衡的专家并行 MoE 训练（§5.2.1）、内存高效训练（§5.2.2）以及多模态编码器优化（§5.2.3）。图 11 展示了由此产生的执行调度。
 
-\subsection{5.2.1 完美均衡的专家并行 MoE 训练}\label{perfectly-balanced-expert-parallel-moe-training}
+\subsubsection{完美均衡的专家并行 MoE 训练}\label{perfectly-balanced-expert-parallel-moe-training}
 
 在传统 EP 方案中，token 负载在 rank 之间不均衡。由此产生的计算不均衡降低了训练吞吐量，而路由专家激活值的动态变化形状则导致严重的内存碎片。因此我们提出了 MoonEP3，一种通过动态冗余专家实现完美负载均衡的 EP 方案。MoonEP 保留了 DeepEP {[}147{]} 等传统方案的总体计算流程，同时额外引入了冗余专家的在线规划与迁移。在前向传播中，我们从当前 micro-batch 和层的路由器输出中规划冗余专家，并在路由专家计算之前预取它们。在后向传播中，我们将它们的梯度暂存到一个本地 reduce 缓冲区中，计算完成后将其 reduce 回其归属 rank 的梯度缓冲区。
 
@@ -60,7 +60,7 @@ MoE 层采用跨 EP rank 复制的共享专家，专家分发和合并的 all-to
 
 Expert-GEMM 调度与重叠。即使整体负载在 rank 间完美均衡，每个 rank 内部的各专家 token 数仍不均衡，固定顺序、对工作负载无感知的调度会将这种不均衡转化为 SM 工作器之间不均衡的 makespan。因此，我们采用工作负载感知的调度器来调度路由专家 GEMM，该调度器在启动前根据当前 token 分布自适应调整参数，并在执行期间保持固定。一个轻量级启发式方法使用硬件指标的分析成本模型来选择这些参数，关键系数通过离线自动调优进行标定。对于共享专家，我们将其 GEMM 分发到单独的流上，以便与其他 Kernel 重叠。
 
-\subsection{5.2.2 内存高效训练}\label{memory-efficient-training}
+\subsubsection{内存高效训练}\label{memory-efficient-training}
 
 统一激活值管理器。我们设计了一个统一的激活值存储抽象，其中为后向传播保存的每个张量与一个可插拔的存储后端关联。重计算、量化和卸载/远程卸载在此抽象下仅是存储策略，可在张量粒度上自由组合；策略通过张量上的轻量级注解声明，与模型代码完全解耦。重计算以函数粒度执行，支持跨层重计算。在我们的实现中，所有 GPU 内存都在主计算流上分配，并在单一内存池中管理，避免了多流碎片化和主机端开销；激活值按层粒度预取回来并与计算重叠，引入的额外开销可忽略不计。在 Kimi K3 中，大部分激活值使用块级 FP8 量化 {[}58, 30{]} 结合卸载/远程卸载，逐元素算子则配置为重计算。
 
@@ -74,17 +74,17 @@ Expert-GEMM 调度与重叠。即使整体负载在 rank 间完美均衡，每�
 
 基于 P2P 的 Muon 正交化。分布式优化器将参数在 DP rank 之间均匀分片，而 Muon 中的 Newton--Schulz 正交化需要完整的参数矩阵，因此在每次更新前需要一个通信步骤来收集完整参数。原始方法在每个 rank 上对整个参数缓冲区执行 all-gather {[}73{]}，这不仅产生了巨大的内存占用，更使通信成为大规模下的主要瓶颈。取而代之，每个 rank 通过与其对应归属 rank 的点对点（P2P）通信，仅获取其本地拥有参数的各个分片，消除了完整参数缓冲区，同时降低了内存使用和通信量。通信和计算进一步以模型块缓冲区的粒度流水线化，隐藏了通信开销。
 
-\subsection{5.2.3 多模态编码器优化}\label{multimodal-encoder-optimization}
+\subsubsection{多模态编码器优化}\label{multimodal-encoder-optimization}
 
 多模态编码器中的动态 CP。在长上下文多模态训练中，大尺寸图像和长视频显著增加了视觉编码器的计算时间，并导致设备间严重的负载不均衡。为解决此问题，我们将上下文并行扩展到这些大样本上。单张大图像沿 patch 维度跨多个设备划分，注意力通过跨 CP rank 收集 key--value 对（gather-KV）来计算。此外，我们将每个 CP 组划分为若干子 CP 组，并以负载均衡的方式在它们之间分发多张大图像，防止通信比例随规模增长。这同时降低了大视觉样本的编码器延迟和跨设备负载不均衡，使得剩余的编码器计算能够隐藏在流水线气泡中。
 
 PP 气泡中的编码器计算。在 Kimi K2.5 中，我们引入了分离编码器进程（DEP）{[}59{]}，将 ViT 和文本训练拆分为独立阶段，并在 PP 阶段之间平衡视觉的前向和后向传播。我们观察到，在交错 1F1B 流水线调度下，第一批 PP micro-batch 的文本前向传播全部在最开始调度，而最后一批 PP micro-batch 的文本后向传播在最末尾才完成。因此我们进一步分解 ViT 计算。第一批 PP micro-batch 的 ViT 前向传播在前期同步执行，其余前向传播被调度到流水线气泡中，后向传播也类似处理。结果，大部分 ViT 计算被隐藏在流水线气泡中，基本消除了视觉编码器的有效开销。
 
-\subsection{5.3 百万 Token 智能体强化学习基础设施}\label{infra-for-1m-agentic-rl}
+\subsection{百万 Token 智能体强化学习基础设施}\label{infra-for-1m-agentic-rl}
 
 在有限的计算预算下，为 Kimi K3 这样的大模型将智能体强化学习扩展到百万 Token 上下文，使得资源效率成为首要目标。这推动了两项互补的工作：1）高效的训练和 rollout，包括 KV 缓存管理、请求调度和训练状态放置；2）用于长时交互的高性能可恢复沙箱。
 
-\subsection{5.3.1 长上下文强化学习基础设施}\label{long-context-rl-infrastructure}
+\subsubsection{长上下文强化学习基础设施}\label{long-context-rl-infrastructure}
 
 我们采用共置 RL 训练 {[}58{]} 将每个百万 Token 上下文的 Kimi K3 RL 实验控制在数百张 GPU 以内，并使用 partial rollout {[}118{]} 来降低超长轨迹的尾部延迟。这一设计实现了良好的硬件利用率，但也引入了 rollout KV 缓存（需要为下一次迭代保留）与训练所需内存之间的占用竞争。这一挑战在长上下文 RL 中更为严峻。
 
@@ -100,7 +100,7 @@ Rollout 自动节流调度器。在多步 rollout 中，上下文随轨迹推进
 
 配合 ZeRO-2 梯度分片与卸载（§ 5.2.2），在 Kimi K3 RL 训练中，每个 GPU 仅为两个 VPP chunk 保留梯度缓冲区。我们将参考权重逐块流式加载到这些槽位中：一个槽位用于当前前向计算，另一个在预取下一个 chunk，从而在不增加 GPU 内存的情况下隐藏拷贝开销。
 
-\subsection{5.3.2 沙箱基础设施}\label{sandbox-infrastructure}
+\subsubsection{沙箱基础设施}\label{sandbox-infrastructure}
 
 我们部署了多个沙箱运行时来支持 Kimi K3 后训练和评估的多样化需求，包括传统的基于容器的运行时、GPU 沙箱运行时，以及最重要的一个——一种新的基于 microVM 的沙箱运行时 AgentENV。
 
@@ -114,11 +114,11 @@ AgentENV4 是与我们的合作伙伴联合开发的，专门为智能体 AI 工
 
 在 Kimi K3 的训练和评估过程中，共创建了 51,219,741 个沙箱，涉及 1,505,678 个镜像。
 
-\subsection{5.4 推理与在线服务}\label{inference-and-online-serving}
+\subsection{推理与在线服务}\label{inference-and-online-serving}
 
 为 Kimi K3 提供服务从生产侧暴露出同样的挑战：混合 KDA--MLA 架构维护两种本质不同的缓存，必须在百万 Token 上下文中联合管理；其新模块和高度稀疏的专家要求为每个模块定制 Kernel；而生产流量混合了单请求成本跨越三个数量级的请求。以下设计在三个层面应对这些挑战。在引擎层面，KDA 感知的前缀缓存将固定大小的循环状态打包到与 MLA KV 缓存相同的分页池中，并使长前缀可在请求间复用。在设备层面，为 KDA 解码、Block AttnRes 和稀疏潜在 MoE 定制的 Kernel 最小化每 token 延迟和内存流量。在集群层面，缓存感知的亲和调度和基于预算的准入控制将这些效率转化为可预测的服务。
 
-\subsection{5.4.1 KDA 感知的前缀缓存管理}\label{kda-aware-prefix-cache-management}
+\subsubsection{KDA 感知的前缀缓存管理}\label{kda-aware-prefix-cache-management}
 
 Kimi K3 中的混合架构使前缀缓存复杂化：KDA 循环状态和 MLA KV 缓存在大小和生命周期上有本质区别，但缓存的前缀只有在二者能在同一边界上一起恢复时才可复用。因此，我们设计了一个 KDA 感知的前缀缓存，将两种缓存类型联合管理——从统一的分页布局到细粒度前缀复用，再到并发调度下的一致性——使得百万 Token 前缀的保留成本低廉并可在请求间复用。
 
@@ -140,7 +140,7 @@ KDA 前缀缓存优化。基于块哈希的前缀缓存以一个物理块为粒�
 
 并发调度下的一致性。其余设计要点均由共享部分填充块的具体失败模式决定：在这种场景下，一个命中块既是共享缓存条目，又是私有请求的增长点；MLA 和 KDA 缓存组必须在每个命中边界上达成一致。首先，所有缓存组从一个共享的空闲列表中获取块，因此为一个组分配私有拷贝可能淘汰另一个组刚刚命中的块；因此，每个命中块在分配任何内容之前，都会在所有组之间被钉住。其次，向私有块的拷贝在当前调度步内紧接前向传播之前在 GPU 上执行，因此当前调度步内分配或注册的块仍可能将前一个拥有者的字节传递给读者；此类块在拷贝落地之前被排除在匹配之外。第三，一个 checkpoint 只有在每个 KDA 组都存在时才能恢复请求，因此淘汰一个组的 checkpoint 原子性地使其兄弟 checkpoint 无效——一个 checkpoint 要么在所有组都可命中，要么在任何一个组都不可命中。通过这些机制，每个已注册状态始终精确对应其声明的 token 前缀，混合 KDA--MLA 模型的前缀缓存达到了与全注意力模型同样的通用性：任何共享前缀在任何 512 token 边界处都可复用，与请求长度、分块或调度交叠无关。
 
-\subsection{5.4.2 高性能 Kernel}\label{high-performance-kernels}
+\subsubsection{高性能 Kernel}\label{high-performance-kernels}
 
 Kimi K3 引入了几个新的架构模块：KDA（§2.1.1）、Block AttnRes（§2.2）和 Stable LatentMoE（§2.3）。我们为每个模块优化了 Kernel 实现。
 
@@ -160,7 +160,7 @@ Stable LatentMoE。Stable LatentMoE 同时增加了专家的总数和每个 toke
 
 对于路由专家，在小批次下，分组 GEMM 退化为对权重矩阵的内存受限流式访问——对于这种场景，传统的以 tile 为中心的 Kernel 由于其面向计算的设计和预处理开销而不适用。我们改为基于 WarpDecode {[}12{]} 的以 token 为中心的设计构建 MoE 解码 Kernel，其中每个 warp 负责一个输出神经元，直接从内存流式读取相关权重。为进一步提高并行度，我们将每个 warp 细分为更细粒度的 lane 组，每组处理一个不相交的专家子集，随后进行 warp 级的部分结果归约。此外，权重布局通过一次性预处理代价进行离线置换，大幅降低了运行时的反量化开销。
 
-\subsection{5.4.3 集群级调度}\label{fleet-level-scheduling}
+\subsubsection{集群级调度}\label{fleet-level-scheduling}
 
 在单个推理实例之上，挑战从单请求效率转变为可预测性：一次前缀缓存未命中的代价比命中高出数个数量级，而百万 Token 请求的突发流量可能饿死短请求。我们提出两项集群级调度策略来应对：缓存感知的亲和调度将每个会话路由到持有其前缀缓存的集群，同时限制集群故障的代价；基于预算的准入控制为每个请求类分配各自的资源预算，使得突发的长上下文流量不会降低系统整体的 SLO。
 
