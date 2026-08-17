@@ -1,0 +1,46 @@
+second-class and confined to their lexical scope, and recovering first-class use through boxing, 
+which lifts that restriction by tracking captured capabilities in types; Cordis instead disciplines 
+effects at runtime, aiming at complete resource recovery on component removal; Section 6.7 
+takes up what a language that made the context second class in this sense would offer.
+Reversible effect semantics. A parallel line gives effects a reversible semantics rather than 
+an interpretive one. Heunen et al. [87] model side effects in a reversible setting by adapting 
+Hughes’ arrows to dagger arrows and inverse arrows, capturing effects such as serialization 
+and mutable store whose operations admit inverses. This is the formal account closest to our 
+revertible effects: both pair each effect with the means to undo it rather than discharging it 
+through a handler. The two differ in where reversibility resides, and in how much of it they 
+demand. Heunen et al. work in a denotational, categorical setting where reversibility is a global 
+property, guaranteed by construction since every computation is invertible, and the inverse is 
+two-sided and recovered from the categorical structure. Cordis tracks inverses at runtime and 
+requires less of them: not that the whole computation be reversible, but that each atomic effect 
+admit a one-sided inverse, supplied by the caller at the point of application rather than derived, 
+from which the inverse of any composite follows by composition (Section 3.1).
+Graded types as unified effects and coeffects. Orchard et al. [88] proposed graded modal 
+types as an umbrella notion encompassing both effect reasoning (via graded monads) and co­
+effect reasoning (via graded comonads), realized in the Granule language, demonstrating that 
+a single type system can track both what a computation does and what it needs; more recent 
+work extends coeffects to imperative Java-like languages [89, 90] and to call-by-push-value 
+[91]. All of these operate at the type level: effects and coeffects are static annotations checked at 
+compile time over lexically fixed scopes. Our contribution is orthogonal to this analysis: we lift 
+the same two notions to runtime mechanisms, which lets Cordis handle dynamic composition. 
+Temporal retraction and spatial dependency are re-resolved as the set of loaded components 
+evolves, instead of being settled once over a fixed program text.
+7.2. Programming Paradigms
+Section 3.3.3 established the context paradigm as a discipline that mediates effects and coeffects 
+through an explicit context. Two established paradigms warrant explicit comparison: one 
+shares our terminology, the other our treatment of crosscutting concerns.
+Context-oriented programming. COP [92, 93] equips a language with layers—partial 
+method and class definitions that are activated and deactivated at runtime according to the 
+execution context, so that behavior adapts without the base code naming its context depen­
+dencies [94]. COP and Cordis coincide in treating context as a first-class, runtime-mutable 
+entity and in activating and deactivating behavior dynamically, but the resemblance is nominal. 
+In COP, “context” denotes the ambient execution situation (e.g., location, user, mode), and 
+activation changes method dispatch within a dynamically scoped extent; a layer neither tracks 
+the side effects it induces nor reverts them, and activation is not governed by dependency 
+satisfaction. In Cordis, the context is the Γ∞ entity mediating effects and coeffects: activation 
+runs a component’s revertible effects and is driven by reactive coeffect satisfaction (Section 3.2), 
+and deactivation reverts them in full. COP varies what behavior runs; Cordis composes and 
+reverts what effects and dependencies a component installs. Their difference is one of trade-off. 
+COP folds activation into the host language’s method dispatch, gaining dynamically-scoped 
+layer extents at the cost of language specificity, whereas Cordis, as a language-agnostic overlay, 
+resolves activation reactively over a shared context. Cordis can thus express as a coeffect only 
+75

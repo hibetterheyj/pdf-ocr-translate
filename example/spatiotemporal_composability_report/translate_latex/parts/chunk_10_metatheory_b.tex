@@ -1,0 +1,115 @@
+\subsection{4.4.2. 时间维组合性}\label{temporal-composability}
+
+局部时间维组合性用一个累加器恢复一串效应（第~3.1.3 节）。注册表为每根纤维持有一个累加器，各纤维相互交错：在 \(n\) 将逆元合成到 \(g _ { n }\) 之上到 \(g _ { n }\) 实际运行之间，其它纤维已经移动了状态。\(g _ { n }\) 是否仍然撤销它当初被构造来撤销的东西，正是该保证的全局形式所断言的；而它所依赖的条件是：中间的那些步骤与 \(g _ { n }\) 可交换。
+
+定义 60. 对 \(i \in { \mathfrak { E } } _ { \Gamma } ^ { \mathrm { i t e r * } }\)，令 \(\mathrm { r e a c h } ( i )\) 为包含 \(i\) 且在续延下封闭的最小迭代器集合；在某迭代器处解读定义~17 的变换幺半群 \(\mathfrak { M }\)，即取其生成元为 \(\mathrm { r e a c h } ( i )\) 中每个迭代器的前向映射与其所产出的逆元：
+
+\[
+\begin{array} { r l } & { \mathrm { r e a c h } ( i ) : = \bigcap \{ S \mid i \in S \land \forall i ^ { \prime } \in S , \gamma \in \Gamma . i ^ { \prime } ( \gamma ) = ( - , - , \mathsf { J u s t } ( i ^ { \prime \prime } ) ) \Rightarrow i ^ { \prime \prime } \in S \} } \\ & { \quad \mathfrak { M } ( i ) : = \langle \{ \mathrm { p r } _ { 1 } \circ i ^ { \prime } \mid i ^ { \prime } \in \mathrm { r e a c h } ( i ) \} \cup \{ \mathrm { p r } _ { 2 } ( i ^ { \prime } ( \gamma ) ) \mid i ^ { \prime } \in \mathrm { r e a c h } ( i ) , \gamma \in \Gamma \} \rangle } \end{array}\tag{54}
+\]
+
+在适用第~4.3.4 节之处，围绕该三元组将其读作 \(\mathsf { R i g h t }\)；并用 \(\mathrm { l e n } ( i )\) 表示 \(\mathrm { r e a c h } ( i )\) 中被续延排序的链 \(C \subseteq \mathrm { r e a c h } ( i )\) 上 \(| C |\) 的上确界。两个迭代器 \(i , j\) 独立，当且仅当它们在定义~19 的意义下独立，其中解读使用这些变换幺半群，并把一次迭代的产出理解为它的逆元连同其续延：
+
+\[
+\begin{array} { r } { \forall f \in \mathfrak { M } ( i ) , g \in \mathfrak { M } ( j ) . \quad f \circ g \simeq g \circ f \qquad } \\ { \forall i ^ { \prime } \in \mathrm { r e a c h } ( i ) , g \in \mathfrak { M } ( j ) , \gamma \in \Gamma . \quad \mathrm { p r } _ { 2 , 3 } ( i ^ { \prime } ( g ( \gamma ) ) ) \simeq \mathrm { p r } _ { 2 , 3 } ( i ^ { \prime } ( \gamma ) ) } \end{array}\tag{55}
+\]
+
+对 \(j\) 对称地成立；\(\simeq\) 在映射上的解读同定义~36，在续延上的解读同定义~51，在登记迭代（定义~47）上的解读为所指名组件的同一性。一族迭代器 \(( i _ { l } ) _ { l \in L }\) 是两两独立的，当且仅当对每个 \({ \mathit { l } } \neq { \mathit { l } } ^ { \prime }\)，\(i _ { l }\) 与 \(i _ { l ^ { \prime } }\) 独立；一个步骤序列是两两独立的，当且仅当 \(( e _ { n } ) _ { n \in N }\) 是两两独立的，其中 \(N\) 是序列曾持有的名字集合，编排器插入的每根纤维与某次迭代登记的每根纤维各对应一个名字。
+
+这种意义下的独立正是迹理论所取为原初的概念：可交换的作用在序列上生成一个等价关系，在该关系下重排两个相邻独立作用的顺序保持端点不变 {[}44{]}，而引理~71 正是针对这些规则的重排结果。用族而非集合来使同一组件的两个名字保持在作用域内：此时条件要求该组件的效应函数与自身独立，即要求 \(\mathfrak { M } ( i )\) 可交换。第一个条件是定理~61 所用到的，第二个则是定理~73 额外需要的：重排两根纤维的步骤，等于在另一根纤维移动过的状态处对迭代器求值；而映射可交换本身并不能说明迭代器在那里产出相同的逆元与相同的续延。检验第一个条件只需迭代器本身即可，因为引理~18(1) 把可交换性从生成元传递到它们所生成的幺半群。
+
+在这些条件下，定理~7 的单累加器不变量在交错之下依然成立，其形式正是时间维组合性的内容所在：运行一个逆元会撤回该纤维的贡献，且仅此而已。
+
+定理 61.（恢复精确性）设步骤序列两两独立，设 \(n\) 的一段进程在 \(b\) 处开启，设 \(u \geq b\) 位于其中，并设 \(t _ { 1 } < \dots < t _ { l }\) 是 \([ b , u )\) 中作用纤维不是 \(n\) 的那些下标。则
+
+\[
+g _ { n } ^ { u } ( \gamma ^ { u } ) \approx \big ( \Psi ^ { t _ { l } } \circ \dotsb \circ \Psi ^ { t _ { 1 } } \big ) \big ( \gamma ^ { b } \big )\tag{56}
+\]
+
+也就是说，在 \(\gamma ^ { u }\) 处应用 \(n\) 的累加器，所得的（在控制字段的意义下）正是同样的那些步骤从 \(\gamma ^ { b }\) 出发本来会产生的状态。若把右端解读为「\(n\) 从未开始」时所达到的状态，则还需额外假设：没有 \(n\) 所登记的纤维在 \([ b , u )\) 内走一步，因为 \(n\) 登记出的纤维是不会在场去走那一步的。
+
+证明。对 \(u\) 归纳，遍及那些满足 \(u+1\) 在进程中的下标 \(u\)。当 \(u = b\) 时，\(b - 1\) 处的步骤是一个 L-Begin（进程由定义~53 开启），于是按表~1 有 \(g _ { n } ^ { b } = \mathrm { i d } _ { \Gamma }\)，下标集为空，断言即为 \(\gamma ^ { b } \approx \gamma ^ { b }\)。每一步使用两个事实。由于 \(\mathrm { e d i t } ^ { t }\) 只写控制字段，\(\gamma ^ { t + 1 } \approx \Psi ^ { t } ( \gamma ^ { t })\)；又由于 \(\mathfrak { M } ( e _ { n } )\) 中除登记所添加者外，每个映射都不写控制字段，由定义~48 连同定义~47，这样的每个映射都把 $\approx$-相等的状态映到 $\approx$-相等的状态。
+
+设步骤 \(u\) 作用于 \(n\)。由于进程在 \(u\) 与 \(u+1\) 处均开启，引理~54(4) 排除了作用于 \(n\) 的 L-Begin 与 L-Unload；而 O-Insert 与 O-Remove 读取一个被 \(\mathrm { i n s t a l l e d } _ { n } ^ { u }\) 否定的 \(\theta _ { n }\)，于是剩下两种情况。当规则为 L-Iter、L-Finish 或落地型 L-Divert 时，表~1 给出 \(\Psi ^ { u } = \mathrm { p r } _ { 1 } \circ i _ { n } ^ { u }\)，以及 \(g _ { n } ^ { u + 1 } = g _ { n } ^ { u } \circ h\)，其中 \(h\) 是该迭代产出的逆元。定义~51 的见证条件给出 \(h ( \Psi ^ { u } ( \gamma ^ { u } ) ) = \gamma ^ { u }\)，在迭代登记纤维之处（引理~57）则精确到 $\approx$；而 \(g _ { n } ^ { u }\) 按上面的等式保持 $\approx$，因此
+
+\[
+g _ { n } ^ { u + 1 } \big ( \gamma ^ { u + 1 } \big ) \approx \big ( g _ { n } ^ { u } \circ h \big ) \big ( \Psi ^ { u } \big ( \gamma ^ { u } \big ) \big ) = g _ { n } ^ { u } \big ( \gamma ^ { u } \big )
+\]
+
+当规则为 L-Leave、L-Raise、中止型 L-Divert 或作用于 \(n\) 的 O-Retire 时，表~1 给出 \(\Psi ^ { u } = \mathrm { i d } _ { \Gamma }\) 与 \(g _ { n } ^ { u + 1 } = g _ { n } ^ { u }\)，于是同一等式在 \(h = \mathrm { i d } _ { \Gamma }\) 时成立。无论哪种情形，归纳假设都在下标集不变的情况下传递下去，这正是定理~7 的运算逐步进行的过程。
+
+设步骤 \(u\) 作用于 \(m \neq n\)。则按表~1 有 \(g _ { n } ^ { u + 1 } = g _ { n } ^ { u }\)；且 \(\Psi ^ { u } \in \mathfrak { M } ( e _ { m } )\)，或当规则为编排规则时 \(\Psi ^ { u } = \mathrm { i d } _ { \Gamma }\)，于是独立性给出
+
+\[
+g _ { n } ^ { u } \bigl ( \gamma ^ { u + 1 } \bigr ) \approx g _ { n } ^ { u } \bigl ( \Psi ^ { u } ( \gamma ^ { u } ) \bigr ) = \Psi ^ { u } \bigl ( g _ { n } ^ { u } \bigl ( \gamma ^ { u } \bigr ) \bigr )
+\]
+
+这就是附加上 \(\Psi ^ { u }\) 之后的归纳假设。□
+
+推论 62.（终端恢复）设步骤序列两两独立，设 \(n\) 的一段进程在 \(b\) 处开启并在 \(u\) 处关闭，无论 \(n\) 到达何种结局。则，取 \(t _ { 1 } < \cdots < t _ { l }\) 如定理~61，
+
+\[
+\gamma ^ { u + 1 } \approx \bigl ( \Psi ^ { t _ { l } } \circ \cdots \circ \Psi ^ { t _ { 1 } } \bigr ) \bigl ( \gamma ^ { b } \bigr )\tag{57}
+\]
+
+由 O-Remove 移除的纤维同样不留任何痕迹，因为其前提只允许 \(\theta _ { n } = \mathsf { I n a c t i v e } ( - )\)。
+
+证明。由引理~54(4)，步骤 \(u\) 是作用于 \(n\) 的 L-Unload，其 \(\Psi ^ { u }\) 按引理~54(3) 为 \(g _ { n } ^ { u }\)，于是 \(\gamma ^ { u + 1 }\) $\approx$ \(g _ { n } ^ { u } ( \gamma ^ { u } )\)，定理~61 适用。陈述与 $\approx$ 都不涉及 \(\zeta\)，而按表~1，\(\zeta\) 正是 L-Divert 与 L-Raise 所导致状态相异的那个唯一字段。□
+
+上述结果假定组件两两独立，而第~3.3.2 节正是兑现这一假定的地方：当组件执行的每个效应都是某个键上的运算、且每个键都可交换时，由这些运算构造出的任意两个效应函数都独立（定理~42）。把该结果从效应函数带到迭代器无需任何新东西：以余效应为中介的效应函数（定义~41）已经按照每一阶段所产出的结果来决定其后接续的内容，而这正是迭代器在其续延中所携带的东西。第~3.2 节的余效应运算则是完全无需任何假定的情形：组件在那里贡献的映射是集合运算与相应限制的复合，只要两个这样的映射触及不相交的键，它们就可交换；而定义~58 第 (2) 款使不同纤维的供给互不相交。
+
+\subsection{4.4.3. 空间维组合性}\label{spatial-composability}
+
+局部空间维组合性把组件约束到它自身的规约上，只在其依赖齐备之处才激活它，并针对这些依赖对每一次上下文变化进行分类（第~3.2.2 节）。全局形式则增加了对其它纤维的量化：提供者只有在每一个解析了某绑定的依赖者都已停用之后，才会撤回该绑定；而转移据以安装其效应的解析不会在其下方漂移。余效应侧的两个性质分别交付这两条，且它们被一起证明，因为它们是同一个不变量的两半，即引理~54(2) 所确立的 \(\omega _ { n }\) 在一段进程上的固定性。排序定理是该固定性在进程的——\(n\) 处于 Active 然后处于 Unloading——那一部分上买来的结果，相干定理则是它在 \(n\) 正在安装其效应的那一部分上买来的结果。
+
+定理 63.（排序）一根纤维只在它的依赖齐备之处才开始一次转移：
+
+\[
+{ \mathrm { s t e p } } ^ { t } = { \mathrm { L } } \mathrm { - B e g i n } ( m ) \Rightarrow \gamma ^ { t } \models d _ { m }\tag{58}
+\]
+
+再设 \([ b ^ { \prime } , u ^ { \prime } ]\) 是 \(m\) 的一段进程，满足对某个 \(m \neq n\) 和 \(k \in d _ { m }\) 有 \(\omega _ { m } ^ { b ^ { \prime } } ( k ) = n\)；设 \([ b , u ]\) 是包含 \(b ^ { \prime }\) 的 \(n\) 的进程；并设 \(t\) 遍取 \([ b ^ { \prime } , u ^ { \prime } ]\)。则
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \(\omega _ { m } ^ { t } ( k ) = n ;\)
+\item
+  \(b < b ^ { \prime }\)，且若 \([ b , u ]\) 关闭则 \(u ^ { \prime } < u\)；
+\item
+  \(k \in \mathrm { d o m } ( \sigma _ { n } ^ { t } )\) 且 \(\sigma _ { n } ^ { t } ( k ) = \sigma _ { n } ^ { b ^ { \prime } } ( k )\)
+\end{enumerate}
+
+证明。第一个断言正是 L-Begin 的前提 \(\mathrm { t a r g e t } _ { m } ^ { t } \neq \perp\)，由定义~46 得 \(\gamma ^ { t } \models d _ { m }\)。
+
+(1) 即引理~54(2)。
+
+对于 (2)，在 \(b ^ { \prime } - 1\) 处的 L-Begin 写入 \(\omega _ { m } ^ { b ^ { \prime } } = \mathrm { t a r g e t } _ { m } ^ { b ^ { \prime } - 1 }\)，其值都是提供者，所以 \(\theta _ { n } ^ { b ^ { \prime } } = \mathsf { A c t i v e } ( - , - )\)；在 \(b - 1\) 处的 L-Begin 则留下 \(\theta _ { n } ^ { b } = \mathsf { R e l o a d i n g } ( - , - , - )\)，因此 \(b \neq b ^ { \prime }\)，进而 \(b < b ^ { \prime }\)，两段进程都按定义~53 开启。设 \([ b , u ]\) 关闭，并假设 \(u \leq u ^ { \prime }\)。则 \(u \in [ b ^ { \prime } , u ^ { \prime } ]\)，于是 \(\mathrm { i n s t a l l e d } _ { m } ^ { u }\) 成立，且由 (1) 得 \(\omega _ { m } ^ { u } ( k ) = n\)；这正是 \(\mathrm { r e l i e d } _ { n } ^ { u }\)，而它在 \(u\) 处的 L-Unload 予以否定。因此 \(u ^ { \prime } < u\)。
+
+对于 (3)，\(n\) 是在 \(\gamma ^ { b ^ { \prime } }\) 处 \(k\) 的提供者，所以 \(k \in \mathrm { d o m } \bigl ( \sigma _ { n } ^ { b ^ { \prime } } \bigr )\)。没有作用于 \(n\) 的 L-Unload 落在 \([ b ^ { \prime } , u ^ { \prime } ]\) 内：若 \([ b , u ]\) 关闭，则由 (2) 它落在 \(u > u ^ { \prime }\) 处；若 \([ b , u ]\) 不关闭，则引理~54(4) 使 \(n\) 根本没有 L-Unload。既然 \(\theta _ { n } ^ { b ^ { \prime } } = \mathsf { A c t i v e } ( - , - )\)，表~1 于是在 \([ b ^ { \prime } , u ^ { \prime } ]\) 内只留下 L-Leave 作为可以作用于 \(n\) 的唯一规则，且其 \(\Psi ^ { t }\) 为 \(\mathrm { i d } _ { \Gamma }\)；由引理~54(1)，\(\sigma _ { n }\) 在其中为常数。□
+
+跨越多个步骤的转移，否则可能会安装针对一个在其下方已发生变化的解析所计算出的效应；两个前提防止了这一点。L-Iter 与 L-Finish 携带 \(\mathrm { t a r g e t } _ { n } ( \gamma ) = \omega\)，因此只有在已提交视图仍是其目标视图时，转移才会继续进行；L-Divert 携带其否定，因此目标视图的任何变化都会把纤维带出转移。L-Raise 则完全不依赖目标视图，因为 raise 是迭代自己做的事情，而非环境所要求的，且它在任何情况下都会退出转移。变化的两个方向并不被区分：依赖已消失的组件与依赖被替换掉的组件走同一条离开路径，因为已变成 \(\bot\) 的目标视图与已变成某个其它纤维的目标视图，同样地不等于 \(\omega\)。
+
+惯性（inertia）正是阻止这成为关于每一步之保证的东西。当目标视图转变时已经处于飞行中的迭代无论如何都会落地，经由 L-Divert；而那一次落地会安装一个针对已不再成立的解析计算出的效应。因此规则所交付的是一个析取，而第二个分支正是使第一个分支安全的东西。
+
+定理 64.（解析相干性）设 \(n\) 的一段进程 \([ b , u ]\) 在 \(b\) 处开启，且 \(\omega _ { n } ^ { b } = \omega\)。则 \(\theta _ { n }\) 在进程的一个初始区间 \([ b , r ]\) 上为 \(\mathsf { R e l o a d i n g } ( - , - , - )\)，且转移的每一次迭代都针对同一个解析 \(\omega\) 运行：
+
+\[
+\forall t \in [ b , r ] . \ \mathrm { s t e p } ^ { t } \in \ \{ \mathrm { L } \mathrm { - } \mathrm { I t e r } ( n ) , \mathrm { L } \mathrm { - } \mathrm { F i n i s h } ( n ) \} \Rightarrow \mathrm { t a r g e t } _ { n } ^ { t } = \omega\tag{59}
+\]
+
+当纤维离开该区间，即 \(r < u\) 时，以下二者恰有其一成立：
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \(\mathrm { s t e p } ^ { r } = \mathrm { L } \mathrm { - F i n i s h } ( n )\) 且 \(\theta _ { n } ^ { r + 1 } = \mathsf { A c t i v e } ( - , \omega )\)；
+\item
+  \(\mathrm { s t e p } ^ { r } \in \{ \mathrm { L } \mathrm { - D i v e r t } ( n ) , \mathrm { L } \mathrm { - R a i s e } ( n ) \}\)，且进程在某个 \(u > r\) 处关闭，满足 \(\gamma ^ { u + 1 }\) $\approx$ \(\left( \Psi ^ { t _ { l } } \circ \cdots \circ \Psi ^ { t _ { 1 } } \right) \left( \gamma ^ { b } \right)\)，如推论~62。
+\end{enumerate}
+
+证明。在 \(b - 1\) 处的 L-Begin 写入 \(\mathsf { R e l o a d i n g }\)，且按表~1 它是进入该生命周期状态的唯一规则；其前提 \(\theta _ { n } = \mathsf { I n a c t i v e } ( \bot )\) 与引理~54(4) 把它的任何第二次应用排除在进程之外。因此 \(\mathsf { R e l o a d i n g }\) 占据 \([ b , u ]\) 的一个初始区间 \([ b , r ]\)，并且不会被再次进入。
+
+第一个断言因而是表~1 赋予 L-Iter 与 L-Finish 的前提 \(\mathrm { t a r g e t } _ { n } ( \gamma ) = \omega ^ { \prime }\)，再加上由引理~54(2) 得到的 \(\omega ^ { \prime } = \omega\)。
+
+对于这个二分，\(\mathrm { s t e p } ^ { r }\) 是一个其前提具有 \(\theta _ { n } = \mathsf { R e l o a d i n g } ( - , - , - )\)、而其结论不具有该形式的规则；在表~1 中这样的规则有 L-Finish、L-Divert 与 L-Raise：第一个落入 \(\mathsf { A c t i v e } ( - , \omega )\)，另外两个落入 \(\mathsf { U n l o a d i n g } ( - , \omega , - )\)，由引理~54(4)，L-Unload 是唯一的出口，而推论~62 提供相应的等式。落地型 L-Divert 所贡献的迭代是 \(n\) 自己的迭代之一，因而在累加器所撤回的映射之列。相反，若 \(r = u\)，则序列以转移仍在飞行中而告终，此时所断言的只有第一个断言。□

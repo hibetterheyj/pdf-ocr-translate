@@ -1,0 +1,41 @@
+[104] D. Leijen, “Algebraic Effect Handlers with Resources and Deep Finalization,” technical 
+report MSR-TR-2018-10, Apr. 2018. [Online].  Available: https://www.microsoft.com/
+en-us/research/publication/algebraic-effect-handlers-resources-deep-finalization/
+[105] M. Fowler, “Event Sourcing.” 2005.
+[106] J. Lee, J. Ahn, and K. Yi, “React-tRace: A Semantics for Understanding React Hooks,” 
+Proc. ACM Program. Lang., vol. 9, no. OOPSLA2, pp. 471–498, 2025, doi: 10.1145/3763067.
+[107] N. Shavit and D. Touitou, “Software Transactional Memory,” in Proceedings of the Four­
+teenth Annual ACM Symposium on Principles of Distributed Computing, in PODC '95.  1995, 
+pp. 204–213. doi: 10.1145/224964.224987.
+[108] T. Harris, S. Marlow, S. Peyton Jones, and M. Herlihy, “Composable Memory Transac­
+tions,” in Proceedings of the Tenth ACM SIGPLAN Symposium on Principles and Practice of 
+Parallel Programming, in PPoPP '05.  2005, pp. 48–60. doi: 10.1145/1065944.1065952.
+[109] M. Herlihy and J. E. B. Moss, “Transactional Memory: Architectural Support for Lock-
+Free Data Structures,” in Proceedings of the 20th Annual International Symposium on 
+Computer Architecture, in ISCA '93.  1993, pp. 289–300. doi: 10.1145/165123.165164.
+[110] R. Landauer, “Irreversibility and Heat Generation in the Computing Process,” IBM Jour­
+nal of Research and Development, vol. 5, no. 3, pp. 183–191, 1961, doi: 10.1147/rd.53.0183.
+[111] C. H. Bennett, “Logical Reversibility of Computation,” IBM Journal of Research and Devel­
+opment, vol. 17, no. 6, pp. 525–532, 1973, doi: 10.1147/rd.176.0525.
+[112] T. Yokoyama and R. Glück, “A Reversible Programming Language and its Invertible 
+Self-Interpreter,” in Proceedings of the 2007 ACM SIGPLAN Workshop on Partial Evalua­
+tion and Semantics-Based Program Manipulation, in PEPM '07.  2007, pp. 144–153. doi: 
+10.1145/1244381.1244404.
+[113] V. Danos and J. Krivine, “Reversible Communicating Systems,” in CONCUR 2004 — 
+Concurrency Theory, 15th International Conference, in Lecture Notes in Computer Science, 
+vol. 3170. Springer,  2004, pp. 292–307. doi: 10.1007/978-3-540-28644-8_19.
+[114] I. Phillips and I. Ulidowski, “Reversing Algebraic Process Calculi,” in Foundations of 
+Software Science and Computation Structures, 9th International Conference (FOSSACS 2006), 
+in Lecture Notes in Computer Science, vol. 3921. Springer,  2006, pp. 246–260. doi: 
+10.1007/11690634_17.
+[115] P. Wadler, “Linear Types Can Change the World!,” in Programming Concepts and Methods: 
+Proceedings of the IFIP Working Group 2.2/2.3 Working Conference, North-Holland,  1990, 
+pp. 561–581. [Online].  Available: https://homepages.inf.ed.ac.uk/wadler/papers/
+linear/linear.ps
+[116] A. Lenharth, V. S. Adve, and S. T. King, “Recovery domains: an organizing principle 
+for recoverable operating systems,” in Proceedings of the 14th International Conference on 
+Architectural Support for Programming Languages and Operating Systems (ASPLOS), ACM, 
+2009, pp. 49–60. doi: 10.1145/1508244.1508251.
+[117] C. Walls, Spring in Action, 6th ed. Manning Publications, 2022. [Online].  Available: 
+https://www.manning.com/books/spring-in-action-sixth-edition
+87

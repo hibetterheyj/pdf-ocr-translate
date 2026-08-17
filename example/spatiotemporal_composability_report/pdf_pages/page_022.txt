@@ -1,0 +1,65 @@
+Definition 30. Define the coeffect context and specification with interception as:
+Σinter ≔((𝑘: 𝐾) →ℳ︀𝑘) × ((𝑘: 𝐾) ⇀(ℳ︀𝑘→𝒱︀𝑘))
+𝔇inter ≔(𝑘: 𝐾) ⇀ℳ︀𝑘
+(29)
+The context Σinter is a pair (𝜄, 𝜎): 𝜄 is the context-carried metadata installed on the context itself, 
+empty (𝜖𝑘) by default; and 𝜎 maps each key 𝑘 to a provider function from metadata ℳ︀𝑘 to value 
+𝒱︀𝑘. A specification 𝑑∈𝔇inter carries the component-declared metadata, assigning each key its 
+metadata 𝑑(𝑘), with dom(𝑑) serving as the dependency set. Each key equips its metadata with 
+a monoid (ℳ︀𝑘, ⊕𝑘, 𝜖𝑘): the merge ⊕𝑘 is associative with identity 𝜖𝑘 (the empty metadata).
+Definition 31. The get, set, and intercept operations on Σinter are:
+get
+:
+(𝑘: 𝐾) × ℳ︀𝑘
+→Σinter
+⇀
+𝒱︀𝑘
+get
+=
+(𝑘, 𝜇)
+↦(𝜄, 𝜎) ↦
+𝜎(𝑘)(𝜇⊕𝑘𝜄(𝑘))
+set
+:
+(𝑘: 𝐾) × (ℳ︀𝑘→𝒱︀𝑘) →Σinter
+⇀
+Σinter × (Σinter ⇀Σinter)
+set
+=
+(𝑘, 𝜓)
+↦(𝜄, 𝜎) ↦((𝜄, 𝜎[𝑘↦𝜓]), 𝜆(𝜄′, 𝜎′).(𝜄′, 𝜎′ ∖𝑘))
+intercept
+:
+(𝑘: 𝐾) × ℳ︀𝑘
+→Σinter
+→
+Σinter
+intercept =
+(𝑘, 𝜈)
+↦(𝜄, 𝜎) ↦
+(𝜄[𝑘↦𝜄(𝑘) ⊕𝑘𝜈], 𝜎)
+(30)
+where get and set carry the preconditions of Definition 23 on the provider table, namely 𝑘∈
+dom(𝜎) and 𝑘∉dom(𝜎). The context that intercept(𝑘, 𝜈) derives merges 𝜈 onto the metadata 
+inherited at 𝑘 and inherits the provider table unchanged.
+When a component with specification 𝑑 accesses key 𝑘, the system evaluates 𝜎(𝑘)(𝑑(𝑘) ⊕𝑘
+𝜄(𝑘)): the component-declared metadata is merged with the context-carried metadata 𝜄, and 
+the provider function is applied to the result. This merge follows each key’s own semantics 
+(e.g. scalar fields are overwritten, set-valued fields unioned) and is right-biased, so 𝜄(𝑘) takes 
+priority and can override the component’s declaration, letting an enclosing context constrain 
+how a component uses a coeffect without modifying that component (e.g. Section 6.3).
+3.3. The Context Paradigm
+Section 3.1 and Section 3.2 each act on a context, the first as the carrier of effects and the second 
+as the carrier of coeffects, leaving open what a single context carrying both looks like. This 
+section gives that unification a concrete construction, assembles from the coeffects an observa­
+tional equivalence that supplies the effect independence Section 3.1.3 leaves open, and argues 
+that the resulting context type constitutes a programming paradigm in its own right.
+3.3.1. Unified Context
+For a context Γ, the effect context 𝜕Γ (Section 3.1) provides a higher-level abstraction, carrying 
+the previous-level context and that level’s accumulator (Definition 2). Making this structure 
+recursive and combining it with the coeffect context Σ yields the following type:
+Definition 32. The context type Γ∞ is defined as:
+Γ∞≔𝜇Γ. Γ × (Γ →Γ) × Σ
+(31)
+where the three projections are:
+22

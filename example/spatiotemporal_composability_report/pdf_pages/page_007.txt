@@ -1,0 +1,42 @@
+2. Preliminaries
+This section provides a concise overview of effect and coeffect systems—the two theoretical 
+pillars underlying our work. We assume familiarity with basic type theory and category 
+theory; the goal here is to fix notation and introduce the key abstractions that Section 3 will 
+operationalize as runtime mechanisms.
+2.1. Effects
+In the simply typed lambda calculus (STLC) [20, 21], a typing judgment Γ ⊢𝑡: 𝑇 states that 
+term 𝑡 has type 𝑇 under context Γ. An effect system refines the type to describe what side effects 
+a computation may produce, yielding judgments of the form
+Γ ⊢𝑡: 𝑇effect
+(1)
+Here, the result type is annotated with an element of an effect algebra that describes which 
+side effects the computation may produce, enabling compositional reasoning about stateful 
+computations. This approach originates with Lucassen and Gifford [22], who introduced a 
+kinded type system distinguishing types, effects, and regions to discover scheduling constraints 
+in parallel programs.
+Monadic effects. Moggi [16] first modeled computational effects categorically via monads; 
+Wadler [23] popularized the approach in Haskell. A monad (𝑇, 𝜂, 𝜇) on a category 𝒞︀ encap­
+sulates an effectful computation as a value of type 𝑇(𝐴), with 𝜂: 𝐴→𝑇(𝐴) lifting pure 
+values and 𝜇: 𝑇(𝑇(𝐴)) →𝑇(𝐴) sequencing nested computations. Classic instances include the 
+Maybe monad (for partiality), State monad (for mutable state), and IO monad (for external 
+interaction).
+Algebraic effects. Plotkin and Power [17, 24] showed that algebraic operations determine 
+monads, establishing a framework in which effect interfaces are decoupled from their imple­
+mentations. An effect signature Σ declares a set of operations (e.g., get : () →𝑆, put : 𝑆→() 
+for state); programs invoke operations freely without committing to a particular interpretation. 
+Plotkin and Pretnar [25] subsequently introduced effect handlers, which interpret operations by 
+providing continuation semantics:
+handle 𝑒with { op(𝑣, 𝜅) ↦… }
+(2)
+The handler receives the operation argument 𝑣 and the delimited continuation 𝜅, which it 
+may invoke zero, one, or multiple times, enabling exceptions, coroutines, and non-determinism 
+within a uniform framework [26]. Languages such as Koka [27, 28], Eff [29], and OCaml 5 [30] 
+have adopted algebraic effects with varying design trade-offs.
+2.2. Coeffects
+Dually to effects, a coeffect system [18, 31] enriches the context rather than the type, yielding 
+judgments of the form
+Γcoeffect ⊢𝑡: 𝑇
+(3)
+Here, the context is annotated with an element of a coeffect algebra describing what the 
+computation requires from its environment, such as resources to access, permissions to hold, 
+7

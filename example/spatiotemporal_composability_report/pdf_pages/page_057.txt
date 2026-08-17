@@ -1,0 +1,54 @@
+mulated inverse ctx.dispose, so a child effect’s inverse is itself an effect on the parent, which 
+is the recursive structure of 𝜕2Γ. The component level (Section 5.1.3) reuses the same execute 
+with a guard that tests the stability of fiber.target instead of armed.
+5.1.2. Coeffect Operations
+This section realizes reactive coeffects (Section 3.2). All coeffect operations act on three symbol-
+keyed slots that each context carries:
+• @@store: the value store 𝜎: (𝑟: 𝑅) ⇀𝒱︀𝑟 from realm symbols to typed values;
+• @@isolate: the realm table 𝜌: Map(𝐾, 𝑅) from coeffect keys to realm symbols;
+• @@intercept: the interception table 𝜄: (𝑘: 𝐾) →ℳ︀𝑘 assigning each key its metadata.
+The first two compose into the two-layer resolution 𝑘→𝜌(𝑘) →𝜎(𝜌(𝑘)): ctx.get(key) 
+(Algorithm 2) reads the realm symbol 𝜌(𝑘) from @@isolate, then the bound value 𝜎(𝜌(𝑘)) from 
+@@store. The 𝜌 indirection lets isolation redirect a key to an independent binding, whereas 
+@@intercept is consulted only when a binding is accessed, adjusting how it is used rather 
+than what it resolves to. We realize these operations in two parts: (1) provision and notification, 
+which install or retract bindings and propagate the change to dependents; and (2) isolation and 
+interception, which reshape how a key resolves.
+Provision and notification. Since set(𝑘, 𝑣) has type 𝔈Σ (Section 3.1), coeffect provision is 
+a ctx.effect call and inherits its automatic tracking and recovery. Algorithm 2 implements 
+ctx.set(key, value), the concrete set(𝑘, 𝑣): the callback binds a value into the store under the 
+realm symbol 𝜌(𝑘), and the returned dispose function removes it. Both installation and removal 
+invoke notify to propagate the change to dependent components.
+Algorithm 2 Coeffect operations
+1
+function get(ctx, key)
+2
+realm ← ctx[@@isolate][key] ▷ 𝜌(𝑘)
+3
+return ctx[@@store][realm] ▷ 𝜎(𝜌(𝑘))
+4
+function set(ctx, key, value)
+5
+function callback()
+6
+realm ← ctx[@@isolate][key] ▷ 𝜌(𝑘)
+7
+ctx[@@store][realm] ← value ▷ 𝜎[𝜌(𝑘) ↦𝑣]
+8
+notify(ctx, [key])
+9
+return function()
+10
+delete ctx[@@store][realm] ▷ 𝜎∖𝜌(𝑘)
+11
+notify(ctx, [key])
+12
+return ctx.effect(callback)
+Algorithm 3 propagates each binding change to dependents by testing, for each live fiber, 
+whether a changed key appears in its fiber.inject and resolves to the same realm; if so, it calls 
+refresh (Section 5.1.3) to re-evaluate that fiber against the new state, and it returns the fibers it 
+re-evaluated so that a caller can wait for them. This is the reactive classification of Definition 26: 
+a change that flips satisfaction activates or deactivates the fiber, and refresh’s idempotence 
+renders a neutral change harmless. The interaction of this re-evaluation with diverse control 
+flows is developed in Section 5.1.3.
+57

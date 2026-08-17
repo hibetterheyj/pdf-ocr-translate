@@ -35,10 +35,10 @@ HEADING_LINE = re.compile(
     r'(?P<rest>.*)$'
 )
 
-# Numbered prefix patterns
-NUMBER_1  = re.compile(r'^(\d+)\s+(.+)')            # "1 Introduction"
-NUMBER_2  = re.compile(r'^(\d+\.\d+)\s+(.+)')        # "2.1 Hybrid Attention"
-NUMBER_3  = re.compile(r'^(\d+\.\d+\.\d+)\s+(.+)')   # "2.1.1 KDA"
+# Numbered prefix patterns (trailing dot optional: "1 Introduction" / "1. Introduction")
+NUMBER_1  = re.compile(r'^(\d+)\.?\s+(.+)')           # "1 Introduction" / "1. Introduction"
+NUMBER_2  = re.compile(r'^(\d+\.\d+)\.?\s+(.+)')       # "2.1 Hybrid" / "2.1. Hybrid"
+NUMBER_3  = re.compile(r'^(\d+\.\d+\.\d+)\.?\s+(.+)')  # "2.1.1 KDA" / "2.1.1. KDA"
 APPENDIX  = re.compile(r'^([A-F])\s+(.+)')            # "A Contributors"
 
 # Special section titles to promote to unnumbered \\section*

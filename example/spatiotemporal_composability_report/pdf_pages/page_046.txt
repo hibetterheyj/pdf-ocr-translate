@@ -1,0 +1,66 @@
+step𝑡= L-Begin(𝑚) ⇒𝛾𝑡⊧𝑑𝑚
+(58)
+Let further [𝑏′, 𝑢′] be an episode of 𝑚 with 𝜔𝑏′
+𝑚(𝑘) = 𝑛 for some 𝑚≠𝑛 and 𝑘∈𝑑𝑚, let [𝑏, 𝑢] be 
+the episode of 𝑛 containing 𝑏′, and let 𝑡 range over [𝑏′, 𝑢′]. Then
+1. 𝜔𝑡
+𝑚(𝑘) = 𝑛;
+2. 𝑏< 𝑏′, and 𝑢′ < 𝑢 if [𝑏, 𝑢] closes;
+3. 𝑘∈dom(𝜎𝑡
+𝑛) and 𝜎𝑡
+𝑛(𝑘) = 𝜎𝑏′
+𝑛(𝑘).
+Proof. The first claim is the premise target𝑡
+𝑚≠⊥ of L-Begin, which by Definition 46 gives 𝛾𝑡⊧
+𝑑𝑚.
+(1) is Lemma 54(2).
+For (2), the L-Begin at 𝑏′ −1 writes 𝜔𝑏′
+𝑚= target𝑏′−1
+𝑚
+, whose values are providers, so 𝜃𝑏′
+𝑛=
+𝖠𝖼𝗍𝗂𝗏𝖾(−, −); the L-Begin at 𝑏−1 leaves 𝜃𝑏
+𝑛= 𝖱𝖾𝗅𝗈𝖺𝖽𝗂𝗇𝗀(−, −, −), so 𝑏≠𝑏′ and hence 𝑏< 𝑏′, 
+both episodes opening by Definition 53. Let [𝑏, 𝑢] close and suppose 𝑢≤𝑢′. Then 𝑢∈[𝑏′, 𝑢′], 
+so installed𝑢
+𝑚 and, by (1), 𝜔𝑢
+𝑚(𝑘) = 𝑛; that is relied𝑢
+𝑛, which the L-Unload at 𝑢 denies. Hence 
+𝑢′ < 𝑢.
+For (3), 𝑛 is the provider of 𝑘 at 𝛾𝑏′, so 𝑘∈dom(𝜎𝑏′
+𝑛). No L-Unload of 𝑛 falls in [𝑏′, 𝑢′]: where 
+[𝑏, 𝑢] closes it falls at 𝑢> 𝑢′ by (2), and where it does not, Lemma 54(4) leaves 𝑛 with no L-
+Unload at all. Since 𝜃𝑏′
+𝑛= 𝖠𝖼𝗍𝗂𝗏𝖾(−, −), Table 1 therefore leaves L-Leave as the only rule 𝑛 can 
+be acted on by within [𝑏′, 𝑢′], and its Ψ𝑡 is idΓ; by Lemma 54(1) 𝜎𝑛 is constant there.
+□
+A transition spread over steps could otherwise install effects computed against a resolu­
+tion that has changed under it, and two premises prevent that. L-Iter and L-Finish carry 
+target𝑛(𝛾) = 𝜔, so a transition proceeds only while its committed view is still its target view, 
+and L-Divert carries the negation, so any change to the target view takes the fiber out of the 
+transition. L-Raise is not conditioned on the target view at all, a raise being something the 
+iteration does rather than something the environment asks for, and it exits the transition in any 
+case. The two directions of change are not distinguished: a component whose dependency has 
+gone and one whose dependency has been replaced leave by the same route, because a target 
+view that has become ⊥ and one that has become some other fiber are equally unequal to 𝜔.
+Inertia is what stops this from being a guarantee about every step. An iteration already in 
+flight when the target view turns lands regardless, by L-Divert, and that landing installs an 
+effect computed against a resolution that no longer holds. What the rules deliver is therefore a 
+disjunction, and the second branch is what makes the first safe.
+Theorem 64. (Resolution coherence.) Let an episode [𝑏, 𝑢] of 𝑛 open at 𝑏 with 𝜔𝑏
+𝑛= 𝜔. Then 
+𝜃𝑛 is 𝖱𝖾𝗅𝗈𝖺𝖽𝗂𝗇𝗀(−, −, −) on an initial interval [𝑏, 𝑟] of the episode, and every iteration of the 
+transition runs against the one resolution 𝜔:
+∀𝑡∈[𝑏, 𝑟]. step𝑡∈{L-Iter(𝑛), L-Finish(𝑛)} ⇒target𝑡
+𝑛= 𝜔
+(59)
+Where the fiber leaves that interval, so that 𝑟< 𝑢, exactly one of the following holds:
+1. step𝑟= L-Finish(𝑛) and 𝜃𝑟+1
+𝑛
+= 𝖠𝖼𝗍𝗂𝗏𝖾(−, 𝜔);
+2. step𝑟∈{L-Divert(𝑛), L-Raise(𝑛)}, and the episode closes at some 𝑢> 𝑟 with 𝛾𝑢+1 ≈
+(Ψ𝑡𝑙∘⋯∘Ψ𝑡1)(𝛾𝑏) as in Corollary 62.
+Proof. The L-Begin at 𝑏−1 writes 𝖱𝖾𝗅𝗈𝖺𝖽𝗂𝗇𝗀, and by Table 1 it is the one rule leading into that 
+lifecycle state; its premise 𝜃𝑛= 𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾(⊥) and Lemma 54(4) put any second application of it 
+outside the episode. So 𝖱𝖾𝗅𝗈𝖺𝖽𝗂𝗇𝗀 occupies an initial interval [𝑏, 𝑟] of [𝑏, 𝑢] and is not re-entered. 
+46

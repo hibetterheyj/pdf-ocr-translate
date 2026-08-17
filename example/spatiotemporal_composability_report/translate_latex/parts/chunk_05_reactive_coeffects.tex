@@ -1,0 +1,146 @@
+\subsection{3.2. 响应式余效应}\label{reactive-coefects}
+
+空间可组合性是指组件之间能够相互声明依赖，系统能够在运行时解析、供给和撤回这些依赖的能力。这要求在共享上下文每次变化时都重新评估依赖满足状况，使组件在依赖变为可用时激活、在依赖被撤回时停用。因此，我们把组件的依赖建模为一种规格，并对照该规格把每一次上下文变更分类为激活性的、停用性的或中性的。对照规格进行分类，正是检测满足状况变化的手段；对分类作出响应，则是驱动激活与停用的机制。我们把这样的余效应称为响应式：通过分类上下文变更并据此驱动激活与停用，正确的余效应排序便成为结构性的保证。
+
+\subsection{3.2.1. 余效应上下文}\label{coefect-context}
+
+传统的控制反转（inversion-of-control，IoC）容器 {[}38{]} 通常把依赖建模为简单的键值映射。本节把 IoC 形式化为一种余效应上下文，它与可逆效应协同工作，为动态组合提供数学基础。
+
+定义 22. 给定类型族 \(\mathcal { V } : K \to \mathrm { T y p e }\)，把余效应上下文定义为依值部分函数类型：
+
+\[
+\Sigma : = ( k : K ) \rightharpoonup \mathcal { V } _ { k }\tag{20}
+\]
+
+其中 \(\sigma : \Sigma\) 是一个有限部分函数，为每个 \(k \in \mathrm { d o m } ( \sigma ) \subseteq K\) 赋一个类型 \(\mathcal { V } _ { k }\) 的值。我们记：
+
+\begin{itemize}
+\item \(\sigma ( k )\) 表示应用（当 \(k \in \mathrm { d o m } ( \sigma )\) 时有定义）；
+\item \(\sigma [ k \mapsto v ]\) 表示表绑定：在 \(k\) 处绑定 \(v\)，在其余各处与 \(\sigma\) 一致；
+\item \(\sigma \setminus k\) 表示限制（当 \(k \in \mathrm { d o m } ( \sigma )\) 时有定义）；
+\item \(k \in \mathrm { d o m } ( \sigma )\) 表示成员关系。
+\end{itemize}
+
+使用类型族 \(\mathcal { V }\) 保证了每个依赖键 \(k\) 都与一个特定的值类型 \(\mathcal { V } _ { k }\) 相关联，为依赖访问提供静态类型安全。扩展与限制带有前置条件，由下面的运算强加：一个依赖不能被供给两次（扩展要求 \(k \notin \mathrm { d o m } ( \sigma )\)），也不能在不存在时被撤销（限制要求 \(k \in \mathrm { d o m } ( \sigma )\)）。违反前置条件会被报告为错误且不产生任何转移，因此描述实际所发生转移的效应代数可原样应用于这些运算。更倾向于把失败内化的读者，可以把下文中的每个 \(\Sigma \rightharpoonup \Sigma\) 读作 \(\Sigma \to \mathsf { Maybe } ( \Sigma )\)，并在 \(\mathsf { Maybe }\) 单子（第~2.1 节）中组合，代价是把每个恒等替换为运算定义域上的部分恒等。基于这一上下文结构，我们定义两个核心运算：
+
+定义 23. \(\Sigma\) 上的 get 与 set 运算定义如下：
+
+\[
+\begin{array} { r c c c c c c } { \mathrm { g e t } } & { : } & { ( k : K ) } & { \to } & { \Sigma } & { \rightharpoonup } & { \mathcal { V } _ { k } } \\ { \mathrm { g e t } } & { = } & { k } & { \mapsto } & { \sigma } & { \mapsto } & { \sigma ( k ) } \\ { \mathrm { s e t } } & { : } & { ( k : K ) \times \mathcal { V } _ { k } } & { \to } & { \Sigma } & { \rightharpoonup } & { \Sigma \times ( \Sigma \rightharpoonup \Sigma ) } \\ { \mathrm { s e t } } & { = } & { ( k , v ) } & { \mapsto } & { \sigma } & { \mapsto } & { ( \sigma [ k \mapsto v ] , \lambda \sigma ^ { \prime } . \sigma ^ { \prime } \setminus k ) } \end{array}\tag{21}
+\]
+
+其中 get\(( k )\) 以 \(k \in \mathrm { d o m } ( \sigma )\) 为前置条件，set\(( k , v )\) 以 \(k \notin \mathrm { d o m } ( \sigma )\) 为前置条件。
+
+值得注意的是，set\(( k , v )\) 具有类型 \(\mathfrak { E } _ { \Sigma } ^ { * }\)，正是一个余效应上下文上的效应函数。因此我们可以直接应用第~3.1 节的效应机制：effect\(\Sigma\) 提供依赖注册的自动追踪与恢复。这正是响应式余效应与可逆效应之间的协同：余效应运算就是效应，而效应是可逆的。
+
+get 交给组件的是一个值，而组件能用这个值做什么，取决于该键处的余效应提供了什么。因此，一个键承载的不仅仅是值类型：
+
+定义 24. 键 \(k\) 处的余效应是一个三元组 \(\left( \mathcal { V } _ { k } , \simeq _ { k } , \mathcal { A } _ { k } \right)\)，其中 \(\mathcal { V } _ { k }\) 是定义~22 的值类型，\(\simeq _ { k }\) 是 \(\mathcal { V } _ { k }\) 上的一个等价关系，\(k\) 处的值按该关系进行比较（第~3.3.2 节），\(\mathcal { A } _ { k }\) 是一组余效应运算，即绑定在 \(k\) 处的值向持有它的组件提供的那些运算。一个运算 \(a \in \mathcal { A } _ { k }\) 带有一个参数类型 \(X _ { a }\) 和一个结果类型 \(B _ { a }\)，并且只作用于该值本身：
+
+\[
+a : X _ { a } \to \mathcal { V } _ { k } \rightharpoonup \mathcal { V } _ { k } \times ( \mathcal { V } _ { k } \rightharpoonup \mathcal { V } _ { k } ) \times B _ { a }\tag{22}
+\]
+
+其前两个分量构成 \(\mathcal { V } _ { k }\) 上的一个效应函数，正如定义~8 所要求的那样被见证；第三个分量则是结果。每个运算都要求尊重 \(\simeq _ { k }\)：在 \(\simeq _ { k }\) 相关的值上，它要么在两者上都有定义，要么在两者上都无定义；在有定义处，它产生 \(\simeq _ { k }\) 相关的后继，其逆再次把 \(\simeq _ { k }\) 相关的值带到 \(\simeq _ { k }\) 相关的值，并产生相同的结果。一个运算通过它的 lift 作用于余效应上下文：
+
+\[
+a ^ { \Sigma } ( x ) ( \sigma ) : = \mathrm { { l e t } } \ ( v , g , b ) = a ( x ) ( \sigma ( k ) ) \mathrm { { i n } } \ ( \sigma [ k \mapsto v ] , \lambda \sigma ^ { \prime } . \sigma ^ { \prime } [ k \mapsto g ( \sigma ^ { \prime } ( k ) ) ] , b )\tag{23}
+\]
+
+当 \(k \in \mathrm { d o m } ( \sigma )\) 时有定义，其前两个分量是 \(\Sigma\) 上的一个效应函数。
+
+把键 \(k\) 的运算类型化为作用在 \(\mathcal { V } _ { k }\) 上，正是将其约束在 \(k\) 处的绑定上：该 lift 读取并写入这个绑定，而让其他所有键保持原样，因此无需附加条件即可表达这一点。在隔离生效之处，它到达的绑定正是领域解析到的那个绑定（定义~28），共享同一领域的两个键共享同一个绑定。行为取决于其他键的运算，会把这个键的值读入其参数 \(X _ { a }\)，而下一小节的响应式纪律保证：只要读取了该值的组件仍在运行，该值就保持不变（定理~63）。
+
+\subsection{3.2.2. 规格与通知}\label{specification-and-notification}
+
+前面的定义描述了单个依赖如何被注册和访问。然而，访问一个不存在的依赖是运行时错误。因此，组件应当只在它声明的所有依赖都就绪之后才激活，而不是乐观地访问它们、在某个依赖缺失时失败。这引出两个问题：组件的声明依赖是否被共同满足，以及当这一状态变化时系统应如何响应。余效应上下文 \(\Sigma\) 具有一种自然的可观察结构，使这两个问题都可处理：对任意余效应规格 \(d \subseteq K\)，定义满足谓词：
+
+\[
+\sigma \models d : = \forall k \in d . k \in \operatorname { d o m } ( \sigma )\tag{24}
+\]
+
+该谓词是可判定的（因为 dom\(( \sigma )\) 是有限的）。由于对 \(\sigma\) 的所有变更都经由效应函数（其逆恢复先前的定义域），满足状况的变化在每个效应边界上都是可检测的。这就是响应性的代数基础：效应系统保证每一次余效应变更都会被观察到。
+
+定义 25. 余效应规格是：
+
+\[
+{ \mathfrak { D } } _ { \Sigma } : = { \mathsf { S e t } } ( K )\tag{25}
+\]
+
+它表示一个组件从环境中声明的依赖集合。
+
+使这种规格具有响应性的，是它如何对状态转移进行分类。任何把 \(\sigma\) 变换为 \(\sigma ^ { \prime }\) 的效应，都可以由规格 \(d \in \mathfrak { D } _ { \Sigma }\) 根据 \(d\) 的满足状况是否被改变来分类：
+
+定义 26. 给定余效应规格 \(d \subseteq K\) 和状态 \(\sigma , \sigma ^ { \prime } \in \Sigma\)，定义：
+
+\[
+\mathrm { n o t i f y } _ { d } ( \sigma , \sigma ^ { \prime } ) : = \left\{ \begin{array} { l l } { \mathrm { a c t i v a t i n g } \quad \mathrm { i f } \ \sigma \nvDash d \land \sigma ^ { \prime } \models d } \\ { \mathrm { d e a c t i v a t i n g ~ i f } \ \sigma \models d \land \sigma ^ { \prime } \nvDash d } \\ { \mathrm { n e u t r a l } \quad \quad \mathrm { o t h e r w i s e } } \end{array} \right.\tag{26}
+\]
+
+由于 \(\sigma \models d\) 是可判定的，且所有状态转移都由效应函数中介，所以这是良定义的。响应性不变式为：激活性的转移触发组件效应的执行（带完整的效应追踪），而停用性的转移则通过施加累加器触发恢复。这些转移的精确操作语义取决于它们与控制流的交互，将在第~4 节中展开。
+
+set 与 notify 共同提供的，是局部空间可组合性——这里“局部”的含义与之前相同，即该保证是针对单个组件自身的余效应而言的。我们把这个保证理解为如下判据：组件只在与它的规格满足相符的状态下激活，因此它永远不会读取一个不存在的绑定；每一次上下文变更都会对照该规格进行分类，因此满足性的丧失会在其发生处被检测到，并驱动一次停用。这两半都直接由上述定义推出：满足性是在组件将要激活处检查的前置条件，而 \(\mathrm { n o t i f y } _ { d }\) 在每个转移处都有定义。
+
+该判据只覆盖余效应排序的一个方向，而非另一个方向。若组件 \(A\) 提供键 \(k\)，组件 \(B\) 声明 \(k \in d _ { B }\)，那么 \(B\) 只有在 \(A\) 已激活并提供 \(k\) 之后才能激活，因为 \(\sigma \models d _ { B }\) 要求 \(k \in \mathrm { d o m } ( \sigma )\)。反方向则不成立：卸载 \(A\) 会把 \(k\) 从 dom\(( \sigma )\) 中移除，从而破坏 \(B\) 的满足性，但仅凭通知既无法在 \(B\) 自身的拆除需要 \(k\) 的整个期间内保持 \(k\) 可读，也无法让 \(A\) 的恢复一直等到 \(B\) 完成。把撤回排在它所引起的停用之后，是对其他组件而非当前操作组件的约束，因此它属于保证的全局形式，第~4.3.1 节提供实现它所必需的机制。
+
+\subsection{3.2.3. 隔离与拦截}\label{isolation-and-interception}
+
+基础的余效应上下文 \(\Sigma\) 建模一张扁平的依赖表。然而在实践中，系统可能需要为不同的组件把不同的值绑定到同一个逻辑依赖上。本节用两种机制扩展余效应上下文：余效应隔离（同一个键在不同的上下文中解析到不同的值）和余效应拦截（依赖访问上的横切行为）。
+
+实现（Realization）。这两种机制与 get 和 set 的区别在于它们作用的对象。供给会写入每个组件都读取的共享表，因此它是该表上的一个效应，并带有撤回它的逆。而隔离与拦截调整的是键在某个上下文下的组件中如何被解析，表本身保持不变。把运算类型化为效应，固定的是它的指称——一个后继状态配一个逆；但并不固定它的实现，后者决定了该逆如何被执行。
+
+定义 27. 上下文上的一个效应函数有两种实现：
+
+\begin{itemize}
+\item 原地（in-place）实现会改变上下文并返回一个非平凡的逆；后继状态以输入为别名，恢复时运行该逆以撤销变更。
+\item 派生（derived）实现保持输入不变，返回一个由它派生的全新上下文，并以恒等作为其逆；恢复时丢弃该派生上下文。由另一个上下文派生的上下文，正是定义~32 的递归结构所承载的。
+\end{itemize}
+
+在纯函数式设定下二者重合，而命令式宿主可以对每个运算任选其一；第~5.1.2 节对两者都有实现。隔离与拦截直接采用派生实现：每个都会产生一个全新上下文，其自身表与继承而来的表不同，因此下面把每个都类型化为从上下文到上下文的映射，而不是效应函数。共享表中没有任何变化，所以没有需要追踪的逆，也没有可供定义~12 提升的东西；恢复时会把派生上下文连同它所携带的调整一起丢弃。在派生表上的赋值会覆盖继承表在该键处的任何内容，这正是这两个运算都不带前置条件的原因。
+
+余效应隔离（Coeffect Isolation）。通过引入隔离领域，余效应隔离允许同一个依赖在不同的上下文中绑定到不同的值。这在一方多租户系统、测试环境和组件沙箱中有着广泛的应用。
+
+定义 28. 定义带隔离的余效应上下文为：
+
+\[
+\Sigma ^ { \mathrm { i s o } } : = ( K \rightharpoonup R ) \times ( ( r : R ) \rightharpoonup \mathcal { V } _ { r } )\tag{27}
+\]
+
+它可以表示为一对 \(( \rho , \sigma )\)，其中：
+
+\begin{itemize}
+\item \(\rho : K \rightharpoonup R\) 是隔离领域表，为每个被隔离的键分配一个领域标识符；dom\(( \rho )\) 之外的键解析到它自身的领域，因此在这些地方我们记 \(\rho ( k ) = k\)（\(R \supseteq K\)）；
+\item \(\sigma : ( r : R ) \rightharpoonup \mathcal { V } _ { r }\) 是依赖表，一个从领域标识符到类型化值的部分依值函数。
+\end{itemize}
+
+这种两层的映射结构把逻辑层与存储层解耦，使依赖访问具有上下文感知能力。当访问键 \(k\) 时，系统首先解析 \(\rho ( k )\) 得到一个领域标识符 \(r\)，然后访问 \(\sigma ( r )\) 以取得实际的值。
+
+定义 29. \(\Sigma ^ { \mathrm { i s o } }\) 上的 get、set 与 isolate 运算为：
+
+\[
+\begin{array} { r c c c c c c } { \mathrm { g e t } } & { : } & { ( k : K ) } & { \to } & { \Sigma ^ { \mathrm { i s o } } } & { \rightharpoonup } & { \mathcal { V } _ { \rho ( k ) } } \\ { \mathrm { g e t } } & { = } & { k } & { \mapsto } & { ( \rho , \sigma ) } & { \mapsto } & { \sigma ( \rho ( k ) ) } \\ { \mathrm { s e t } } & { : } & { ( k : K ) \times \mathcal { V } _ { \rho ( k ) } } & { \to } & { \Sigma ^ { \mathrm { i s o } } } & { \rightharpoonup } & { \Sigma ^ { \mathrm { i s o } } \times ( \Sigma ^ { \mathrm { i s o } } \rightharpoonup \Sigma ^ { \mathrm { i s o } } ) } \\ { \mathrm { s e t } } & { = } & { ( k , v ) } & { \mapsto } & { ( \rho , \sigma ) } & { \mapsto } & { ( ( \rho , \sigma [ \rho ( k ) \mapsto v ] ) , \lambda ( \rho ^ { \prime } , \sigma ^ { \prime } ) . ( \rho ^ { \prime } , \sigma ^ { \prime } \setminus \rho ^ { \prime } ( k ) ) ) } \\ { \mathrm { i s o l a t e } } & { : } & { K \times R } & { \to } & { \Sigma ^ { \mathrm { i s o } } } & { \to } & { \Sigma ^ { \mathrm { i s o } } } \\ { \mathrm { i s o l a t e } } & { = } & { ( k , r ) } & { \mapsto } & { ( \rho , \sigma ) } & { \mapsto } & { ( \rho [ k \mapsto r ] , \sigma ) } \end{array}\tag{28}
+\]
+
+其中 get 和 set 携带沿 \(\rho\) 搬运而来的定义~23 的前置条件，即 \(\rho ( k ) \in \mathrm { d o m } ( \sigma )\) 与 \(\rho ( k ) \notin \mathrm { d o m } ( \sigma )\)。isolate\(( k , r )\) 派生出的上下文把领域 \(r\) 分配给 \(k\)，并原样继承依赖表，因此一个已被隔离的键会被重新分配，而不是被拒绝。
+
+余效应隔离机制本质上实现了一个运行时即席多态（ad-hoc polymorphism）系统。通过隔离领域标识符，同一个依赖键可以在不同上下文中解析到完全不同的值，并且这种多态可以在运行时动态调整。与传统依赖注入相比，余效应隔离提供了更细粒度的控制，能够为特定组件实现定制化的隔离；set 仍然是一个效应函数 \(\left( \mathfrak { E } _ { \Sigma ^ { \mathrm { { i s o } } } } ^ { * } \right)\)，因此继承了可逆性，而 isolate 不需要逆，它派生一个上下文而不是写入共享表。
+
+余效应拦截（Coeffect Interception）。第二种机制是余效应拦截，它把横切的元数据附加到依赖访问上，在不修改依赖值的情况下添加行为。这种元数据既可以由上下文携带，也可以由组件声明，因此我们同时扩展余效应上下文和余效应规格：
+
+定义 30. 定义带拦截的余效应上下文与规格为：
+
+\[
+\begin{array} { r l } & { \Sigma ^ { \mathrm { i n t e r } } : = ( ( k : K ) \to \mathcal { M } _ { k } ) \times ( ( k : K ) \rightharpoonup ( \mathcal { M } _ { k } \to \mathcal { V } _ { k } ) ) } \\ & { \mathfrak { D } ^ { \mathrm { i n t e r } } : = ( k : K ) \rightharpoonup \mathcal { M } _ { k } } \end{array}\tag{29}
+\]
+
+上下文 \(\Sigma ^ { \mathrm { i n t e r } }\) 是一个二元组 \(( \iota , \sigma )\)：\(\iota\) 是安装在上下文本身上的上下文携带元数据，默认情况下为空（\(\epsilon _ { k }\)）；\(\sigma\) 把每个键 \(k\) 映射到一个提供函数，即从元数据 \(\mathcal { M } _ { k }\) 到值 \(\mathcal { V } _ { k }\) 的函数。规格 \(d \in \mathfrak { D } ^ { \mathrm { i n t e r } }\) 携带组件声明的元数据，为每个键分配其元数据 \(d ( k )\)，并以 dom\(( d )\) 作为依赖集合。每个键为它的元数据配备一个幺半群 \(( \mathcal { M } _ { k } , \oplus _ { k } , \epsilon _ { k } )\)：合并运算 \(\oplus _ { k }\) 是可结合的，以 \(\epsilon _ { k }\) 为单位元（空元数据）。
+
+定义 31. \(\Sigma ^ { \mathrm { i n t e r } }\) 上的 get、set 与 intercept 运算为：
+
+\[
+\begin{array} { r c c c c c c } { \mathrm { g e t } } & { : } & { ( k : K ) \times \mathcal { M } _ { k } } & { \to } & { \Sigma ^ { \mathrm { i n t e r } } } & { \rightharpoonup } & { \mathcal { V } _ { k } } \\ { \mathrm { g e t } } & { = } & { ( k , \mu ) } & { \mapsto } & { ( \iota , \sigma ) } & { \mapsto } & { \sigma ( k ) ( \mu \oplus _ { k } \iota ( k ) ) } \\ { \mathrm { s e t } } & { : } & { ( k : K ) \times ( \mathcal { M } _ { k } \to \mathcal { V } _ { k } ) } & { \to } & { \Sigma ^ { \mathrm { i n t e r } } } & { \rightharpoonup } & { \Sigma ^ { \mathrm { i n t e r } } \times ( \Sigma ^ { \mathrm { i n t e r } } \rightharpoonup \Sigma ^ { \mathrm { i n t e r } } ) } \\ { \mathrm { s e t } } & { = } & { ( k , \psi ) } & { \mapsto } & { ( \iota , \sigma ) } & { \mapsto } & { ( ( \iota , \sigma [ k \mapsto \psi ] ) , \lambda ( \iota ^ { \prime } , \sigma ^ { \prime } ) . ( \iota ^ { \prime } , \sigma ^ { \prime } \setminus k ) ) } \\ { \mathrm { i n t e r c e p t } } & { : } & { ( k : K ) \times \mathcal { M } _ { k } } & { \to } & { \Sigma ^ { \mathrm { i n t e r } } } & { \to } & { \Sigma ^ { \mathrm { i n t e r } } } \\ { \mathrm { i n t e r c e p t } } & { = } & { ( k , \nu ) } & { \mapsto } & { ( \iota , \sigma ) } & { \mapsto } & { ( \iota [ k \mapsto \iota ( k ) \oplus _ { k } \nu ] , \sigma ) } \end{array}\tag{30}
+\]
+
+其中 get 和 set 携带提供函数表上的定义~23 的前置条件，即 \(k \in \mathrm { d o m } ( \sigma )\) 与 \(k \notin \mathrm { d o m } ( \sigma )\)。intercept\(( k , \nu )\) 派生出的上下文把 \(\nu\) 合并到 \(k\) 处继承的元数据上，并原样继承提供函数表。
+
+当带规格 \(d\) 的组件访问键 \(k\) 时，系统计算 \(\sigma ( k ) ( d ( k ) \oplus _ { k } \iota ( k ) )\)：把组件声明的元数据与上下文携带的元数据 \(\iota\) 合并，然后将提供函数应用于结果。这种合并遵循每个键自身的语义（例如标量字段被覆盖、集合值字段取并集），并且是右偏的，因此 \(\iota ( k )\) 优先，可以覆盖组件的声明，从而使外层上下文能在不修改组件的情况下约束组件如何使用某个余效应（例如第~6.3 节）。

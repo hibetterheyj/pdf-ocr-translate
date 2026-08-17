@@ -1,0 +1,58 @@
+[60]
+P. Wadler and S. Blott, “How to Make Ad-hoc Polymorphism Less Ad Hoc,” in 
+Proceedings of the 16th ACM SIGPLAN-SIGACT Symposium on Principles of Programming 
+Languages, in POPL '89.  1989, pp. 60–76. doi: 10.1145/75277.75283.
+[61]
+N. D. Matsakis and F. S. K. II, “The Rust Language and Type System,” in ACM SIGPLAN 
+ML Family Workshop, Gothenburg, Sweden, Sep. 2014.
+[62]
+D. Dreyer, R. Harper, M. M. T. Chakravarty, and G. Keller, “Modular Type Classes,” in 
+Proceedings of the 34th ACM SIGPLAN-SIGACT Symposium on Principles of Programming 
+Languages, in POPL '07.  2007, pp. 63–70. doi: 10.1145/1190216.1190229.
+[63]
+Microsoft, “Declaration Merging.” [Online]. Available: https://www.typescriptlang.
+org/docs/handbook/declaration-merging.html
+[64]
+T. Van Cutsem and M. S. Miller, “Proxies: Design Principles for Robust Object-oriented 
+Intercession APIs,” in Proceedings of the 6th Symposium on Dynamic Languages, in DLS '10. 
+2010, pp. 59–72. doi: 10.1145/1869631.1869638.
+[65]
+R. Hettinger, “Descriptor HowTo Guide.” [Online]. Available: https://docs.python.org/
+3/howto/descriptor.html
+[66]
+P. Maes, “Concepts and Experiments in Computational Reflection,” in Conference on 
+Object-Oriented Programming Systems, Languages, and Applications (OOPSLA),  1987, pp. 
+147–155. doi: 10.1145/38765.38821.
+[67]
+G. Bracha and D. M. Ungar, “Mirrors: design principles for meta-level facilities of object-
+oriented programming languages,” in Proceedings of the 19th Annual ACM SIGPLAN 
+Conference on Object-Oriented Programming, Systems, Languages, and Applications (OOP­
+SLA),  2004, pp. 331–344. doi: 10.1145/1028976.1029004.
+[68]
+R. Rouvoy and P. Merle, “Leveraging component-based software engineering with 
+Fraclet,” Annals of Telecommunications, vol. 64, no. 1–2, pp. 65–79, 2009, doi: 10.1007/
+s12243-008-0072-z.
+[69]
+E. Burmako, “Scala Macros: Let Our Powers Combine!,” in Proceedings of the 4th Workshop 
+on Scala, in SCALA@ECOOP '13.  2013, p. 3:1–3:10. doi: 10.1145/2489837.2489840.
+[70]
+S. Raemaekers, A. van Deursen, and J. Visser, “Semantic Versioning and Impact of 
+Breaking Changes in the Maven Repository,” Journal of Systems and Software, vol. 129, pp. 
+140–158, 2017, doi: 10.1016/j.jss.2016.04.008.
+[71]
+P. Lam, J. Dietrich, and D. J. Pearce, “Putting the Semantics into Semantic Versioning,” 
+in Proceedings of the 2020 ACM SIGPLAN International Symposium on New Ideas, New 
+Paradigms, and Reflections on Programming and Software, in Onward! '20.  2020, pp. 157–
+179. doi: 10.1145/3426428.3426922.
+[72]
+P. Abate, R. Di Cosmo, R. Treinen, and S. Zacchiroli, “Dependency Solving: A Separate 
+Concern in Component Evolution Management,” Journal of Systems and Software, vol. 85, 
+no. 10, pp. 2228–2240, 2012, doi: 10.1016/j.jss.2012.02.018.
+[73]
+L. Cardelli, “Structural Subtyping and the Notion of Power Type,” in Proceedings of the 
+15th ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages, in POPL 
+'88.  1988, pp. 70–79. doi: 10.1145/73560.73566.
+[74]
+B. Meyer, “Applying "Design by Contract",” Computer, vol. 25, no. 10, pp. 40–51, 1992, 
+doi: 10.1109/2.161279.
+84

@@ -1,0 +1,240 @@
+\subsection{5. 实现与案例研究}\label{implementation-and-case-study}
+
+本节介绍 Cordis，它将第~3 节的各形式模型落实为一种实用的编程抽象。Cordis 是时空可组合性的元框架：与面向特定领域（例如 Web 路由、ORM、UI 渲染）的应用框架不同，它不规定任何具体场景；它的唯一职责是提供通用的动态组合语义。实现分为三层：(1) 核心库（第~5.1 节）直接实现效应与余效应系统；(2) 组件加载器（第~5.2 节）在核心之上扩展出配置调和与热模块替换；(3) 应用框架（例如 Koishi，第~5.3 节）在前两层之上构建领域特定功能。
+
+\subsection{5.1. 核心库}\label{core-library}
+
+表~2 总结了理论构件与其运行时对应物之间的对应关系。特别地，本节通篇使用下文引入的运行时名称，而把理论符号保留给形式对应关系。我们还用 @@name 表示框架内部的符号键，因此 ctx{[}@@store{]} 中的方括号表示对上下文上不透明槽位的符号键访问，而不是对字符串键映射的下标访问。
+
+Table 2 \textbar{} 理论到实现的对应关系
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}|l|l|@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\hline
+理论（第 3 节、第 4 节） & 实现 \\
+\hline
+\textbackslash Gamma \_ \{ \textbackslash infty \} & ctx，一等上下文 \\
+\hline
+\textbackslash gamma \textbackslash in \textbackslash Gamma & 上下文树以及运行系统所触及的一切 \\
+\hline
+\textbackslash mathfrak \{ E \} \_ \{ \textbackslash Gamma \} , \textbackslash mathfrak \{ E \} \_ \{ \textbackslash Gamma \} \^{} \{ \textbackslash mathrm \{ i t e r \} \} & 返回 / 产生逆的效应回调 \\
+\hline
+\textbackslash mathrm \{ e f f e c t \} \_ \{ \textbackslash Gamma \} ( e ) & ctx.effect(callback) \\
+\hline
+\textbackslash Sigma , \textbackslash Sigma \^{} \{ \textbackslash mathrm \{ i s o \} \} , \textbackslash Sigma \^{} \{ \textbackslash mathrm \{ i n t e r \} \} & ctx{[}@@store{]}, ctx{[}@@isolate{]}, ctx{[}@@intercept{]} \\
+\hline
+\textbackslash operatorname* \{ g e t \} ( k ) , \textbackslash operatorname* \{ s e t \} ( k , v ) & ctx.get(key), ctx.set(key, value) \\
+\hline
+\textbackslash mathrm \{ i s o l a t e \} ( k , r ) & ctx.isolate(key, realm) \\
+\hline
+\textbackslash operatorname \{ i n t e r c e p t \} ( k , \textbackslash nu ) & ctx.intercept(key, metadata) \\
+\hline
+\textbackslash langle d , p , e , \textbackslash pi , \textbackslash sigma , \textbackslash tau , \textbackslash theta \textbackslash rangle & fiber，\textbackslash mathfrak \{ C \} \_ \{ \textbackslash Gamma \} 中一个组件的实例化 \\
+\hline
+\textbackslash mathrm \{ d o m \} \textbackslash big ( F \_ \{ \textbackslash gamma \} \textbackslash big ) & 通过 ctx.registry 枚举 \\
+\hline
+n : \textbackslash mathfrak \{ N \} & fiber.uid \\
+\hline
+d : \textbackslash mathfrak \{ D \} \_ \{ \textbackslash Gamma \} & fiber.inject \\
+\hline
+p : \textbackslash mathfrak \{ P \} \_ \{ \textbackslash Gamma \} & 组件的 provide \\
+\hline
+e : \textbackslash mathfrak \{ E \} \_ \{ \textbackslash Gamma \} \^{} \{ * \} & fiber.apply \\
+\hline
+\textbackslash pi : \textbackslash mathfrak \{ N \} & fiber.parent.fiber.uid，即拥有其被实例化所在上下文的那个 fiber \\
+\hline
+派生实现（定义 27） & fiber.ctx，纤维运行所在的子上下文 \\
+\hline
+$\theta$（定义 44） & fiber.state，生命周期状态，其 LOADING 为 Reloading、FAILED 为 Inactive(ξ) \\
+\hline
+recover，累加器 g & fiber.dispose，累加器 \\
+\hline
+ω（定义 44） & fiber.committed，已提交视图 \\
+\hline
+provide \textbackslash mathrm \{ r \} \_ \{ k \} ( \textbackslash gamma ) & 一个 provider 纤维为 ACTIVE 的 Impl \\
+\hline
+target ( \textbackslash gamma , n ) & fiber.target，由 refresh 重算（算法~5），其中 ⊥ 为 INACTIVE \\
+\hline
+Future、惯性（第 4.3.3 节） & fiber.inertia，进行中转移的句柄 \\
+\hline
+O-Insert、O-Retire（定义 47） & ctx.use 及其回调的逆（算法~4） \\
+\hline
+O-Remove & 从其运行时中移除、uid 被清除的纤维 \\
+\hline
+L-Begin、L-Iter、L-Finish & execute 的迭代循环（算法~1） \\
+\hline
+L-Divert & 迭代边界处守卫失败（算法~1），或 reload 链入 unload \\
+\hline
+L-Leave & refresh 将纤维标记为 UNLOADING（第 10 行） \\
+\hline
+L-Unload & unload 及其惯性链接（算法~5） \\
+\hline
+L-Unload 上的守卫 & unload 等待被通知的依赖者（第 25 行） \\
+\hline
+L-Raise & 记录在纤维上的错误，其 target 置为 ⊥ \\
+\hline
+\end{longtable}
+}
+
+本节其余部分自下而上地构建核心库。第~5.1.1 节实现可逆效应，这是上下文被变更所经过的唯一原语；第~5.1.2 节在它之上实现响应式余效应；第~5.1.3 节把两者组合进组件生命周期；第~5.1.4 节则暴露基于它们构建的上下文级操作。
+
+\subsection{5.1.1. 效应追踪}\label{efect-tracking}
+
+本节实现可逆效应（第~3.1 节）。Cordis 中每次上下文变更都流经一个单一原语 ctx.effect：余效应供给、组件实例化以及所有其他变更上下文的操作都归结为一次 ctx.effect 调用，因此任何经由上下文执行的操作都会被自动追踪，并在组件卸载时得到恢复。从操作层面看，ctx.effect 是 effectiter（定义~52）的实现：它接受一个类型为 \({ \mathfrak { E } } _ { \Gamma } ^ { \mathrm { i t e r } }\) 的回调，把它提升到 \({ \mathfrak { E } } _ { \partial \Gamma } ^ { \mathrm { i t e r } }\)，产出一个 dispose 闭包，调用该闭包即可恢复效应。Cordis 通过这一个操作同时接受 \(\mathfrak { E } _ { \Gamma }\) 与 \({ \mathfrak { E } } _ { \Gamma } ^ { \mathrm { i t e r } }\)（即席多态）；我们以迭代器形式为代表，因为普通效应函数只是产生单个逆的退化迭代器。该操作不检查的是 \({ \mathfrak { E } } _ { \Gamma } ^ { * }\) 所携带的见证：回调提供逆，而"该逆能恢复它所伴随的效应"是组件作者的责任，而非运行时验证的性质。演算在定理~61 处诉诸这一点，而第~6.1 节界定了这一责任。
+
+算法~1 展示 ctx.effect 的构造。我们用 \(f \circ g\) 表示先运行 \(g\)、再运行 \(f\) 的处置器，用 id 表示空操作；因此每前置一个新逆便得到 LIFO 恢复。
+
+算法~1 效应追踪
+1 async function execute(callback, guard)
+2 iter $\leftarrow$ callback()
+3 inverse $\leftarrow$ id
+4 while guard()
+5 (value, done) $\leftarrow$ await iter.next()
+6 if value then inverse $\leftarrow$ value ∘ inverse
+7 if done then break
+8 return inverse
+9 function effect(ctx, callback)
+10 armed $\leftarrow$ true
+11 task $\leftarrow$ execute(callback, () ↦ armed)
+12 async function dispose()
+13 if not armed then return
+14 armed $\leftarrow$ false
+15 recover $\leftarrow$ await task
+16 recover()
+17 ctx.dispose $\leftarrow$ dispose ∘ ctx.dispose
+18 return dispose
+
+执行引擎 execute 把回调作为效应迭代器（\( \mathfrak { E } _ { \Gamma } ^ { \mathrm { i t e r } }\)，定义~51）来驱动，并把每一步产生的逆折叠成一个复合逆。在每一步之前它都咨询调用方提供的守卫；一旦守卫跳闸，迭代停止，只留下迄今已累积的逆。这正是第~4.3.2 节的步边界中断：\(\mathsf{Maybe}( \mathfrak { E } ^ { \mathrm { i t e r } } )\) 续延由迭代器的 done 标志连同守卫实现。
+
+ctx.effect 是 execute 之上的一层薄包装，增加了两件事。其一，自处置：守卫报告 armed 标志，返回的 dispose 把 armed 翻转为 false，这同时中止任何进行中的迭代，并使恢复至多触发一次。触发两次会在某个从未施加效应的状态下应用逆，而没有任何东西约束它去撤销什么。其二，父组合：dispose 被前置到外层上下文已累积的逆 ctx.dispose 之前，因此子效应的逆本身又是父上的一个效应，这正是 \(\partial ^ { 2 } \Gamma\) 的递归结构。组件层（第~5.1.3 节）复用同一个 execute，只是守卫改为检验 fiber.target 的稳定性而非 armed。
+
+\subsection{5.1.2. 余效应操作}\label{coefect-operations}
+
+本节实现响应式余效应（第~3.2 节）。所有余效应操作都作用于每个上下文携带的三个符号键槽位：
+
+• @@store：值存储 \(\sigma : ( r : R ) \rightharpoonup \mathcal { V } _ { r }\)，从领域符号到类型化值的部分函数；
+
+• @@isolate：领域表 \(\rho : \operatorname { M a p } ( K , R )\)，从余效应键到领域符号；
+
+• @@intercept：拦截表 \(\iota : ( k : K ) \to \mathcal { M } _ { k }\)，为每个键分配它的元数据。
+
+前两个槽位组合成两层解析 \(k \to \rho ( k ) \to \sigma ( \rho ( k ) )\)：ctx.get(key)（算法~2）先从 @@isolate 读出领域符号 \(\rho ( k )\)，再从 @@store 读出绑定值 \(\sigma ( \rho ( k ) )\)。\(\rho\) 这一间接层让隔离可以把一个键重定向到独立的绑定；而 @@intercept 只在绑定被访问时才被查阅，调整的是它的使用方式而非解析结果。我们分两部分实现这些操作：(1) 供给与通知，安装或撤回绑定并把变更传播给依赖者；(2) 隔离与拦截，重塑一个键的解析方式。
+
+供给与通知。由于 set\(( k , v )\) 具有类型 \(\mathfrak { E } _ { \Sigma }\)（第~3.1 节），余效应供给就是一次 ctx.effect 调用，并继承其自动追踪与恢复。算法~2 实现 ctx.set(key, value)，即具体的 set\(( k , v )\)：回调在领域符号 \(\rho ( k )\) 之下把一个值绑定进存储，返回的 dispose 函数则移除它。安装与移除都会调用 notify 把变更传播给依赖组件。
+
+算法~2 余效应操作
+1 function get(ctx, key)
+2 realm $\leftarrow$ ctx{[}@@isolate{]}{[}key{]} ▷ $\rho ( k )$
+3 return ctx{[}@@store{]}{[}realm{]} ▷ $\sigma ( \rho ( k ) )$
+4 function set(ctx, key, value)
+5 function callback()
+6 realm $\leftarrow$ ctx{[}@@isolate{]}{[}key{]} ▷ $\rho ( k )$
+7 ctx{[}@@store{]}{[}realm{]} $\leftarrow$ value ▷ $\sigma [ \rho ( k ) \mapsto v ]$
+8 notify(ctx, {[}key{]})
+9 return function()
+10 delete ctx{[}@@store{]}{[}realm{]} ▷ $\sigma \setminus \rho ( k )$
+11 notify(ctx, {[}key{]})
+12 return ctx.effect(callback)
+
+算法~3 通过如下方式把每个绑定变更传播给依赖者：对每个存活的纤维，检验某个变更的键是否出现在它的 fiber.inject 中、并解析到同一个领域；若是，则调用 refresh（第~5.1.3 节）让该纤维针对新状态重新求值，并返回被重新求值的纤维，使调用方可以等待它们。这正是定义~26 的响应式分类：翻转满足状况的变更会激活或停用纤维，而 refresh 的幂等性使中性变更变得无害。这种重新求值与多种控制流的交互在第~5.1.3 节展开。
+
+算法~3 响应式通知
+1 function notify(ctx, keys)
+2 affected $\leftarrow$ ⌀
+3 for fiber in all\_fibers do
+4 for key in keys do
+5 if key $\in$ fiber.inject and fiber.ctx{[}@@isolate{]}{[}key{]} = ctx{[}@@isolate{]}{[}key{]} then
+6 refresh(fiber)
+7 affected $\leftarrow$ affected $\cup$ \{fiber\}
+8 break
+9 return affected
+
+一个绑定只有当安装它的纤维处于 ACTIVE 时才算对依赖者可用，因此 refresh 让每个声明键针对某个活跃提供者而非仅针对存储来解析。这正是定义~46 的 provided by 关系，也是让一次撤回在它实际发生前一步就被依赖者看到的原因：一个已进入 UNLOADING 的提供者已经停止提供，因此它的依赖者重算出一个不满足的目标视图，并在其绑定全部仍然就位时就启动自身的拆除。
+
+隔离与拦截。这两个操作在结构上做的是同一件事：各自派生一个子上下文，针对某个键调整一张继承来的表，而让父上下文保持不变，因此恢复是隐式的：丢弃子上下文即可，无需运行任何显式逆。ctx.isolate(key, realm) 用 realm 覆盖领域映射 \(\rho\)，缺省时用一个新生成的符号（实现 isolate，定义~29），因此两个把不同符号赋给同一键的上下文会解析到独立的绑定。ctx.intercept(key, metadata) 把元数据并入拦截表 \(\iota\)（实现 intercept，定义~31）：按照该定义，新元数据与上下文已经为 key 携带的任何元数据相组合，并优先于后者。
+
+\subsection{5.1.3. 组件生命周期}\label{component-lifecycle}
+
+组件由 ctx.use 实例化为一个纤维。本节把纤维（第~5.1 节引入）赋予第~4.3.3 节惯性状态机的操作含义。两个字段驱动下面的算法：fiber.parent，即构成组件层级（\(\Gamma _ { \infty }\) 的递归结构，第~3.3.1 节）的 fiber.ctx 的父上下文；以及 fiber.inertia，指向进行中的异步转移的句柄（空闲时为 null）。
+
+算法~4 展示组件实例化。一个组件把余效应规格 component.inject（\(d\)）与一个效应函数 component.apply 配对；实例化把组件的 config 绑定进 fiber.apply（第 9 行），即生命周期随后运行的应用了配置的效应函数（\(e\)）。回调函数（第 2 行）是在父纤维中被追踪的效应：执行时它通过调用 refresh（算法~5）启动子生命周期；被恢复时它把子的 target 强制置为 ⊥ 并触发 unload。这就是定义~47 的注册原语，以回调为其 O-Insert，以回调返回的闭包为其 O-Retire：实例化是父的一个普通被追踪效应，因此卸载父会级联到它的子。
+
+算法~4 组件实例化
+1 function use(ctx, component, config)
+2 function callback()
+3 refresh(fiber)
+4 return function()
+5 fiber.target $\leftarrow$ ⊥
+6 unload(fiber)
+7 fiber $\leftarrow$ Fiber(parent: ctx, inject: component.inject)
+8 fiber.ctx $\leftarrow$ ctx{[}fiber ↦ fiber{]}
+9 fiber.apply $\leftarrow$ () ↦ component.apply(fiber.ctx, config)
+10 ctx.effect(callback)
+11 return fiber
+
+算法~5 实现第~4.3.3 节的惯性状态机，其中 reload 与 unload 是惯性的：一旦进入，一次转移会运行到完成，之后系统才对目标状态的变化作出响应。它在余效应存储之上使用两个辅助查询：resolve(inject) 返回声明键当前解析到的绑定，provided(fiber) 返回该纤维所安装的绑定对应的键。refresh 函数从余效应存储重算 fiber.target，并且若纤维尚未处于转移中，则发起一次 reload 或 unload 任务\(^{2}\)。reload 函数记录当前目标并执行组件的效应函数 apply。完成后它检查目标是否仍然匹配：若是，纤维进入 ACTIVE；若否（无论新目标是 ⊥ 还是不同的提供者集合），则链入 unload。对称地，unload 以 LIFO 顺序恢复所有被追踪的效应，然后进入 INACTIVE 或链入 reload。这一相互递归实现了惯性性质：一旦转移开始，它在任何新转移能够启动之前完成。
+
+算法~5 组件生命周期
+1 function refresh(fiber)
+2 target $\leftarrow$ target($\gamma$, $n$)
+3 if target = fiber.target then return
+4 fiber.target $\leftarrow$ target
+5 if fiber.inertia then return
+6 if target ≠ ⊥ then
+7 fiber.state $\leftarrow$ LOADING
+8 fiber.inertia $\leftarrow$ create\_task(reload(fiber))
+9 else
+10 fiber.state $\leftarrow$ UNLOADING ▷ out of service before any inverse is scheduled
+11 fiber.inertia $\leftarrow$ create\_task(unload(fiber))
+12 async function reload(fiber)
+13 target0 $\leftarrow$ fiber.target
+14 fiber.committed $\leftarrow$ resolve(fiber.inject) ▷ commit the view
+15 recover $\leftarrow$ await execute(fiber.apply, () ↦ fiber.target = target0)
+16 fiber.dispose $\leftarrow$ recover ∘ fiber.dispose
+17 if fiber.target = target0 then
+18 fiber.state $\leftarrow$ ACTIVE
+19 notify(fiber.ctx, provided(fiber))
+20 fiber.inertia $\leftarrow$ null
+21 else
+22 fiber.state $\leftarrow$ UNLOADING
+23 fiber.inertia $\leftarrow$ create\_task(unload(fiber))
+24 async function unload(fiber)
+25 await all(notify(fiber.ctx, provided(fiber)).map(f ↦ f.await())) ▷ drain dependents
+26 await fiber.dispose()
+27 fiber.dispose $\leftarrow$ id
+28 fiber.committed $\leftarrow$ ⊥
+29 if fiber.target = ⊥ then
+30 fiber.state $\leftarrow$ INACTIVE
+31 fiber.inertia $\leftarrow$ null
+32 else
+33 fiber.state $\leftarrow$ LOADING
+34 fiber.inertia $\leftarrow$ create\_task(reload(fiber))
+
+create\_task 调度一个异步函数并发运行并返回它的句柄（存放在 fiber.inertia 中）。我们把它显式写出以保证语言无关性：在急切调度下（例如 TypeScript 的 promise），该调用是隐式的，返回的 promise 就是句柄；而在惰性调度下（例如 Python 协程、Rust future），宿主必须派生该任务它才会推进。
+
+fiber.target 通过把每个声明键对当前余效应存储解析、并对提供它的纤维的 uid 取元组来计算，因此它是 target(\(\gamma\), \(n\))（定义~46）的一个摘要。按提供者而非按值识别绑定，正是使一次对记录目标的单一比较就足够的原因：uid 每次新取且从不复用，所以被替换的提供者不会被误认为替换它的那个，即使两者提供相等的值。由于 notify（第~5.1.2 节）在每次余效应变化时都重算目标，一个纤维恰在其某个声明键改由不同纤维提供时重新加载。原地覆盖自身绑定的提供者因此不会被观察到；想让其替换被传播的组件会撤回绑定并重新安装它。
+
+该算法在两个互补的层面上运作。在转移层面，reload 与 unload 在完成时检查目标，从而实现跨转移的惯性链接。在每个转移内部的迭代层面，效应执行（算法~1）在每个迭代边界检查目标，从而实现在单一转移内的部分回滚。这两种机制分别对应第~4.3.3 节的转移间链接，以及定理~64 所依赖的转移内陈旧性检查。
+
+有三行承担着定理~63 的余效应排序，而每一行所处的位置正是排序成立的原因。reload 在第 14 行提交已解析的视图，unload 则在每个逆都运行完之后才丢弃它，因此一个纤维只要处于加载状态就读到相同的绑定，它自身的拆除也不例外。refresh 在转移任务创建之前于第 10 行把纤维标记为 UNLOADING，这就是 L-Leave 步骤：纤维停止提供，依赖者在其任何逆被调度之前就据此重算。随后 unload 在第 25 行等待每个被通知的依赖者到达 INACTIVE，这就是 L-Unload 上的守卫；notify 只有在依赖者的声明键解析到与提供者相同的领域符号时才接纳它，这是守卫"依赖者必须从该纤维看到键、而不仅仅是声明它"这一要求的运行时形态。这一等待位于整个恢复之前，而非落在某个被等待的逆内部，因为 fiber.dispose 并发地发起一个纤维的各个效应，若把等待放进其中之一，其余效应就会失去次序。终止性由定理~66 保证：一个纤维只等待那些已经不再可满足的依赖者，而本身也是提供者的依赖者以同样的方式等待它自己的依赖者，因此提供者图是按需遍历的，而非预先分析。
+
+\subsection{5.1.4. 上下文访问}\label{context-access}
+
+第~5.1.2 节的余效应操作构成一个反射式 API：余效应用 ctx.set(key, value) 写入、用 ctx.get(key) 读取，两者都以名称为键。Cordis 在这个反射式 API 之上又叠加了第二种更原生的扩展与消费上下文的方式：属性访问。组件可以把余效应作为属性 ctx{[}key{]} 来访问，仿佛它是上下文的原生结构，而非通过一次方法调用。在 TypeScript 中，Cordis 用一个 get 陷阱中介每一次属性访问的 Proxy 来实现这一点。算法~6 展示上下文如何在第~5.1.2 节原语 get 之上把这样的访问解析为一个余效应。
+
+算法~6 代理介导的上下文访问
+1 function resolve(ctx, key)
+2 fiber $\leftarrow$ ctx.fiber
+3 repeat
+4 if key $\in$ fiber.committed then return fiber.committed{[}key{]}
+5 if key $\in$ fiber.inject then throw INACTIVE\_ACCESS
+6 if fiber = root then throw UNDECLARED\_ACCESS
+7 fiber $\leftarrow$ fiber.parent.fiber
+
+算法~6 从访问上下文出发向上遍历纤维链：在第一个其已提交视图绑定了 key 的纤维处，访问被授权并返回该绑定；若遍历到达一个声明了 key 却尚未提交它的纤维，则该纤维未加载，访问失败；若到达根而没有任何声明，访问作为未声明而被拒绝。这正是代理与裸 ctx.get 的差异所在：ctx.get(key) 是对存储的一次查询，返回绑定值或什么都不返回，且从不失败；而代理针对访问纤维自身的视图来解析，并在使用点强制余效应规格（\(d\)）。读取视图而非读取存储，也正是定理~63 所依赖的，因为正是这一点让某个其拆除由该依赖消失所触发的组件仍能读到该依赖。
+
+这种拒绝是在访问点执行的运行时检查。由于组件的余效应规格（\(d\)）是静态声明的，同样的违规原则上可以在编译期检测到：在执行之前把每个 ctx{[}key{]} 对已声明的 \(d\) 解析即可。第~6.4 节讨论宿主语言的类型级依赖声明与编译期元编程如何能恰好完成这种介导。

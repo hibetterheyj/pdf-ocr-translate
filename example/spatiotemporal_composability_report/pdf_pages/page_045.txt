@@ -1,0 +1,58 @@
+𝑔𝑢+1
+𝑛
+(𝛾𝑢+1) ≈(𝑔𝑢
+𝑛∘ℎ)(Ψ𝑢(𝛾𝑢)) = 𝑔𝑢
+𝑛(𝛾𝑢)
+Where the rule is L-Leave, L-Raise, an aborting L-Divert, or an O-Retire of 𝑛, Table 1 gives 
+Ψ𝑢= idΓ and 𝑔𝑢+1
+𝑛
+= 𝑔𝑢
+𝑛, so the same equation holds with ℎ= idΓ. Either way the induction 
+hypothesis carries over with the index set unchanged, which is the computation of Theorem 7 
+one step at a time.
+Let step 𝑢 act on 𝑚≠𝑛. Then 𝑔𝑢+1
+𝑛
+= 𝑔𝑢
+𝑛 by Table 1, and Ψ𝑢∈𝔐(𝑒𝑚), or Ψ𝑢= idΓ where the 
+rule is an orchestration rule, so independence gives
+𝑔𝑢
+𝑛(𝛾𝑢+1) ≈𝑔𝑢
+𝑛(Ψ𝑢(𝛾𝑢)) = Ψ𝑢(𝑔𝑢
+𝑛(𝛾𝑢))
+which is the induction hypothesis with Ψ𝑢 appended.
+□
+Corollary 62. (Terminal recovery.) Let the sequence of steps be pairwise independent and let 
+an episode of 𝑛 open at 𝑏 and close at 𝑢, whatever outcome 𝑛 arrives at. Then, with 𝑡1 < ⋯< 𝑡𝑙 
+as in Theorem 61,
+𝛾𝑢+1 ≈(Ψ𝑡𝑙∘⋯∘Ψ𝑡1)(𝛾𝑏)
+(57)
+A fiber removed by O-Remove leaves nothing behind either, its premise admitting only 𝜃𝑛=
+𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾(−).
+Proof. By Lemma 54(4) step 𝑢 is an L-Unload of 𝑛, whose Ψ𝑢 is 𝑔𝑢
+𝑛 by Lemma 54(3), so 𝛾𝑢+1 ≈
+𝑔𝑢
+𝑛(𝛾𝑢) and Theorem 61 applies. Neither the statement nor ≈ mentions 𝜁, which by Table 1 is 
+the one field in which the states L-Divert and L-Raise lead to differ.
+□
+Pairwise independence is assumed of the components by the results above, and Section 3.3.2 
+is what discharges it: where every effect a component performs is an operation of a key and 
+every key is commutative, any two effect functions built from those operations are independent 
+(Theorem 42). Carrying that result from effect functions to iterators calls for nothing new, a 
+coeffect-mediated effect function (Definition 41) already choosing what follows each stage by 
+the outcome that stage yields, which is what an iterator carries in its continuation. The coeffect 
+operations of Section 3.2 are the case that needs no hypothesis at all: the maps a component 
+contributes there are composites of set operations and of the corresponding restrictions, two 
+such commute whenever they touch disjoint keys, and clause (2) of Definition 58 makes the 
+provisions of distinct fibers disjoint.
+4.4.3. Spatial Composability
+Local spatial composability holds a component to its own specification, activating it only 
+where its dependencies are provided and classifying every context change against them 
+(Section 3.2.2). The global form adds what quantifies over other fibers: a provider withdraws 
+a binding only after every dependent that resolved it has deactivated, and the resolution a 
+transition installs its effects against does not shift under it. Two properties of the coeffect side 
+deliver the two, and they are proved together, being two halves of one invariant, namely the 
+fixity of 𝜔𝑛 over an episode that Lemma  54(2) establishes. The ordering theorem is what 
+that fixity buys over the part of the episode in which 𝑛 is 𝖠𝖼𝗍𝗂𝗏𝖾 and then 𝖴𝗇𝗅𝗈𝖺𝖽𝗂𝗇𝗀, and the 
+coherence theorem what it buys over the part in which 𝑛 is installing its effects.
+Theorem 63. (Ordering.) A fiber begins a transition only where its dependencies are provided:
+45

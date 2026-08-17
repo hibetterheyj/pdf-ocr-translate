@@ -1,0 +1,43 @@
+host. Koishi routinely performs this operation: an orchestrator disables a plugin from the 
+console and its effects are withdrawn in place; during development, the HMR engine re-applies 
+edited plugins on save while preserving cache state and live connections elsewhere in the 
+system. Cordis makes such removal not merely possible but effortless for the plugin author. 
+Because effects performed through the context are tracked and their inverses composed auto­
+matically (Section 3.1), even an inexperienced author obtains ordered cleanup for a plugin’s 
+context-mediated effects without writing an uninstall path. This achieves the locality of concern 
+whose absence Section 1.2.1 identifies: correctness that would otherwise rest on each author’s 
+diligence is instead discharged once, by the abstraction.
+Spatial composability across an open ecosystem. In contrast to the plugin systems of 
+Section 1.2.1, where inter-plugin dependencies are largely absent, Koishi’s ecosystem exhibits 
+a genuine dependency topology: IM adapters provide access to each messaging platform, 
+database drivers provide persistent storage, and functional plugins declare these as coeffects 
+and access them. Reconfiguring a provider at runtime, such as switching the storage backend or 
+reconnecting an adapter, reactivates only the dependents whose resolved dependency changed 
+(Section 3.2); a plugin whose dependency is unavailable stays inactive until it appears, without 
+erroring. What the case study substantiates is that this composition holds across independently 
+authored code: a plugin and its dependencies are typically written by different authors who 
+coordinate on nothing beyond the coeffect that connects them, so reactive coeffects keep the 
+assembly consistent across an open ecosystem of independent contributors.
+Threats to validity. The evidence here is drawn from a single ecosystem in a single host lan­
+guage, so it cannot separate the merits of the paradigm from those of its TypeScript realization 
+or of Koishi’s particular domain, and it is observational rather than a controlled comparison 
+against an alternative architecture. What the case study establishes is thus an existence-and-
+adoption result rather than a quantitative one; measuring the abstraction’s overhead and its 
+effect on developer productivity against a baseline remains future work.
+6. Discussion
+The formal model and implementation presented in the preceding sections introduce a 
+programming paradigm for dynamic composability. This section examines how the paradigm 
+extends to broader engineering concerns, and discusses the design tensions and open prob­
+lems.
+6.1. System Boundary
+Every effect in Section 3.1 carries an inverse, and what that inverse amounts to is settled by the 
+system boundary. The boundary divides the environment a system runs against into two parts. 
+(1) A location lies inside when the system is able to modify it exclusively and to restore the state 
+before that modification, so an operation on it is tracked in Γ and can be recovered later. (2) A 
+location lies outside when either ability fails, so an operation on it acts as idΓ and is therefore 
+neither tracked nor recovered. This section develops the properties of this boundary and their 
+consequences for recovery.
+Boundaries from coeffects. A coeffect moves the boundary by reifying an external location: 
+it confines every access to that location to a set of operations it provides, each of which it can 
+supply an inverse for, so operations that acted as idΓ come to be tracked in Γ and recovered. The 
+67

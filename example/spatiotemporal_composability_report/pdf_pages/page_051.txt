@@ -1,0 +1,46 @@
+2. If step 𝑡 applies an activation rule at 𝑚, step 𝑡+ 1 an orchestration rule at 𝑛, and step 𝑡 
+does not register 𝑛, then the same holds of the two.
+Proof. For (1), by Table 1 the step of 𝑚 writes 𝜃𝑚 and, within Ψ𝑡∈𝔐(𝑒𝑚), the table 𝜎𝑚 and 
+the effect part. It therefore leaves 𝜃𝑛 and 𝑖𝑛 alone, and by the second condition of Definition 60 
+leaves the inverse and the continuation that 𝑖𝑛 yields alone as well, so only the premises of step 
+𝑡+ 1 that mention target𝑛 remain to be checked. Its retirement half cannot fall, no activation 
+rule writing a 𝜏. Its resolution half cannot move either: step 𝑡+ 1 being applicable at 𝛾𝑡 puts 
+every 𝑘∈𝑑𝑛 in dom(𝜎𝑡), and clause (2) of Definition 58 makes the fiber providing such a 𝑘 the 
+only one that can, so 𝑘∉𝑝𝑚 and no write of 𝜎𝑚 reaches a key of 𝑑𝑛. The same argument in 
+the other direction leaves step 𝑡 applicable. Finally Ψ𝑡∈𝔐(𝑒𝑚) and Ψ𝑡+1 ∈𝔐(𝑒𝑛) commute 
+by the first condition of Definition 60, and the two edits write control fields of distinct fibers, 
+so the composite is the same in either order.
+For (2), the orchestration step has Ψ𝑡+1 = idΓ by Table 1, so the two state maps commute 
+outright, and its edit𝑡+1 writes 𝜏𝑛 or dom(𝐹𝛾) at 𝑛 alone, which the activation step neither reads 
+nor writes: the premises of the latter read 𝜃𝑚, 𝑖𝑚, 𝜏𝑚, and target𝑚, and an O-Insert of a fresh 𝑛 
+moves no target, a fresh fiber providing nothing, whereas an O-Retire or O-Remove of 𝑛 leaves 
+𝜎𝛾 where it was, 𝑛 being 𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾 in the one case and unaffected in its table in the other. So 
+step 𝑡 remains applicable. Conversely each premise of the orchestration step is either read at 𝑛, 
+which step 𝑡 does not write, or is one of the two premises of O-Insert that a smaller registry only 
+relaxes, whence its applicability at 𝛾𝑡+1 gives its applicability at 𝛾𝑡; here step 𝑡 not registering 
+𝑛 is what keeps 𝑛 present at 𝛾𝑡 where O-Retire and O-Remove require it.
+□
+Lemma 72. (Deletion.) Let the sequence of steps be pairwise independent, let every compo­
+nent be total on its provision (Definition 69), let it reach a quiescent 𝛾𝑇 at which no fiber is 
+failed, let [𝑏, 𝑢] be an episode of 𝑛 that closes, let no episode of any 𝑚 with 𝑛≺𝑚 close in the 
+sequence, and let no fiber 𝑛 registers during [𝑏, 𝑢] have an episode. Write 𝑅 for the names those 
+registrations draw. Then deleting the steps that act on 𝑛 in [𝑏, 𝑢], together with every step acting 
+on a name of 𝑅, leaves a sequence of steps reaching a state ≈-equal to 𝛾𝑇 and ≃-equal to it 
+outside 𝑅.
+Proof. The deleted steps leave the state where they found it. Let 𝑡1 < ⋯< 𝑡𝑙 be the steps of [𝑏, 𝑢] that 
+act on fibers other than 𝑛. Corollary 62 reads
+𝛾𝑢+1 ≈(Ψ𝑡𝑙∘⋯∘Ψ𝑡1)(𝛾𝑏)
+whose right side is what the surviving steps of [𝑏, 𝑢] produce on their own, 𝛾𝑏−1 ≈𝛾𝑏 and their 
+edits writing control fields of fibers other than 𝑛 that the deletion does not touch. By Table 1 
+the deleted steps of 𝑛 write no field but 𝜃𝑛, which Lemma 54(4) restores to 𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾(⊥) at 𝑢, no 
+fiber being failed, and which it held at 𝛾𝑏−1.
+An invariant carries the suffix. Write 𝛾′𝑡 for the state the surviving steps reach at the point 
+corresponding to 𝑡. We claim, for every 𝑡> 𝑢, that 𝛾𝑡≈𝛾′𝑡, that every name of 𝑅 is vestigial at 
+𝛾𝑡 and absent from 𝛾′𝑡, and that the two states agree on every field of every name outside 𝑅. At 
+𝑡= 𝑢+ 1 this is the paragraph above together with Definition 47, which leaves each name of 𝑅 
+retired by the accumulator that ran at 𝑢, 𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾(⊥) and holding an empty table, the fibers of 𝑅 
+having no episode by hypothesis. The induction step is Lemma 57(1) applied at each name of 
+𝑅 in turn: a step acting outside 𝑅 has the same premises at the two states, reaches states again 
+≈-equal, and leaves the entries of 𝑅 vestigial. A step acting on a name of 𝑅 is one of the deleted 
+ones, and Lemma 57(2) is why it has to be deleted rather than kept, an O-Retire or O-Remove 
+51

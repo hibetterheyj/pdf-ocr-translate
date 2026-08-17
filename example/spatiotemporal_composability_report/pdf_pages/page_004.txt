@@ -1,0 +1,39 @@
+1. Introduction
+Composition—assembling complex systems from simpler parts—is a foundational principle of 
+software engineering [1]. Traditionally, composition is static: function calls, module imports, 
+and class inheritance are resolved at compile time and remain fixed throughout execution. 
+However, modern software increasingly demands dynamic composition, where components 
+are loaded, unloaded, and reconfigured at runtime. Plugin architectures [2] and self-evolving 
+agent harnesses both require systems that can safely add and remove functionality on the 
+fly, yet current practice defers to coarse-grained mechanisms [3] that reconfigure only by 
+restarting, discarding runtime state. Despite the growing practical importance of dynamic 
+composition, its theoretical foundations remain underdeveloped, compared to the rich formal 
+frameworks available for static composition.
+1.1. Dimensions of Composability
+To characterize the requirements of dynamic composition, we identify two orthogonal dimen­
+sions beyond the well-studied algebraic aspects of composition:
+• Temporal composability addresses the time dimension: upon removal of a component, 
+the modifications the component made to the shared environment must be completely 
+and safely reversed. This requires tracking every resource allocation, event registration, 
+and state mutation the component performs, and guaranteeing their orderly reclamation 
+upon removal.
+• Spatial composability addresses the space dimension: components must be able to 
+declare, discover, and resolve their dependencies on one another in a structured and 
+verifiable manner. This requires managing dependency topology and coordinating com­
+ponent lifecycles in response to dependency changes.
+In the static setting, temporal composability reduces to lexical scoping (e.g., RAII [4], 
+bracket patterns [5]), and spatial composability reduces to module import resolution [6]. 
+In the dynamic setting, where components arrive and depart at runtime, both dimensions 
+become significantly harder: temporal composability must handle long-lived, stateful effects 
+whose scope is not lexically bounded; and spatial composability must handle dependencies 
+that appear, disappear, or change identity during execution.
+1.2. Motivating Examples
+1.2.1. Plugin Systems
+Plugin systems are a canonical instance of dynamic composition. We use Visual Studio Code 
+(VSCode), one of the most widely-used extensible IDEs, as a representative example.
+Temporal limitation. VSCode runs all extensions in a shared process called the extension 
+host. Although extensions can be installed dynamically, this host provides no mechanism to 
+unload an individual extension’s code at runtime. Once an extension’s activate function has 
+executed, disabling or uninstalling it requires restarting the entire host, affecting all loaded 
+extensions. Purely declarative extensions such as themes, keybindings, and snippets carry no 
+4

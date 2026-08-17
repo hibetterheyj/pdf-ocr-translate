@@ -1,0 +1,47 @@
+3.1.2. Revertible Effect Functions
+The track/recover model of the previous section takes inverses as given a priori: trackΓ(𝑓, 𝑔) 
+fixes 𝑔 before any context state is seen, so one 𝑔 has to serve every state the effect is applied at. 
+In practice, however, the inverse of each effect is not known a priori: it must be supplied by the 
+caller at the point of effect application. Moreover, recover is all-or-nothing: it cannot selectively 
+undo one effect while retaining others. To address both issues, we enhance the model at both 
+the input and output sides:
+1. On the input side, we not only transform Γ but also return an inverse function alongside 
+it, so that the inverse is supplied where the effect is applied: Γ →Γ × (Γ →Γ), i.e., Γ →
+𝜕Γ;
+2. On the output side, we not only transform 𝜕Γ but also return an inverse function along­
+side it, so that one effect can be undone while the others are retained: 𝜕Γ →𝜕Γ × (𝜕Γ →
+𝜕Γ), i.e., 𝜕Γ →𝜕2Γ.
+This enhancement preserves structural consistency between input and output, so we can 
+still define corresponding theory that maintains the mathematical properties of track. The 
+resulting types are the effect functions 𝔈Γ and their witnessed refinement 𝔈∗
+Γ:
+Definition 8. Define the effect function 𝔈Γ and witnessed effect function 𝔈∗
+Γ as:
+𝔈Γ ≔Γ →Γ × (Γ →Γ)
+𝔈∗
+Γ ≔(𝑒: Γ →Γ × (Γ →Γ))
+× ((𝛾: Γ) →((𝛿: Γ) × (𝑔: Γ →Γ) × ((𝛿, 𝑔) = 𝑒(𝛾) →𝑔(𝛿) = 𝛾)))
+(12)
+where 𝑒(𝛾) yields a pair (𝛿, 𝑔) representing:
+• 𝛿: Γ is the new context;
+• 𝑔: Γ →Γ is the inverse function of the current effect.
+An element of 𝔈∗
+Γ chooses its inverse per state, and the constraint 𝑔(𝛿) = 𝛾 holds that choice 
+to reverting the effect where it was applied, leaving 𝑔 unconstrained everywhere else. A single 
+𝑔 with 𝑔∘𝑓= idΓ meets the constraint at every state at once, and induces an element of 𝔈∗
+Γ by 
+(𝑓, 𝑔) ↦𝛾↦(𝑓(𝛾), 𝑔), which Theorem 11 shows to be a homomorphism. The constraint can be 
+visualized as the following commutative diagram, ensuring that the inverse 𝑒 returns indeed 
+reverses the transformation at the state where 𝑒 was applied:
+𝑓
+𝑔
+𝑒
+pr1
+pr2
+Γ
+Γ
+𝜕Γ
+Since effect functions 𝔈Γ are no longer endomorphisms on the context, they cannot be 
+directly composed. We therefore define a new operation for effect composition:
+Definition 9. Given functions 𝑓, 𝑔∈𝔈Γ, define their effect composition 𝑓⋄𝑔 as:
+12

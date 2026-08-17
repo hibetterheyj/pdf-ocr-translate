@@ -1,0 +1,49 @@
+• Γ: the current context state (recursive);
+• Γ →Γ: the accumulator, which recovers this level’s effects;
+• Σ: the coeffect context carrying dependency information.
+Under this definition, effect maps 𝔈Γ∞ to itself, unifying the 𝜕-tower into a single self-
+similar type. The coeffect context Σ is structurally integrated: dependency operations (set, get) 
+act on Σ, and the accumulator tracks their reversal. Since the type family 𝒱︀ underlying Σ is 
+unconstrained, any state the system needs to share across components can be encoded as a 
+dependency with an appropriate value type—Σ subsumes all shared mutable states, not just 
+inter-component dependencies. Every interaction between a component and its environment 
+passes through this single entity.
+Hierarchical composition. The recursive structure of Γ∞ supports hierarchical control: a 
+parent context aggregates multiple child-level effects, forming a tree-shaped control structure 
+that maintains modularity while enabling unified cross-level management. The effect transfor­
+mation realizes a literal “plug-in” metaphor:
+• Loading a component corresponds to executing its effects (plugging in);
+• Unloading a component corresponds to recovering its effects (unplugging, without 
+affecting other running components);
+• Components at different levels of the hierarchy are independently loadable and unload­
+able; a parent context aggregates and manages the effects of all its children, enabling 
+arbitrarily nested composition.
+3.3.2. Observational Equivalence
+The recovery guarantee of Section 3.1 asserts an equality of states (Theorem 7), which is an 
+idealization, because the physical state cannot be recovered as it stood. For example, free 
+releases a block to the allocator without restoring the layout the heap had before malloc; and 
+a generative name is not restored by the inverse that discards it, since the next creation draws 
+a fresh one [39]. The equalities of Section 3 are therefore to be read up to an equivalence ≃, 
+and we take ≃ to be an observational equivalence: two states are related when no observer can 
+distinguish them. Comparing behaviour rather than representation is the established route to 
+program equivalence [40], and the relation such a comparison yields depends on what the 
+observer is given to work with [41]. What an observer of a context is given is the coeffects it 
+carries, each of which arrives with an equivalence of its own (Definition 24), so the relation 
+on a context is assembled from theirs. Assembling it is the business of this subsection, and 
+quotienting by it is what buys the independence Section 3.1.3 asks for.
+Definition 33. Two coeffect contexts are related when they bind the same keys to related values, 
+and two states of a context when their coeffect projections are:
+𝜎≃𝜎′
+≔
+dom(𝜎) = dom(𝜎′) ∧∀𝑘∈dom(𝜎). 𝜎(𝑘) ≃
+𝑘𝜎′(𝑘)
+𝛾≃𝛾′
+≔
+𝜎𝛾≃𝜎𝛾′
+(32)
+writing 𝜎𝛾 for the coeffect projection of 𝛾 (Definition 32).
+The part of a state that no key binds is thereby forgotten, and forgetting it is what lets 
+Theorem 7 be read up to ≃ at all: the heap layout and the generative name of the examples 
+above lie outside the relation unless some key binds them. What Section 3.2.2 needs of ≃ 
+follows rather than being assumed. Related states have the same domain, so they agree on the 
+23

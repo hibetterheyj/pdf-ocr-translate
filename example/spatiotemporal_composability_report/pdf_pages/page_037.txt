@@ -1,0 +1,48 @@
+4.3.3. Asynchrony
+The layers so far let the environment move between one iteration and the next, and assume 
+that each iteration itself completes instantaneously, its launch and its landing being one step. 
+We model non-immediacy abstractly: an iteration yields a value of type 𝖥𝗎𝗍𝗎𝗋𝖾(𝐴), where 
+𝖥𝗎𝗍𝗎𝗋𝖾 is an opaque type constructor whose defining property is that between submission and 
+resolution, external state may change.
+Under this model an iteration is launched at one state and lands at another, and the fiber is 
+𝖱𝖾𝗅𝗈𝖺𝖽𝗂𝗇𝗀 while it is in flight. What the layer adds is inertia: once launched, an iteration lands, 
+and its landing cannot be declined. A target view that turns during the flight therefore cannot be 
+answered by aborting the iteration, and only the alternative of L-Divert that lands one remains 
+available: the iteration lands, and the fiber deactivates afterwards. This layer therefore adds no 
+rule and no type that a rule matches on; at the granularity of Γ inertia is its whole content, and 
+it takes the form of a restriction on which alternative of L-Divert a host may take.
+That alternative is what the base calculus could not express. There, a transition whose target 
+view had turned was undone in the same step that discovered it; here the iteration in flight 
+must land first, so the fiber needs somewhere to be while its inverse runs, and the only sound 
+place is 𝖴𝗇𝗅𝗈𝖺𝖽𝗂𝗇𝗀 holding the inverse the iteration produced. Routing through 𝖠𝖼𝗍𝗂𝗏𝖾 instead 
+would let the fiber provide its coeffects for the length of one step and oblige its dependents to 
+activate against a component that is already leaving. This is the mutual chaining of reload and 
+unload in the implementation.
+A deactivation may also chain straight back into an activation, by a composite rather than a 
+rule. L-Unload carries no premise on the target view, so whatever the target view has become 
+while the fiber was deactivating, the accumulator runs and the fiber becomes 𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾, from 
+which L-Begin may immediately start a new transition.
+4.3.4. Failure
+Every rule so far assumes the effect it runs succeeds, and a runtime cannot. The effects a 
+component installs reach outside the context that tracks them, and what they reach may refuse: 
+a port already bound, a file that is not there, a peer that does not answer. A failing transition 
+must still leave the fiber’s effects recovered rather than stranded.
+Let Ξ be a set of errors and refine the effect iterator of Definition 51 so that an iteration may 
+raise in place of yielding a triple:
+𝔈fail
+Γ ≔𝜇ℑ. Γ →𝖤𝗂𝗍𝗁𝖾𝗋(Ξ, Γ × (Γ →Γ) × 𝖬𝖺𝗒𝖻𝖾(ℑ))
+𝔈fail∗
+Γ
+≔𝜇ℑ. (𝑒: Γ →𝖤𝗂𝗍𝗁𝖾𝗋(Ξ, Γ × (Γ →Γ) × 𝖬𝖺𝗒𝖻𝖾(ℑ)))
+× ((𝛾: Γ) →(𝐥𝐞𝐭𝖱𝗂𝗀𝗁𝗍(𝛿, 𝑔, 𝑜) = 𝑒(𝛾) 𝐢𝐧𝑔(𝛿) ≃𝛾))
+(49)
+The witness constrains the 𝖱𝗂𝗀𝗁𝗍 case alone, being vacuous where the pattern does not 
+match, a raise having nothing to undo, and the 𝑖 that 𝖱𝖾𝗅𝗈𝖺𝖽𝗂𝗇𝗀 carries is read at 𝔈fail∗
+Γ
+ from here 
+on. The lift of Definition 52 carries over with a raise propagated in place of a triple, so a raising 
+iterator is usable wherever an effect is, as an ordinary one is. The layer adds one rule and puts 
+the second outcome of Definition 49 to use, O-Remove needing no widening to admit it. The 
+premises of L-Iter, L-Finish, and L-Divert are read with 𝖱𝗂𝗀𝗁𝗍 around the triple they match. A 
+raise is something an iteration does, so the rule is an exit from 𝖱𝖾𝗅𝗈𝖺𝖽𝗂𝗇𝗀.
+37

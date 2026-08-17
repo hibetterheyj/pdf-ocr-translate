@@ -1,0 +1,59 @@
+Proof.
+1. The maps commuting with every generator of 𝔐(𝑒2) form a submonoid of Γ →Γ, since 
+idΓ lies in it and 𝑓∘𝑓′ does where 𝑓 and 𝑓′ do. That submonoid contains the generators of 
+𝔐(𝑒1) by hypothesis and hence contains 𝔐(𝑒1). Fixing 𝑓∈𝔐(𝑒1), the maps commuting 
+with 𝑓 likewise form a submonoid containing the generators of 𝔐(𝑒2) and hence 𝔐(𝑒2).
+2. By Definition 9 the forward map of 𝑒1 ⋄𝑒2 is (pr1 ∘𝑒1) ∘(pr1 ∘𝑒2) and the inverse it yields 
+at any state is 𝑠∘𝑡 for an 𝑠 yielded by 𝑒2 and a 𝑡 yielded by 𝑒1. Every generator of 𝔐(𝑒1 ⋄
+𝑒2) is therefore a composite of generators of the two.
+□
+Definition 19. Effect functions 𝑒1, 𝑒2 ∈𝔈Γ are independent when
+1. every transformation of one commutes with every transformation of the other,
+∀𝑓∈𝔐(𝑒1), 𝑔∈𝔐(𝑒2).
+𝑓∘𝑔= 𝑔∘𝑓
+(18)
+2. neither one’s transformations disturb the inverse the other yields,
+∀𝑔∈𝔐(𝑒2), 𝛾∈Γ.
+pr2(𝑒1(𝑔(𝛾))) = pr2(𝑒1(𝛾))
+(19)
+and the same with 𝑒1 and 𝑒2 exchanged.
+A family (𝑒𝑙)𝑙∈𝐿 is pairwise independent when 𝑒𝑙 and 𝑒𝑙′ are independent for every 𝑙≠𝑙′. A 
+family may repeat an effect function, and holding one independent of itself is holding 𝔐(𝑒) 
+commutative.
+For effects induced by pairs (𝑓1, 𝑔1) and (𝑓2, 𝑔2), clause (1) is by Lemma 18(1) the commu­
+tation of the four pairs 𝑓1, 𝑓2; 𝑔1, 𝑔2; 𝑓1, 𝑔2; and 𝑔1, 𝑓2, and clause (2) holds outright, an induced 
+effect yielding one inverse at every state. Commutation under ⋄ is a different property. What 
+𝑒1 ⋄𝑒2 = 𝑒2 ⋄𝑒1 equates is the composite forward map of the two orders with each other and 
+the composite inverse of the two orders with each other, each inverse entering the composite 
+at the state its own application produced; independence instead relates each transformation 
+of one effect to each transformation of the other, a forward map paired with a foreign inverse 
+included.
+Under independence an inverse may be run at a state later effects have moved, and what it 
+withdraws there is its own contribution and nothing else:
+Theorem 20. Let 𝑒1, ⋯, 𝑒𝑛∈𝔈∗
+Γ be pairwise independent and applied in order from 𝛾0. Write 
+𝑓𝑖≔pr1 ∘𝑒𝑖, let 𝛿𝑖≔𝑓𝑖(𝛿𝑖−1) with 𝛿0 ≔𝛾0, and let 𝑔𝑖≔pr2(𝑒𝑖(𝛿𝑖−1)) be the inverse 𝑒𝑖 yields 
+where it is applied. Fix 𝑗 and write 𝛿′
+𝑖≔(𝑓𝑖∘⋯∘𝑓𝑗+1)(𝛿𝑗−1) for the states of the sequence with 
+𝑒𝑗 omitted, so that 𝛿′
+𝑗= 𝛿𝑗−1. Then for every 𝑢 with 𝑗≤𝑢≤𝑛,
+1. 𝛿𝑢= 𝑓𝑗(𝛿′
+𝑢) and 𝑔𝑗(𝛿𝑢) = 𝛿′
+𝑢;
+2. each 𝑒𝑖 with 𝑖> 𝑗 yields at 𝛿′
+𝑖−1 the same inverse 𝑔𝑖 it yields at 𝛿𝑖−1.
+Proof.
+1. The first equation is an induction on 𝑢. At 𝑢= 𝑗 it reads 𝛿𝑗= 𝑓𝑗(𝛿𝑗−1), which is the 
+definition of 𝛿𝑗. For the inductive step, 𝛿𝑢+1 = 𝑓𝑢+1(𝛿𝑢) = 𝑓𝑢+1(𝑓𝑗(𝛿′
+𝑢)) = 𝑓𝑗(𝑓𝑢+1(𝛿′
+𝑢)) =
+𝑓𝑗(𝛿′
+𝑢+1), the middle equality being clause (1) of Definition 19 for 𝑒𝑢+1 and 𝑒𝑗, which are 
+distinct effects of the family since 𝑢+ 1 > 𝑗. For the second equation, clause (1) carries 
+𝑔𝑗 out through the forward maps applied after 𝑒𝑗, leaving the witness of 𝑒𝑗 to be used at 
+the one state it holds at:
+𝑔𝑗(𝛿𝑢) = (𝑔𝑗∘𝑓𝑢∘⋯∘𝑓𝑗+1)(𝛿𝑗) = (𝑓𝑢∘⋯∘𝑓𝑗+1)(𝑔𝑗(𝑓𝑗(𝛿𝑗−1))) = 𝛿′
+𝑢
+the last equality resting on 𝑔𝑗(𝑓𝑗(𝛿𝑗−1)) = 𝛿𝑗−1, which is the witness Definition 8 requires 
+of 𝑒𝑗 at 𝛿𝑗−1.
+16

@@ -1,0 +1,45 @@
+Proof. Order the names of dom(𝐹𝛾) by the index of the step that registered each, which Defin­
+ition 53 supplies by starting the sequence at an empty registry. The parent half of ⊲ descends 
+in that index: an O-Insert has 𝜋∈dom(𝐹𝛾) as a premise, so a parent pointer names a fiber 
+registered earlier, and iterating it reaches the whole ancestry of a name in finitely many steps. 
+A cycle therefore has to use ≺, and since ≺ is acyclic it has to mix the two, which needs some 
+𝑚 to declare a key that a fiber of 𝑚’s own subtree may provide. Such a fiber is registered by an 
+activation of 𝑚 or of one of 𝑚’s descendants, hence at a step after the L-Begin of 𝑚; that L-Begin 
+has 𝛾⊧𝑑𝑚 as a premise, so a fiber providing the key is 𝖠𝖼𝗍𝗂𝗏𝖾 already before it, and clause (2) 
+of Definition 58 leaves the key no second possible provider. The fiber that would close the cycle 
+is therefore never registered, and the edge is absent from dom(𝐹𝛾). A well-founded recursion 
+has one solution, and the clauses read the four fields alone.
+□
+The last clause reads 𝑝, the keys a component may provide, whereas the target reads 
+dom(𝜎𝛾), the keys its fibers have installed, and Definition 43 relates the two by dom(𝜎𝑛) ⊆
+𝑝𝑛 alone. The support set therefore over-approximates the 𝖠𝖼𝗍𝗂𝗏𝖾 fibers in general, and the 
+condition that closes the gap is the following.
+Definition 69. A component (𝑑, 𝑝, 𝑒) is total on its provision when an activation of it that finishes 
+has installed every key of 𝑝, so that dom(𝜎𝑛) = 𝑝𝑛 at every 𝖠𝖼𝗍𝗂𝗏𝖾 fiber instantiating it.
+Like independence (Definition 60) this is a condition on the components alone, mentioning 
+no lifecycle state and no step, and independence already bounds how far it can fail: were a 
+component to install a key only at context states another component’s effects reach, its forward 
+map would not commute with that component’s, so the keys a fiber installs are fixed by its 
+component rather than by the schedule. What totality adds is that the fixed set is all of 𝑝 rather 
+than a proper subset of it.
+Lemma 70. (Support at quiescence.) Let ≺ be acyclic, let quiet(𝛾), let no fiber of 𝛾 be failed, 
+and let every component of 𝛾 be total on its provision (Definition 69). Then the support set is 
+the set of 𝖠𝖼𝗍𝗂𝗏𝖾 fibers:
+𝐴= {𝑛: 𝜃𝑛= 𝖠𝖼𝗍𝗂𝗏𝖾(−, −)}
+(64)
+Proof. Write 𝐴′ for the right-hand side. No fiber being failed, the quiet of Definition 49 leaves 
+𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾(⊥) and 𝖠𝖼𝗍𝗂𝗏𝖾 as the only states and reads
+𝑛∈𝐴′ ⟺target𝑛(𝛾) ≠⊥
+By Definition 46 the right side holds exactly when ¬𝜏𝑛 and every 𝑘∈𝑑𝑛 lies in dom(𝜎𝛾), and 
+dom(𝜎𝛾) = ⋃𝑚∈𝐴′ 𝑝𝑚 by Definition 69. The middle clause is the one the target no longer carries, 
+and registration supplies it: a fiber with 𝜋𝑛≠𝗋𝗈𝗈𝗍 is registered only by an activation of 𝜋𝑛, and 
+if 𝜋𝑛∉𝐴′ then 𝜋𝑛 is not 𝖠𝖼𝗍𝗂𝗏𝖾, so its accumulator has run and retired 𝑛 by Definition 47, giving 
+𝜏𝑛. Hence 𝐴′ satisfies the clauses of Definition 67, and Lemma 68 gives them one solution, so 
+𝐴= 𝐴′.
+□
+Lemma 71. (Transposition.) Let the steps be pairwise independent and 𝐹𝑡 well formed, and 
+let steps 𝑡 and 𝑡+ 1 act on distinct fibers 𝑚 and 𝑛.
+1. If both apply an activation rule, namely L-Begin, L-Iter, or L-Finish, and step 𝑡+ 1 is 
+applicable at 𝛾𝑡, then step 𝑡 is applicable at the state step 𝑡+ 1 produces from 𝛾𝑡, and the 
+two orders reach the same 𝛾𝑡+2.
+50

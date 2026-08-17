@@ -1,0 +1,159 @@
+\subsection{5.2. 组件加载器}\label{component-loader}
+
+核心库为组件开发者提供了用于动态组合的命令式原语，例如 ctx.effect、ctx.use 与 ctx.set。应用编排器则面临一个独立的问题：他们把既有组件装配成一个运行中的系统，并在其生命周期内调整组合方式。组件加载器通过引入一个声明式配置层来解决这一问题：编排器把期望的组合描述为一个持久化数据结构，而加载器把对该规范的变更转化为相应的命令式纤维操作。
+
+61
+
+\subsection{5.2.1. 声明式配置}\label{declarative-configuration}
+
+第~4 节把一个运行中的系统分解为若干纤维，每条纤维是某个组件的一次实例化。一次实例化所需的全部内容都可以被声明，因此编排器可以把整个系统描述为一份声明式配置：一份由加载器实现为纤维、并与之保持同步的持久化记录。
+
+条目。一份配置由若干条目组成。每个条目指定一条纤维并管理它，绑定是双向的：加载器通过调整纤维来响应条目字段的变更；组件若修订自己的配置或停用自身，其变更会被写回它的条目。
+
+定义~74。一个条目声明一条纤维，记录如下：
+
+• id —— 稳定的标识符，在其所在组的子列表发生变化时用作对账键；
+
+• url —— 要实例化的组件模块的 URL；
+
+• isolate —— 应用到该条目上下文上的隔离注解；
+
+• intercept —— 应用到该条目上下文上的拦截注解；
+
+• config —— 绑定进组件、以构成其效应函数 apply 的配置；
+
+• disabled —— 该条目是否被管理性地关闭。
+
+一个条目之所以能充当忠实的规范，是因为支撑一条纤维的恰好就是条目所记录的内容。定义~67 的支撑集只读取 \(\tau , \pi , d ,\) 与 \(p\)，此外别无他物，而一个条目恰好给出全部四项：disabled 给出 \(\tau\)，条目在树中的父节点给出 \(\pi\)，而 url 选择声明 \(d\) 与 \(p\) 的组件。支撑集没有读取的字段是纤维的运行时状态，一次实例化同样不需要它们；引理~70 把静止状态（定义~49）的支撑集等同于 \(\mathsf{Active}\) 纤维，前提是每个组件都安装它声明的每个键（定义~69）。
+
+这些条目构成一棵配置树，它是系统所加载内容的权威记录。一个条目可以是映射到单条纤维的叶子，其组件也可以转而加载更多组件，使该条目成为分支节点。Cordis 为这种分组与嵌套加载提供了组件：@cordisjs/group 以一组子条目作为配置，将它们作为子组加载；而 @cordisjs/include 加载一份外部配置文件（YAML 或 JSON），并把这些条目作为嵌套子树嫁接进来。两者都是建立在定义~47（算法~4）的注册原语之上的普通组件，因此嵌套树仍保持在演算之内，下文的结果对它成立。
+
+对账。当一个条目的记录发生变更时，加载器会进行增量对账，而不是把纤维拆掉后整体重建。这种对账方式之所以可靠，其理由由元理论给出。
+
+• 定理~73 使静止状态成为最终配置的单一函数：无论加载器在途中执行了哪些实例化与退役，也无论其顺序如何，系统都静止在从零加载最终配置时系统所会停留之处。最终加载了哪些组件，只在各组件安装其声明的每个键（定义~69）的范围内由声明读出；一个声明了某个键、却仅在某些配置下才安装它的组件，加载器仍然可以对其对账，但此时已加载组件的集合也会随之响应这些配置。
+
+• 定理~66 证明系统确实会归于静止，因此一旦对账所涉及的实例化与退役均已发出，对账即告完成。
+
+• 推论~62 把离场纤维对状态的贡献设为零，因此重建一个条目会撤走其纤维所安装的内容，而让周围的纤维保持原状。
+
+62
+
+• 定理~63 允许各条目被一起实例化，无需编排器安排加载顺序：一条纤维若其已声明的键尚未被提供，就在其 L-Begin 处等待；其提供者离场时，它则先于提供者停用。因此，依赖约束的是纤维何时激活，而非它的模块何时被获取与求值，于是加载器并发地加载模块——加载一份大型配置的时间正消耗于此。
+
+在条目所声明的纤维之上，加载器依据条目中哪个字段发生了变更进行分派，并对每个字段应用扰动最小的操作。
+
+• id、url —— 重建该条目，因为其身份或其组件已经改变；
+
+• isolate —— 重新分配该条目的领域（算法~7）；
+
+• intercept —— 就地更新，因为拦截元数据在读取时才会被查阅，无需重载；
+
+• config —— 交给组件处理，由组件决定如何应用新的载荷，通常是将它与前一份做 diff，仅在发生实质性变更时才重载。特别是，@cordisjs/group 条目的 config 就是它的子条目列表，因此它以子条目 id 上的带键 diff 应用这次更新，逐一创建、移除或更新每个子条目；由于更新一个存活的子条目会重新进入同一个按字段分派，组对账与条目更新会沿树向下一起递归；
+
+• disabled —— 置位时卸载纤维，清除时重载它。
+
+受管领域。核心中的隔离通过让子上下文在某个键处覆盖领域表 \(\rho\)（第~5.1.2 节）来派生，这在上下文树保持静止时已经足够。一个条目可能在运行时被移到其他组之间，因此加载器自行管理领域，而 isolate 字段在每个键上于两种作用域规则之间作出选择。取值 true 要求一个本地领域，它对条目私有并以该条目的 id 打标签，条目无论移到何处都随身携带它；取字符串值则要求一个全局领域，由每个以该字符串命名的条目共享，因此移动这样的条目改变的是它与哪些条目共享绑定，而非它属于哪个领域。一旦没有任何条目命名某个领域，该领域即被丢弃。
+
+重新分配条目的领域，取决于哪些键改变了领域、该条目自身是否是某个已变更键处的提供者，以及要通知哪些依赖者。中间那个问题最难回答，因为一个领域符号可能由若干纤维共享，而其中只有一个是提供者。加载器用分隔符来回答它：每个键一个符号 \(\delta _ { k }\)，每个上下文在其中存下自己的标签。分隔符被写在某个上下文上并被其后代继承，因此条目的标签与提供者的标签恰好一致，当且仅当两者是在同一个 isolate 作用域内为 \(k\) 派生的；而正是在这种情况下，\(k\) 处的绑定属于条目自己，必须随它一起移动。
+
+Algorithm 7 隔离领域重分配 1 function
+patch\_isolation(entry, $\rho'$) 2 $\rho$ $\leftarrow$ entry.ctx{[}@@isolate{]} 3 store $\leftarrow$
+entry.ctx{[}@@store{]} 4 $\Delta \leftarrow \{ k \mid \rho(k) \neq \rho'(k) \}$ $\triangleright$ 领域发生变更的键 5 for $k$ in $\Delta$ do 6 entry.ctx{[}$\delta _ { k }${]} $\leftarrow$ fresh tag 7
+diff{[}$k${]} $\leftarrow$ ($\rho(k)$, $\rho'(k)$, entry.ctx{[}$\delta _ { k }${]},
+store{[}$\rho(k)${]}.fiber.ctx{[}$\delta _ { k }${]}) 8 entry.ctx{[}@@isolate{]} $\leftarrow$ $\rho'$ 9
+reload(entry.fiber) 10 for $k$ in $\Delta$ do
+
+63
+
+11
+\(( s _ { 1 } , s _ { 2 } , d _ { 1 } , d _ { 2 } ) \leftarrow \mathrm { d i f f } [ k ]\)
+12 if \(d _ { 1 } = d _ { 2 }\) and store \(\left[ s _ { 1 } \right]\)
+and not store \(\left[ s _ { 2 } \right]\) then \(\triangleright\) 绑定属于该条目自己 13
+\(\mathrm { s t o r e } [ s _ { 2 } ] \gets \mathrm { s t o r e } [ s _ { 1 } ]\)
+14 delete store \(\left[ s _ { 1 } \right]\) 15 function affected(fiber,
+\(k)\) 16
+\(( s _ { 1 } , s _ { 2 } , d _ { 1 } , d _ { 2 } ) \leftarrow \mathrm { d i f f } [ k ]\)
+17 return fiber.ctx{[}@@isolate{]}
+\(] [ k ] \in \{ s _ { 1 } , s _ { 2 } \}\) and (fiber.ctx{[}
+\(\delta _ { k } ] = d _ { 1 } ) \neq ( d _ { 2 } = d _ { 1 } )\)
+18 notify(entry.ctx, \(\Delta ,\) affected) $\triangleright$ 取代算法~3 的领域测试
+
+这个测试依赖于分隔符的一个性质。\(\delta _ { k }\) 下的标签被写在条目的上下文上，并被从其派生的每个上下文继承；标签在每次重分配时都会重新抽取，因此对上下文 \(\gamma ^ { \prime }\)
+
+\[
+\gamma ^ { \prime } [ \delta _ { k } ] = d _ { 1 } \quad \Longleftrightarrow \quad \gamma ^ { \prime } { \mathrm { ~ i s ~ d e r i v e d ~ f r o m ~ t h e ~ e n t r y ' s ~ c o n t e x t } }\tag{65}
+\]
+
+把该条件写作 own \((\gamma ^ { \prime })\)，而 \(d _ { 2 } = d _ { 1 }\) 是其在提供者处的实例。重分配把满足 own 的上下文从 \(s _ { 1 }\) 移到 \(s _ { 2 }\)，并让其余上下文留在原处；由上面的循环可知，它恰好当提供者满足 own 时才把绑定移到 \(s _ { 2 }\)。一个依赖者在自己的 \(k\) 处领域正是绑定所在领域时能看到该绑定。当 own 在依赖者与提供者上一致时，两者要么一起移动、要么都不动，因此依赖者之后能否看到绑定，与之前完全一致。当 own 把两者分开时，一侧移动而另一侧留在原地，于是依赖者要么获得、要么失去该绑定。那个不等式正是这种分离，而成员测试会剔除在哪个领域都解析不到 \(k\) 的依赖者，移动的任何部分都不会触及它们。
+
+\subsection{5.2.2. 热模块替换}\label{hot-module-replacement}
+
+热模块替换（HMR）在模块层面应用可逆效应模式：当源文件发生变化时（通常在开发期间），系统在不重启进程的情况下就地替换受影响的模块。由于一条纤维已经把其组件的全部效应与余效应都界定在内，一个本身是组件的模块仅凭纤维操作即可被替换：处置旧纤维会回收组件安装的一切，而由重载后的模块实例化出的新纤维会重新安装它们。因此，与 Webpack {[}46{]} 或 Vite {[}47{]} 的 HMR 不同，HMR 无需开发者标注的验收边界。
+
+@cordisjs/hmr 组件提供了 HMR 引擎，它分三个阶段运作。
+
+阶段 1：模块分类。引擎有两个输入：暂存集（自上次重载以来内容发生变化的文件 URL）与外部集（无法热替换、反而会触发完全重启的模块）。记 get\_imports(url) 为 url 直接导入的模块，引擎对变更的依赖子图进行分类，把每个模块标记为接受或拒绝：
+
+Algorithm 8 模块分类 1 function classify(stashed,
+externals) 2 accepted $\leftarrow$ stashed 3 declined $\leftarrow$ externals 4 pending $\leftarrow$ $\varnothing$ 5
+for url in stashed do
+
+64
+
+6 pending $\leftarrow$ pending $\cup$ (get\_imports(url) $\setminus$ (accepted $\cup$ declined)) 7
+repeat 8 progress $\leftarrow$ false 9 for url in pending do 10 if
+get\_imports(url) $\cap$ accepted $\neq$ $\varnothing$ then 11 accepted $\leftarrow$ accepted $\cup$ \{url\}
+12 pending $\leftarrow$ pending $\setminus$ \{url\} 13 progress $\leftarrow$ true 14 else if
+get\_imports(url) $\subseteq$ declined then 15 declined $\leftarrow$ declined $\cup$ \{url\} 16
+pending $\leftarrow$ pending $\setminus$ \{url\} 17 progress $\leftarrow$ true 18 else 19 pending $\leftarrow$
+pending $\cup$ (get\_imports(url) $\setminus$ (accepted $\cup$ declined)) 20 until not
+progress 21 declined $\leftarrow$ declined $\cup$ pending 22 return (accepted, declined)
+
+以暂存文件的导入集合为种子，上述不动点在一个模块的某个导入被接受后接受该模块，并在其全部导入都被拒绝后拒绝该模块；任何未被判定的模块，凡被困在导入环中的，一律默认归为拒绝。
+
+阶段 2：过时条目检测。引擎随后利用 accepted 与 declined 把组件条目过滤到其中过时的那部分——它们的依赖树触及某个已变更的模块。引擎用 get\_dependencies 遍历每个条目的树，该函数收集一个模块的传递导入，同时把 declined 当作边界予以尊重：
+
+Algorithm 9 过时条目检测 1 function get\_dependencies(root,
+declined) 2 deps $\leftarrow$ $\varnothing$ 3 function traverse(url) 4 if url $\in$ deps or url $\in$
+declined then return 5 deps $\leftarrow$ deps $\cup$ \{url\} 6 for child in
+get\_imports(url) do traverse(child) 7 traverse(root) 8 return deps 9
+function detect(entries, accepted, declined) 10 stale\_entries $\leftarrow$ $\varnothing$ 11
+for entry in entries do 12 tree $\leftarrow$ get\_dependencies(entry.url, declined)
+13 if tree $\cap$ accepted $\neq$ $\varnothing$ then 14 accepted $\leftarrow$ accepted $\cup$ tree 15
+stale\_entries $\leftarrow$ stale\_entries $\cup$ \{entry\} 16 return stale\_entries
+
+一个条目恰好在其树与 accepted 相交时是过时的；随后该树被并入 accepted，于是沿树而下的每个过时模块都在下一阶段被失效。
+
+65
+
+阶段 3：事务性重载。最后，引擎重载过时的条目。它使被接受模块的缓存失效3，为每个被移除的模块做备份以便回滚，然后按其 url 重新导入每个过时条目的组件模块，并换入一条新纤维：
+
+Algorithm 10 事务性模块重载 1 function reload(ctx,
+accepted, stale\_entries) 2 backup $\leftarrow$ invalidate\_caches(accepted) 3 try
+4 for entry in stale\_entries do 5 entry.fiber.dispose() 6 entry.fiber $\leftarrow$
+ctx.use(import(entry.url), entry.config) 7 catch error 8
+restore\_caches(backup) 9 for entry in stale\_entries do 10
+entry.fiber.dispose() 11 entry.fiber $\leftarrow$ ctx.use(backup{[}entry.url{]},
+entry.config) 12 throw error
+
+事务性保证确保系统绝不会进入半重载状态：如果某个模块导入失败（例如因语法错误），缓存会被恢复，每个过时条目都会从 backup{[}entry.url{]}——即缓存刚刚恢复的那个先前组件——重建，从而撤销已经完成的换入。
+
+\subsection{5.3. 案例研究：Koishi}\label{case-study-koishi}
+
+Koishi 是一个构建在 Cordis4 之上的开源聊天机器人应用框架。经过四年多的开发，它积累了超过 4000 个由社区贡献的插件5，涵盖即时通讯（IM）适配器、数据库驱动，直至管理控制台与终端用户功能。其规模与多样性，使它成为 Cordis 动态可组合性在生产环境中的一个代表性验证。
+
+元框架的表达力与通用性。Koishi 作为一个服务端机器人运行，其每个功能都作为第~5.1 节上下文原语之上的一个插件实现；Koishi 本身只贡献聊天机器人领域的词汇。同样的模型在一个完全不同的运行时中重现：Koishi 的 Web 控制台是第二个独立的 Cordis 应用，其插件组合的是浏览器及其用户界面的原语，而非服务端的原语。上述迥异的场景确立了第~3 节模型的两个性质。(1) 它有表达力：其原语足以承载一个完整的生产系统，宿主框架只提供领域词汇。(2) 它具有通用性：它固定了效应与余效应如何组合，而把它们的含义留给各个应用，因此既不预设某个特定领域，也不预设某个特定运行时。
+
+无认知开销的时间可组合性。第~1.2.1 节综述的插件系统，无法在不重启扩展宿主的情况下卸载某个扩展的效应。Koishi 例行地执行这一操作：编排器从控制台禁用某个插件，其效应就地被撤走；在开发期间，HMR 引擎在保存时重新应用被编辑的插件，同时保留系统其他部分的缓存状态与存活连接。Cordis 使这种移除不仅成为可能，而且对插件作者来说毫不费力。由于经由上下文执行的效应会被追踪、其逆会被自动复合（第~3.1 节），即使是缺乏经验的作者，也能在无需编写卸载路径的情况下，为插件的经由上下文中介的效应获得有序的清理。这实现了第~1.2.1 节所指出的缺失的关切局部性：否则需要依靠每位作者的个人勤勉才能保证的正确性，改由抽象一次性承担。
+
+3在 Node.js 上，这意味着同时清除 ES 模块与 CommonJS 模块系统的缓存，因为经由 ES 加载器导入的模块可能同时出现在两者之中。
+
+4Koishi 目前使用 Cordis v3。本文介绍的是 Cordis v4，它细化了效应与余效应的语义并重新设计了加载器；核心组合模型在两个版本间共享。
+
+5Koishi 用 plugin 一词指代本文形式化为 component 的概念。
+
+66
+
+跨开放生态的空间可组合性。与第~1.2.1 节中插件间依赖大体缺失的插件系统相反，Koishi 的生态展现出真实的依赖拓扑：IM 适配器提供对各个消息平台的访问，数据库驱动提供持久化存储，而功能插件把这些声明为余效应并访问它们。在运行时重新配置某个提供者——例如切换存储后端或重连某个适配器——只会重新激活那些已解析依赖发生变化的依赖者（第~3.2 节）；依赖不可用的插件会保持不活跃，直到该依赖出现，而不会报错。这个案例研究所要确证的是：这种组合在独立编写的代码之间依然成立——一个插件与其依赖通常由不同的作者编写，他们在除了连接双方的余效应之外不作任何协调，因此响应式余效应在一个由独立贡献者构成的开放生态中保持装配的一致性。
+
+对有效性的威胁。此处的证据取自单一生态、单一宿主语言，因此无法把该范式的价值与它的 TypeScript 实现或 Koishi 特定领域的价值分开；它属于观察性的，而非针对替代架构的受控比较。因此，这个案例研究所确立的是一个存在性与被采用性的结论，而非定量结论；对照基线测量该抽象的运行时开销及其对开发者生产力的影响，仍是未来工作。

@@ -1,0 +1,69 @@
+5.1.1. Effect Tracking
+This section realizes revertible effects (Section 3.1). Every context mutation in Cordis flows 
+through a single primitive, ctx.effect: coeffect provision, component instantiation, and every 
+other context-mutating operation reduces to a ctx.effect call, so any operation performed 
+through the context is automatically tracked and recovered upon component unloading. Oper­
+ationally, ctx.effect is the realization of effectiter
+Γ (Definition 52): it takes a callback of type 𝔈iter
+Γ 
+and lifts it to 𝔈iter
+𝜕Γ , yielding a dispose closure that, when invoked, recovers the effect. Cordis 
+accepts both 𝔈Γ and 𝔈iter
+Γ through this one operation (ad-hoc polymorphism); we take the 
+iterator form as representative, since a plain effect function is the degenerate iterator that yields 
+a single inverse. What the operation does not check is the witness that 𝔈∗
+Γ carries: the callback 
+supplies an inverse, and that the inverse recovers the effect it accompanies is an obligation on 
+the component author rather than a property the runtime verifies. Theorem 61 is where the 
+calculus appeals to it, and Section 6.1 is where the obligation is delimited.
+Algorithm 1 shows the construction of ctx.effect. We write 𝑓∘𝑔 for the disposer that runs 
+𝑓 after 𝑔, and id for the no-op; prepending each new inverse therefore yields LIFO recovery.
+Algorithm 1 Effect tracking
+1
+async function execute(callback, guard)
+2
+iter ← callback()
+3
+inverse ← id
+4
+while guard()
+5
+(value, done) ← await iter.next()
+6
+if value then inverse ← value ∘ inverse
+7
+if done then break
+8
+return inverse
+9
+function effect(ctx, callback)
+10
+armed ← true
+11
+task ← execute(callback, () ↦ armed)
+12
+async function dispose()
+13
+if not armed then return
+14
+armed ← false
+15
+recover ← await task
+16
+recover()
+17
+ctx.dispose ← dispose ∘ ctx.dispose
+18
+return dispose
+The engine execute drives the callback as an effect iterator (𝔈iter
+Γ , Definition 51) and folds 
+the inverse yielded at each step into a single composite. Before each step it consults a caller-
+supplied guard; once the guard trips, iteration stops and only the inverses accumulated so far 
+remain. This is the step-boundary interruption of Section 4.3.2: the 𝖬𝖺𝗒𝖻𝖾(𝔈iter) continuation 
+is realized by the iterator’s done flag together with guard.
+ctx.effect is a thin wrapper over execute that adds two things. First, self-disposal: the 
+guard reports the armed flag, and the returned dispose flips armed to false, which simultaneously 
+halts any in-flight iteration and makes recovery fire at most once. Firing twice would apply 
+an inverse at a state no application of the effect produced, where nothing holds it to reverting 
+anything. Second, parent composition: dispose is prepended to the enclosing context’s accu­
+56

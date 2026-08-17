@@ -1,0 +1,45 @@
+These three approaches address different aspects of the problem. Designing a unified 
+dependency model that combines these approaches while preserving the dynamic composition 
+guarantees of the coeffect model remains an open problem.
+6.7. Co-Design with Languages and Operating Systems
+Section 6.4 identifies the minimum a host language must supply for the context paradigm. This 
+section takes up the converse question, what a language or operating system co-designed with 
+the paradigm can offer beyond that minimum.
+Co-design with languages. A language designed around the context paradigm can improve 
+on a library in two respects: the semantics it gives to contexts, and the primitives it gives to 
+effects and coeffects.
+Such a language can make the context implicit again while preserving the context semantics 
+of Section 3.3. An imperative language already runs every statement against an implicit context, 
+and that single context neither tracks effects nor resolves coeffects. The context paradigm 
+instead distinguishes multiple contexts, where an operation either modifies the context it 
+runs against or derives another from it (Definition 27). An in-place realization modifies the 
+ambient context, just as an imperative language does. A derived realization instead introduces a 
+separate context, for which the language must provide a construct. Making the context implicit 
+brings both an ergonomic and a safety benefit. (1) In a library realization, every function 
+involving effects or coeffects takes the context as an ordinary argument or a receiver, as in 
+Section 5.1. Where the language supplies the context implicitly, functions no longer need to 
+take it. (2) Every context carries its own lifecycle state and committed view (Section 4.1). A 
+library realization passes a context as an ordinary variable, so a component may reach another 
+component’s context by mistake, through a closure or a global variable. An effect it installs 
+there then leaks out of its own lifecycle, and a coeffect it reads there escapes its dependency 
+specification. Making the context implicit closes both.
+Such a language can also make effects and coeffects known to its compiler. (1) For effects, 
+an effect iterator (Definition 51) allocates a closure at every step to hold the inverse together 
+with the state it restores. With syntax for performing an effect, a compiler can emit a single 
+state machine for the whole iteration and hold those inverses in its frame. (2) For coeffects, 
+the coeffect specification can be admitted into the type system, with two benefits. First, a 
+dependency cycle is reported at compile time instead of being left to the runtime (Section 6.5). 
+Second, a dependency can be compared by the structure of its type rather than by key identity 
+alone, as row types do [28], which is type-level support for the structural compatibility of 
+Section 6.6.
+Co-design with operating systems. Section 1.2.3 observes a coarse-grained substitute for 
+dynamic composability, where the operating system supplies temporal composability at the 
+granularity of a process, and the container orchestrator above it supplies spatial composability 
+at the granularity of a service. An operating system co-designed with the paradigm would 
+support fine-grained composition, by making the coeffect specification a component declares 
+the whole of what it can reach, and by providing its own resources as coeffects.
+Such an operating system can supply the sandbox that Section 6.3 defers to a mechanism 
+outside the language. It does so by bounding a component to the dependencies it declares, 
+supplying them when the component is loaded and leaving nothing else reachable from within 
+it, as a WebAssembly module receives its imports from its embedder at instantiation [76]. It 
+73

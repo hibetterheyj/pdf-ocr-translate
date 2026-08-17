@@ -1,0 +1,49 @@
+notify𝑑(𝜎, 𝜎′) ≔
+{
+activating
+if 𝜎⊭𝑑∧𝜎′ ⊧𝑑
+deactivating if 𝜎⊧𝑑∧𝜎′ ⊭𝑑
+neutral
+otherwise
+(26)
+This is well-defined because 𝜎⊧𝑑 is decidable and all state transitions are mediated 
+by effect functions. The reactive invariant is: an activating transition triggers execution of 
+the component’s effects (with full effect tracking), whereas a deactivating transition triggers 
+recovery by applying the accumulator. The precise operational semantics of these transitions 
+depend on their interaction with control flows, and are developed in Section 4.
+What set and notify deliver together is local spatial composability, local in the same sense as 
+before, the guarantee being read of one component’s coeffects taken by themselves. We take that 
+to be the following criterion: a component activates only at a state satisfying its specification, 
+so it never reads a binding that is absent, and every change to the context is classified against 
+that specification, so a loss of satisfaction is detected where it happens and drives a deactiva­
+tion. Both halves are immediate from the definitions above, satisfaction being a precondition 
+checked where the component would activate and notify𝑑 being defined at every transition.
+The criterion covers one direction of the coeffect ordering and not the other. If component 
+𝐴 provides a key 𝑘 and component 𝐵 declares 𝑘∈𝑑𝐵, then 𝐵 can activate only after 𝐴 has 
+activated and provided 𝑘, since 𝜎⊧𝑑𝐵 requires 𝑘∈dom(𝜎). The converse fails: unloading 𝐴 
+removes 𝑘 from dom(𝜎) and so breaks 𝐵’s satisfaction, but a notification cannot by itself keep 
+𝑘 readable for as long as 𝐵’s own teardown needs it, nor hold 𝐴’s recovery back until 𝐵 
+has finished. Ordering a withdrawal after the deactivations it causes is a condition on other 
+components rather than on the one acting, so it belongs to the global form of the guarantee, 
+and Section 4.3.1 supplies the machinery it takes.
+3.2.3. Isolation and Interception
+The basic coeffect context Σ models a flat dependency table. In practice, however, the system 
+may need to bind distinct values to the same logical dependency for different components. 
+This section extends the coeffect context with two mechanisms: coeffect isolation (the same key 
+resolves differently in different contexts) and coeffect interception (cross-cutting behavior on 
+dependency access).
+Realization. The two mechanisms differ from get and set in what they act on. A provision 
+writes the shared table every component reads, so it is an effect on that table and carries an 
+inverse to withdraw it. Isolation and interception instead adjust how a key is resolved for the 
+components under one context, leaving the table itself as it stands. Typing an operation as an 
+effect fixes its denotation, a successor state paired with an inverse, but not its realization, which 
+determines how that inverse is carried out.
+Definition 27. An effect function on a context admits two realizations:
+• In-place realization mutates the context and returns a nontrivial inverse; the successor 
+aliases the input, and recovery runs the inverse to undo the mutation.
+• Derived realization leaves the input intact and returns a fresh context deriving from it, 
+with the identity as its inverse; recovery discards the derived context. A context derived 
+from another is what the recursive structure of Definition 32 carries.
+In a purely functional setting the two coincide, and an imperative host may choose either per 
+operation; Section 5.1.2 implements both. Isolation and interception are given derived realiza­
+20

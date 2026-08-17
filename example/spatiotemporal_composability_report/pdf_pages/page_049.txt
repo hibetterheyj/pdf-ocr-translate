@@ -1,0 +1,44 @@
+The target records the providing fiber rather than a boolean, and under the single-source 
+discipline of Section 4.2 the two drive the same transitions, a key having one possible provider 
+there. What the view buys is the vocabulary of the results above, Theorem 63 and Theorem 64 
+both speaking of the resolution a fiber activated against, and it is what makes those results 
+survive the scoped resolution of Section  3.2.3, under which one key resolves to different 
+providers in different realms and the provisions no longer force the view. The implementation 
+carries that scoping and holds the view in fiber.committed (Section 5.1.3).
+4.4.5. Confluence
+The results so far are about individual fibers. The property that characterizes the system as a 
+whole is that its dynamic history leaves no trace: whatever sequence of activations and deacti­
+vations a running system has been through, the state it quiesces at is the one the same insertions 
+and retirements would have produced had each component that ends up active been loaded 
+once, in dependency order, and none ever unloaded. The lifecycle relation is confluent, and the 
+normal form it converges on is the statically assembled one. This is the analogue, for dynamic 
+composition, of the consistency with a from-scratch evaluation that change propagation estab­
+lishes for incremental computation [45].
+The claim is about ⟶ alone. Orchestration steps are inputs, and two sequences given 
+different inputs land in different places for no interesting reason; what is at issue is whether 
+the lifecycle rules, which are nondeterministic in which fiber steps next and in which exit a 
+𝖱𝖾𝗅𝗈𝖺𝖽𝗂𝗇𝗀 fiber takes, can be made to disagree.
+Three lemmas are needed first. The first fixes the set of fibers that end up 𝖠𝖼𝗍𝗂𝗏𝖾 without 
+reference to any sequence of steps, which is what makes it a function of the input rather than 
+of the schedule.
+Definition 67. A fiber is supported at 𝛾 when it is not retired, the fiber registering it is supported, 
+and every key it declares is provided by a supported fiber. The support relation on dom(𝐹𝛾) is 
+the union of the two relations those clauses read,
+𝑚⊲𝑛≔𝑚≺𝑛∨𝜋𝑛= 𝑚
+(62)
+and where it is well founded (Lemma 68) we write 𝐴 for the support set, the fibers supported 
+at 𝛾:
+𝑛∈𝐴≔¬𝜏𝑛∧(𝜋𝑛= 𝗋𝗈𝗈𝗍∨𝜋𝑛∈𝐴) ∧∀𝑘∈𝑑𝑛. ∃𝑚∈𝐴. 𝑘∈𝑝𝑚
+(63)
+where 𝜋𝑛= 𝗋𝗈𝗈𝗍 marks a fiber the orchestrator inserted and 𝜋𝑛 otherwise the fiber whose 
+activation registers 𝑛. The clauses read no field but 𝜏, 𝜋, 𝑑, 𝑝. Both halves relate a fiber to one 
+immediately below it, a parent rather than an ancestor and a direct provider rather than a 
+transitive one, since that is what the clauses read; where the results below want an order they 
+take the transitive closure, whose minimal elements, maximal elements, and linearizations are 
+those of ⊲.
+The clauses refer to 𝐴 itself, so the definition is a recursion along ⊲, and it is the following 
+that makes it one with a solution.
+Lemma 68. (Support is well founded.) Let ≺ be acyclic and let 𝛾 be reached by a sequence of 
+steps. Then ⊲ is well founded, and 𝐴 is the one solution of Definition 67, a function of 𝜏, 𝜋, 𝑑, 
+and 𝑝 alone.
+49

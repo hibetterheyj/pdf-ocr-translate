@@ -1,0 +1,46 @@
+boundary is therefore drawn per location rather than per medium, since both aforementioned 
+abilities are properties of a location, and reification changes how a location is accessed while 
+leaving its medium as it was. For example, a memory region lies inside when the system 
+alone writes it, and outside when other processes write it too; a file lies inside when only the 
+system can reach it, as with a scratch file under a private path, and outside when it is a path 
+other programs read or write. Moving the boundary is itself a trade-off, between whether the 
+environment provides revertible semantics for a location and what supplying those semantics 
+costs on every access. We take up the co-design this suggests in Section 6.7.
+Acquisition and emission. An operation that reaches outside the boundary generally 
+proceeds in two stages. (1) In the acquisition stage, the operation obtains access and installs 
+a record inside the boundary: open installs a descriptor that close removes, malloc reserves a 
+block that free releases, fork starts a child process that kill terminates. The record itself is part 
+of the coeffect that reifies the location, e.g. an entry in a map it keeps, and installing that entry 
+is a revertible effect. That record is at the same time the channel along which data can leave. (2) 
+In the emission stage, the operation pushes data through that channel, as with the bytes a write 
+hands to the file or the datagram a send puts on the wire, and the push acts as idΓ, leaving the 
+data where other parties may read and write it. The two stages therefore fall on opposite sides 
+of the boundary: the acquisition stays inside it, whereas the emission crosses to the outside.
+Withholding and compensation. A system that must nonetheless recover from an emission 
+has two approaches available. One is to withhold an emission until the state that produced it 
+is certain to persist, which is the output commit problem of rollback-recovery [48]. The other is 
+compensation [49]: an action that restores the state up to an equivalence the application supplies, 
+coarser than the ≃ of Definition 33, as in deleting a file that was created or refunding a charge 
+that was made. Such actions compose in the same LIFO order as inverses do, so the composition 
+of Section 3.1 transfers to them. The metatheory does not: the commutation of Definition 60 is 
+proved against ≃ and has to be re-established against the coarser one.
+6.2. Service Multiplexing
+Dynamic component platforms such as OSGi [50] organize composition around services: units 
+of functionality that a provider publishes under an interface and a consumer binds to. The 
+Cordis coeffect model echoes this notion, with a service corresponding to the interface behind 
+a key. Components that provide a service are its providers, and components that inject a 
+service are its consumers. A single service may be implemented by multiple providers, and this 
+multiplicity can be realized in two forms. (1) Exclusive binding: several implementations share 
+one interface but at most one is bound at a time; the orchestrator selects which implementation 
+is bound, and switching between them requires unloading one provider and loading another, 
+momentarily perturbing every consumer’s dependency. (2) Service broker: a central service 
+that acts as the entrypoint for the interface is injected by both the backing providers and the 
+consumers, so that multiple providers coexist and the broker dispatches each request among 
+them. Compared to exclusive binding, the broker absorbs this perturbation: updating a backing 
+provider leaves the broker in place, so consumers see no change to their dependency and no 
+reload is triggered.
+The service broker underlies three capabilities: load balancing, rolling updates, and cross-
+process invocation.
+Load balancing. When several providers coexist, the broker distributes requests among 
+them according to a configurable policy (e.g., round-robin, least-loaded, latency-weighted) or 
+68

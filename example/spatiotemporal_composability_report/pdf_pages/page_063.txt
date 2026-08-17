@@ -1,0 +1,56 @@
+• Theorem 63 lets the entries be instantiated together, with no load order for the orches­
+trator to arrange: a fiber whose declared keys are not yet provided waits at its L-Begin, and 
+one whose provider leaves is deactivated ahead of it. A dependency therefore constrains 
+when a fiber activates rather than when its module is fetched and evaluated, so the loader 
+loads modules concurrently, where bringing up a large configuration spends its time.
+On top of the fiber that an entry declares, the loader dispatches on which of the entry’s 
+fields changed and applies the least disruptive operation for each.
+• id, url — rebuilds the entry, since its identity or its component has changed;
+• isolate — reassigns the entry’s realms (Algorithm 7);
+• intercept — updated in place, as interception metadata is consulted at read time and 
+needs no reload;
+• config — handed to the component, which decides how to apply the new payload, 
+typically by diffing it against the previous one and reloading only on a material change. 
+In particular, an @cordisjs/group entry’s config is its list of child entries, so it applies the 
+update as a keyed diff over child ids, creating, removing, or updating each child; since 
+updating a surviving child re-enters this same per-field dispatch, group reconciliation 
+and entry update recurse together down the tree;
+• disabled — unloads the fiber when set and reloads it when cleared.
+Managed realms. Isolation in the core derives a child context overriding the realm table 𝜌 
+at one key (Section 5.1.2), which suffices while the context tree stands still. An entry may be 
+moved between groups at runtime, so the loader manages realms of its own, and the isolate 
+field selects between two scoping rules per key. A value of true asks for a local realm, private 
+to the entry and tagged by its id, which the entry carries with it wherever it moves; a string 
+asks for a global realm shared by every entry naming that string, so moving such an entry 
+changes which entries it shares a binding with rather than which realm it belongs to. A realm 
+is discarded once no entry names it.
+Reassigning an entry’s realms turns on which keys changed realm, whether the entry is 
+itself the provider at a changed key, and which dependents to notify. The middle question is 
+the hard one, since a realm symbol may be shared by several fibers of which only one is the 
+provider. The loader answers it with delimiters: one symbol 𝛿𝑘 per key, under which each context 
+stores a tag of its own. A delimiter is written on a context and inherited by its descendants, so 
+the entry’s tag and the provider’s agree exactly when the two were derived within one isolate 
+scope for 𝑘, which is the case in which the binding at 𝑘 is the entry’s own and has to move 
+with it.
+Algorithm 7 Isolation realm reassignment
+1
+function patch_isolation(entry, 𝜌′)
+2
+𝜌 ← entry.ctx[@@isolate]
+3
+store ← entry.ctx[@@store]
+4
+Δ ← {𝑘| 𝜌(𝑘) ≠𝜌′(𝑘)} ▷ keys whose realm changes
+5
+for 𝑘 in Δ do
+6
+entry.ctx[𝛿𝑘] ← fresh tag
+7
+diff[𝑘] ← (𝜌(𝑘), 𝜌′(𝑘), entry.ctx[𝛿𝑘], store[𝜌(𝑘)].fiber.ctx[𝛿𝑘])
+8
+entry.ctx[@@isolate] ← 𝜌′
+9
+reload(entry.fiber)
+10
+for 𝑘 in Δ do
+63

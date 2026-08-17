@@ -1,0 +1,48 @@
+The first claim is then the premise target𝑛(𝛾) = 𝜔′ that Table  1 gives L-Iter and L-Finish, 
+together with 𝜔′ = 𝜔 by Lemma 54(2).
+For the dichotomy, step𝑟 is a rule whose premise has 𝜃𝑛= 𝖱𝖾𝗅𝗈𝖺𝖽𝗂𝗇𝗀(−, −, −) and whose 
+conclusion does not, of which Table 1 offers L-Finish, L-Divert, and L-Raise; the first lands in 
+𝖠𝖼𝗍𝗂𝗏𝖾(−, 𝜔) and the other two in 𝖴𝗇𝗅𝗈𝖺𝖽𝗂𝗇𝗀(−, 𝜔, −), from which Lemma 54(4) makes an L-
+Unload the only exit and Corollary 62 supplies the equation. The iteration a landing L-Divert 
+contributes is one of 𝑛’s own, hence among the maps that accumulator withdraws. Where 
+instead 𝑟= 𝑢, the sequence ends with the transition still in flight and the first claim is all that 
+is asserted.
+□
+4.4.4. Progress
+A guard that defers a provider’s withdrawal until its dependents are gone delivers Theorem 63 
+only if it eventually releases. One relation on the fibers of a registry carries the argument.
+Definition 65. The precedence relation on the names of a registry is
+𝑛≺𝑚≔𝑝𝑛∩𝑑𝑚≠⌀
+(60)
+so that 𝑛 may provide a key 𝑚 declares. It reads 𝑑 and 𝑝 alone, which by Lemma 54(5) come 
+into existence with a fiber’s entry and are never written again.
+Theorem 66 and Theorem 73 are established on the hypothesis that ≺ is acyclic, which is 
+an assumption and not something the definition delivers, 𝑛≺𝑛 holding of a component that 
+declares a key it provides itself. What ≺ orders is the two fibers’ activations and not their 
+lifetimes: 𝑛≺𝑚 says that 𝑛 has to become 𝖠𝖼𝗍𝗂𝗏𝖾 before 𝑚 can, whereas that a provider outlives 
+its consumer is Theorem 63(2), a theorem about the guarded calculus.
+A fiber’s target view answers to the fiber that created it as well as to its providers. What a 
+creator writes is 𝜏𝑛, through the primitive of Definition 47, and 𝜏 is monotone by Lemma 54(5). 
+A creator can therefore turn its child’s target view at most once over that child’s whole existence.
+Progress is a claim that some rule applies, so it is formulated over the rules a host must 
+offer: L-Begin, L-Leave, L-Unload, the landing rules L-Iter, L-Finish, and L-Raise, and L-Divert. 
+It appeals to the aborting alternative of L-Divert nowhere, so a host bound by the inertia of 
+Section 4.3.3 is covered as well.
+Theorem 66. (Progress.) Assume ≺ acyclic, len(𝑒𝑛) ≤𝐾 for every 𝑛, and the set 𝑁 of names of 
+Definition 60 finite; and let every step apply a lifecycle rule. Write 𝑆(𝑛) for the number of steps 
+acting on 𝑛 and
+𝑉(𝑛) ≔|{𝑡: target𝑡
+𝑛≠target𝑡+1
+𝑛
+}|
+(61)
+for the number of times its target view turns. Then
+1. (No deadlock.) ¬ quiet𝑡 implies that some lifecycle rule applies at 𝛾𝑡;
+2. (Termination.) 𝑆(𝑛) ≤(𝐾+ 4)(𝑉(𝑛) + 1), and both 𝑉(𝑛) and ∑𝑛𝑆(𝑛) are finite.
+Consequently every maximal sequence of lifecycle steps ends in a quiescent state.
+Proof. No deadlock. Let ¬ quiet𝑡, so some fiber 𝑛 satisfies neither clause of the quiet of Defini­
+tion 49. Reading Table 1 against the four kinds it can then be:
+• 𝜃𝑡
+𝑛= 𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾(⊥) with target𝑡
+𝑛≠⊥: L-Begin applies;
+47

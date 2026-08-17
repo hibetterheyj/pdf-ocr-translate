@@ -1,0 +1,63 @@
+classifying context changes and driving activation and deactivation from them, correct coeffect 
+ordering becomes a structural guarantee.
+3.2.1. Coeffect Context
+Traditional inversion-of-control (IoC) containers [38] typically model dependencies as simple 
+key-value mappings. This section formalizes IoC as a coeffect context that synergizes with 
+revertible effects to provide a mathematical foundation for dynamic composition.
+Definition 22. Given a type family 𝒱︀: 𝐾→Type, define the coeffect context as the dependent 
+partial function type:
+Σ ≔(𝑘: 𝐾) ⇀𝒱︀𝑘
+(20)
+where 𝜎: Σ is a finite partial function assigning to each 𝑘∈dom(𝜎) ⊆𝐾 a value of type 𝒱︀𝑘. 
+We write:
+• 𝜎(𝑘) for application (defined when 𝑘∈dom(𝜎));
+• 𝜎[𝑘↦𝑣] for the table binding 𝑣 at 𝑘 and agreeing with 𝜎 elsewhere;
+• 𝜎∖𝑘 for restriction (defined when 𝑘∈dom(𝜎));
+• 𝑘∈dom(𝜎) for membership.
+The use of a type family 𝒱︀ ensures that each dependency key 𝑘 is associated with a specific 
+value type 𝒱︀𝑘, providing static type safety for dependency access. Extension and restriction 
+carry preconditions, imposed by the operations below: a dependency cannot be provided 
+twice (𝑘∉dom(𝜎) for extension) nor revoked if absent (𝑘∈dom(𝜎) for restriction). A violated 
+precondition is signalled as an error and produces no transition, so the effect algebra, which 
+describes the transitions that do occur, applies to these operations unchanged. A reader prefer­
+ring to internalize the failure may read every Σ ⇀Σ below as Σ →𝖬𝖺𝗒𝖻𝖾(Σ) and compose in 
+the 𝖬𝖺𝗒𝖻𝖾 monad (Section 2.1), at the cost of replacing each identity by the partial identity on 
+the operation’s domain. Based on this context structure, we define two core operations:
+Definition 23. The get and set operations on Σ are defined as:
+get
+:
+(𝑘: 𝐾)
+→Σ ⇀
+𝒱︀𝑘
+get =
+𝑘
+↦
+𝜎
+↦
+𝜎(𝑘)
+set
+:
+(𝑘: 𝐾) × 𝒱︀𝑘
+→Σ ⇀
+Σ × (Σ ⇀Σ)
+set
+=
+(𝑘, 𝑣)
+↦
+𝜎
+↦(𝜎[𝑘↦𝑣], 𝜆𝜎′.𝜎′ ∖𝑘)
+(21)
+where get(𝑘) requires 𝑘∈dom(𝜎) and set(𝑘, 𝑣) requires 𝑘∉dom(𝜎) as preconditions.
+Notably, set(𝑘, 𝑣) has type 𝔈∗
+Σ, precisely an effect function on the coeffect context. We can 
+therefore directly apply the effect machinery from Section  3.1: effectΣ provides automatic 
+tracking and recovery of dependency registrations. This is the synergy between reactive coef­
+fects and revertible effects: coeffect operations are effects, and effects are revertible.
+What get hands a component is a value, and what the component can do with that value is 
+whatever the coeffect at that key provides. A key therefore carries more than a value type:
+Definition 24. A coeffect at a key 𝑘 is a triple (𝒱︀𝑘, ≃
+𝑘, 𝒜︀𝑘), where 𝒱︀𝑘 is the value type of Defin­
+ition 22, ≃
+𝑘 is an equivalence relation on 𝒱︀𝑘 up to which values at 𝑘 are compared (Section 3.3.2), 
+and 𝒜︀𝑘 is a set of coeffect operations, the operations the value bound at 𝑘 provides to a component 
+18

@@ -1,0 +1,75 @@
+Theory (Section 3, Section 4)
+Implementation
+Γ∞
+ctx, the first-class context
+𝛾∈Γ
+the context tree together with everything the running system 
+has touched
+𝔈Γ, 𝔈iter
+Γ
+Effect callback returning / yielding inverses
+effectΓ(𝑒)
+ctx.effect(callback)
+Σ, Σiso, Σinter
+ctx[@@store], ctx[@@isolate], ctx[@@intercept]
+get(𝑘), set(𝑘, 𝑣)
+ctx.get(key), ctx.set(key, value)
+isolate(𝑘, 𝑟)
+ctx.isolate(key, realm)
+intercept(𝑘, 𝜈)
+ctx.intercept(key, metadata)
+⟨𝑑, 𝑝, 𝑒, 𝜋, 𝜎, 𝜏, 𝜃⟩
+fiber, the instantiation of a component in ℭΓ
+dom(𝐹𝛾)
+enumerated through ctx.registry
+𝑛: 𝔑
+fiber.uid
+𝑑: 𝔇Γ
+fiber.inject
+𝑝: 𝔓Γ
+the component’s provide
+𝑒: 𝔈∗
+Γ
+fiber.apply
+𝜋: 𝔑
+fiber.parent.fiber.uid, the fiber owning the context it was 
+instantiated on
+derived realization (Definition 27)
+fiber.ctx, the child context the fiber runs in
+𝜃 (Definition 44)
+fiber.state, the lifecycle state, whose LOADING is 𝖱𝖾𝗅𝗈𝖺𝖽𝗂𝗇𝗀 and 
+whose FAILED is 𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾(𝜉)
+recover, accumulator 𝑔
+fiber.dispose, the accumulator
+𝜔 (Definition 44)
+fiber.committed, the committed view
+provider𝑘(𝛾)
+an Impl whose provider fiber is ACTIVE
+target(𝛾, 𝑛)
+fiber.target, recomputed by refresh (Algorithm 5), where 
+⊥ is INACTIVE
+𝖥𝗎𝗍𝗎𝗋𝖾, inertia (Section 4.3.3)
+fiber.inertia, the handle of the transition in flight
+O-Insert, O-Retire (Definition 47)
+ctx.use and the inverse of its callback (Algorithm 4)
+O-Remove
+the fiber dropped from its runtime, with uid cleared
+L-Begin, L-Iter, L-Finish
+execute’s iteration loop (Algorithm 1)
+L-Divert
+the guard failing at an iteration boundary (Algorithm 1), or 
+reload chaining into unload
+L-Leave
+refresh marking the fiber UNLOADING (Line 10)
+L-Unload
+unload and its inertial chaining (Algorithm 5)
+guard on L-Unload
+unload awaiting the notified dependents (Line 25)
+L-Raise
+the error recorded on the fiber, with its target set to ⊥
+Table 2 | Theory-to-implementation correspondence
+The remainder of this section builds the core library from the bottom up. Section 5.1.1 
+realizes revertible effects, the sole primitive through which a context is mutated; Section 5.1.2 
+realizes reactive coeffects over it; Section 5.1.3 composes both into the component lifecycle; and 
+Section 5.1.4 exposes the context-level operations built on them.
+55

@@ -1,0 +1,43 @@
+can also provide the coeffect isolation and interception of Section 3.2.3 as abilities of its own, 
+binding a key differently for each component and mediating the accesses it supplies.
+Such an operating system can also provide its own resources as coeffects. A resource lying 
+outside the boundary is made revertible where the runtime records each acquisition against 
+the component that made it (Section 6.1), and every runtime keeps a record of its own. An 
+operating system that provides the resource as a coeffect keeps that record once, since it is the 
+party that hands the resource out and can attribute it to the component that asked. Memory 
+and file descriptors are the immediate candidates, and tracking them for the sake of recovery 
+has been done at the kernel interface [77, 78]. Furthermore, an operating system can make 
+revertible some of the operations Section 6.1 can only withhold or compensate for. A system 
+that performs a write to persistent storage transactionally can roll it back [79], and one built on 
+copy-on-write or immutable storage reaches an earlier state by moving a pointer [80, 81].
+7. Related Work
+Dynamic composability intersects several established research areas. We survey the most 
+relevant lines of work and distinguish our contribution from each of them.
+7.1. Effect and Coeffect Systems
+Section 2 reviewed effects and coeffects as the theoretical pillars underlying our work. We 
+first situate the monadic effect systems now common in industrial practice, then survey three 
+research lines that extend effects and coeffects in directions relevant to Cordis: recasting 
+algebraic effects as capabilities, giving effects a reversible semantics, and unifying effects and 
+coeffects under a single graded discipline.
+Monadic effect systems. One family of libraries encodes effects in the type systems of 
+existing general-purpose languages, representing them as monadic values that a runtime exe­
+cutes. ZIO in Scala [82] models a computation as ZIO[R,E,A] and Effect-TS in TypeScript [83] 
+as Effect<A,E,R>, a generic type whose parameters describe its result, its typed errors, and the 
+services its context must supply; the fp-ts library [84] encodes the same error and requirement 
+channels through Reader-based monad transformers. Two traits separate these systems from 
+Cordis. First, the tracking is bought with a monadic embedding: a program obtains it only by 
+being written inside the effect type, whereas Cordis tracks effects as an overlay over ordinary 
+host code. Second, a requirement is discharged by interpretation, an installed service that 
+supplies its operations, and when that service is withdrawn what its operations performed 
+remains in place; Cordis instead pairs each effect with an inverse and re-resolves requirements 
+as providers come and go (Section 3.1, Section 3.2).
+Algebraic effects as capabilities. Algebraic effects (Section 2.1) make effect operations visi­
+ble to the type system. The extension closest to our work is Brachthäuser et al.‘s Effekt language, 
+which reinterprets effect types as capabilities [85, 86]: an effect type expresses what a compu­
+tation requires from its context rather than what side effects it may produce. This perspective, 
+like ours, treats the context as a mediator of capabilities. Cordis and Effekt differ in two respects. 
+(1) In purpose, algebraic effects make effects visible to enable modular interpretation, giving one 
+operation many handler semantics, whereas Cordis makes them visible to enable tracking and 
+reversion, pairing every context transformation with an inverse. (2) In setting, Effekt disciplines 
+effects statically at the type level, defaulting to scope-based reasoning in which capabilities are 
+74

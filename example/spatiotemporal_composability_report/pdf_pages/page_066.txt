@@ -1,0 +1,56 @@
+Phase 3: Transactional reload. Finally, the engine reloads the stale entries. It invalidates 
+the accepted modules’ caches3, backing up each removed module to enable rollback, then re-
+imports each stale entry’s component module by its url and swaps in a fresh fiber:
+Algorithm 10 Transactional module reload
+1
+function reload(ctx, accepted, stale_entries)
+2
+backup ← invalidate_caches(accepted)
+3
+try
+4
+for entry in stale_entries do
+5
+entry.fiber.dispose()
+6
+entry.fiber ← ctx.use(import(entry.url), entry.config)
+7
+catch error
+8
+restore_caches(backup)
+9
+for entry in stale_entries do
+10
+entry.fiber.dispose()
+11
+entry.fiber ← ctx.use(backup[entry.url], entry.config)
+12
+throw error
+The transactional guarantee ensures that the system never enters a half-reloaded state: if 
+any module fails to import (e.g., due to a syntax error), the caches are restored and every 
+stale entry is rebuilt from backup[entry.url], the previous component whose cache was just 
+restored, undoing the swaps already made.
+5.3. Case Study: Koishi
+Koishi is an open-source chatbot application framework built on Cordis4. Over four years of 
+development, it has accumulated over 4000 community-contributed plugins5, ranging from 
+instant-messaging (IM) adapters and database drivers to administrative consoles and end-
+user features. Its scale and diversity make it a representative validation of Cordis’s dynamic 
+composability in a production setting.
+Expressiveness and generality of the meta-framework. Koishi runs as a server-side bot 
+whose every feature is realized as a plugin over the context primitives of Section 5.1; Koishi 
+itself contributes only the chatbot-domain vocabulary. The same model reappears in a wholly 
+different runtime: Koishi’s web console is a second, independent Cordis application whose 
+plugins compose the primitives of the browser and its user interface rather than those of the 
+server. The disparate settings above establish two properties of the model of Section 3. (1) It 
+is expressive: its primitives suffice to carry a complete production system, the host framework 
+supplying only domain vocabulary. (2) It is general: it fixes how effects and coeffects compose 
+while leaving their meaning to each application, and so presupposes neither a particular 
+domain nor a particular runtime.
+Temporal composability without cognitive overhead. The plugin systems surveyed in 
+Section 1.2.1 cannot unload an individual extension’s effects without restarting the extension 
+3On Node.js, this means clearing the caches of both the ES module and CommonJS module systems, since a 
+module imported through the ES loader can appear in both.
+4Koishi currently uses Cordis v3. This paper presents Cordis v4, which refines the effect and coeffect semantics 
+and redesigns the loader; the core compositional model is shared across both versions.
+5Koishi uses the term plugin for the concept this paper formalizes as component.
+66

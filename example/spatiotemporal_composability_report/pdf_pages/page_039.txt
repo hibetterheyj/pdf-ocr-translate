@@ -1,0 +1,45 @@
+registry. The two halves are named separately, and both are maps on all of Γ. The state map of 
+a step taken at 𝛾𝑡 by a rule acting on 𝑛 is
+Ψ𝑡≔
+{
+pr1 ∘𝑖
+at L-Iter, L-Finish, and a landing L-Divert
+𝑔
+at L-Unload
+idΓ
+at every other rule
+(51)
+where 𝑖 and 𝑔 are the iterator and the accumulator that 𝜃𝑡
+𝑛 carries, and the edit edit𝑡: Γ →Γ is 
+the bracket read as a function, assigning to the fields it names the values the premises computed 
+at 𝛾𝑡. Both are therefore fixed by step𝑡 together with 𝛾𝑡 and defined at every state, which is 
+what lets Theorem 61 and Lemma 71 evaluate them away from 𝛾𝑡. Each step factors as
+𝛾𝑡+1 = edit𝑡(Ψ𝑡(𝛾𝑡))
+(52)
+At L-Unload, for instance, edit𝑡 is [𝜃𝑛↦𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾(𝜁)], and at O-Remove it is the removal ∖𝑛, 
+which is why the second half is an edit rather than an assignment. The fields divide along the 
+same seam: the tables 𝜎𝑚, which no edit𝑡 writes once the O-Insert creating 𝑚 has set it empty, 
+and the control fields 𝜃𝑚, 𝜏𝑚, 𝜋𝑚, 𝑑𝑚, 𝑝𝑚, 𝑒𝑚 together with dom(𝐹𝛾), which no Ψ𝑡 writes save 
+through the primitive of Definition 47. Write 𝛾≈𝛿 when two states agree on everything but 
+the control fields.
+The relation ≈ is not the ≃ of Definition 33, and neither refines the other, because each 
+forgets what the other has to keep. Recovery exactness is a claim about effects, so ≈ compares 
+the tables and the ambient state exactly and forgets only the registry’s record of which fiber 
+installed them. A rule reads the control fields to decide whether it applies, so ≃ has to keep 
+them, and this section reads it as the conjunction of Definition  33 with agreement on the 
+registry’s domain and on every control field of every fiber:
+𝛾≃𝛿
+≔
+𝜎𝛾≃𝜎𝛿∧dom(𝐹𝛾) = dom(𝐹𝛿) ∧∀𝑛, 𝑐∈{𝜃, 𝜏, 𝜋, 𝑑, 𝑝, 𝑒}. 𝑐(𝛾(𝑛)) ≃𝑐(𝛿(𝑛))(53)
+A field of function type, as 𝑒𝑛 and the 𝑔 inside 𝜃𝑛 are, is compared as Definition 36 compares 
+maps, an iterator as Definition 51 compares two, and a field of any other type by equality. The 
+results below hold up to both relations, one for each half of the state, Lemma 55 establishing 
+the ≃ half once for all ten rules.
+Table 1 is the ten rules of Section 4.3 read as such writes. The accumulator, the committed 
+view, and the remaining iterator are constituents of 𝜃𝑛, so the third column records the writes to 
+them as well, and ℎ there names the inverse the iteration of the fourth column yields, idΓ where 
+L-Divert aborts that iteration. Where a Ψ𝑡 built from an iterator registers a fiber (Definition 47), 
+that registration carries the writes of the O-Insert row at the name it draws, and an L-Unload 
+whose accumulator retires one carries those of the O-Retire row. Every case analysis below is 
+a lookup in the table, and five lookups recur often enough to name.
+39

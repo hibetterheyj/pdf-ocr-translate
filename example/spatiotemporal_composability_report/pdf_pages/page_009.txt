@@ -1,0 +1,41 @@
+3. Revertible Effects and Reactive Coeffects
+This section lifts the concepts of effects and coeffects introduced in Section 2 to runtime mecha­
+nisms, constructing a theory of dynamic composition. The central idea is to turn the typing 
+contexts carrying effects and coeffects into context types, i.e., runtime-operable types that reify 
+the context as a first-class entity. For the effect type, we model it as a context transformation 
+paired with an inverse, achieving local temporal composability. For the coeffect context, we 
+model it as a type carrying dependency information, achieving local spatial composability. An 
+observational equivalence on the coeffects then supplies the effects with independence. The 
+unified context that carries both effects and coeffects constitutes a programming paradigm in 
+its own right.
+3.1. Revertible Effects
+Temporal composability is the ability to load and unload components at runtime such that, upon 
+unloading, the shared environment is recovered to its pre-composition state. This requires that 
+every modification a component makes to the environment be both trackable and recoverable. 
+We therefore model an effect as a function of type Γ →Γ × (Γ →Γ): applied to the current 
+context, it yields the modified context together with an explicit inverse. Supplying that inverse 
+is what lets the effect be reverted, and returning it to the runtime is what makes the effect 
+trackable. We call such effects revertible: by tracking and composing these inverses during 
+execution, complete environment recovery becomes a structural guarantee.
+3.1.1. Effect Context
+Given any impure function 𝑓impure : 𝑋→𝑌, we transform it into a pure form 𝑓: Γ × 𝑋→Γ ×
+𝑌, where Γ is the context and all possible side effects can be represented as transformations 
+on Γ. For any fixed input 𝑥: 𝑋, the induced map 𝛾↦pr1(𝑓(𝛾, 𝑥)) captures the side effect of 𝑓 
+independently of the return value. Effects on Γ therefore live in the monoid of transformations 
+Γ →Γ under composition ∘, where each monoid axiom has a direct reading as a property of 
+effects:
+• Closure: the sequential composition of two effects is again an effect;
+• Associativity: a composite effect is independent of how it is bracketed;
+• Identity: idΓ, the identity function on Γ, acts as the unit of composition.
+To model effects that can be undone, we pair each transformation 𝑓 with another transfor­
+mation 𝑔 that undoes 𝑓, and call 𝑔 a left inverse of 𝑓, abbreviated to inverse throughout the paper. 
+Undoing is one-sided: what an inverse is held to is 𝑔∘𝑓 and never 𝑓∘𝑔. Pairs of transformations 
+carry a multiplication of their own:
+Definition 1. Define the twisted composition of pairs of context transformations by
+(𝑓1, 𝑔1) ∘(𝑓2, 𝑔2) ≔(𝑓1 ∘𝑓2, 𝑔2 ∘𝑔1)
+(4)
+As for ∘ itself, the left operand acts after the right, and the inverses accumulate in the opposite 
+order. It makes (Γ →Γ) × (Γ →Γ) a monoid with unit (idΓ, idΓ), the product of the monoid of 
+transformations with its opposite, which we call the twisted composition monoid 𝔗Γ over Γ.
+To track effects within the context itself, we introduce the following definition:
+9

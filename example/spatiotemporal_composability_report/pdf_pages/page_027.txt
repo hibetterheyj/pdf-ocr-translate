@@ -1,0 +1,41 @@
+Two limits of the theorem are worth naming. Binding every shared location at a key is the 
+paradigm’s discipline and not a property of the construction, so a location the system cannot 
+reify as a coeffect lies outside the boundary of Section 6.1 and outside the theorem with it. And 
+commutativity of a key is a property of the interface that key publishes, so meeting it is an 
+obligation on the component providing the key rather than on the components consuming it.
+3.3.3. Situating the Context Paradigm
+Programming paradigms differ fundamentally in how they handle side effects. Two established 
+poles define the spectrum:
+Explicit state threading (functional). To preserve referential transparency, purely func­
+tional languages model side effects as explicit transformations on state. The State monad 𝑆→
+(𝐴, 𝑆) [23] threads an environment through every computation. This approach yields strong 
+compositional guarantees: effects are visible in types and amenable to equational reasoning. 
+However, it imposes significant ergonomic costs: every function in the call chain must accept 
+and return the state parameter, even when it merely passes the state through unchanged. As the 
+number of effect dimensions grows (logging, configuration, I/O), monadic stacking or effect-
+handler boilerplate proliferates.
+Implicit mutation (imperative/OOP). Mainstream imperative languages permit compo­
+nents to modify shared state and access dependencies without explicit declaration at the 
+call site. On the effect side, a representative example is React’s useEffect hook: it registers a 
+persistent side effect on the component’s internal fiber, yet neither the effect target nor the regis­
+tration mechanism appears as an explicit parameter—identification relies on call-order position 
+within hidden runtime state. On the coeffect side, Java’s service locator pattern (e.g., Spring’s 
+ApplicationContext.getBean(...)) retrieves dependencies from a process-wide registry at 
+runtime, requiring null checks and type casts at each call site; dependency relationships are 
+implicit and scattered across the codebase. More generally, understanding how f() modifies or 
+depends on the system requires reading its implementation transitively. Refactoring becomes 
+fragile because moving or removing a call may silently break distant invariants.
+The context paradigm combines the traceability of the functional approach with the 
+ergonomics of the imperative approach. Effects and coeffects are both mediated through an 
+explicit context parameter. Each operation is therefore attributable to the specific context on 
+which it was invoked, and hence to the component that context belongs to.
+Beyond combining the strengths of both poles, the context paradigm lets the developer 
+handle each effect and dependency individually and composes them into the system’s behavior 
+automatically. For revertible effects, the developer supplies the inverse of each atomic opera­
+tion, and the inverse of any composite follows by composition (Section 3.1), so a component’s 
+teardown is derived from its loading rather than written alongside it. For reactive coeffects, 
+a component declares only the dependencies it needs, and the runtime resolves and re-wires 
+them automatically (Section 3.2), keeping them consistently wired as providers are added, 
+removed, or replaced. In both directions, correctness that would otherwise rest on developer 
+discipline becomes a structural property of the paradigm.
+27

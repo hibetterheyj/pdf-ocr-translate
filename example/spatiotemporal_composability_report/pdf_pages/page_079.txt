@@ -1,0 +1,43 @@
+blocking wait against a reference that may already be stale. Cordis’s reactive coeffects close both 
+gaps: deactivation reverts the dependents’ accumulated effects, and its inertial 𝖴𝗇𝗅𝗈𝖺𝖽𝗂𝗇𝗀 state 
+(Section 4.3.3) runs asynchronous teardown to completion before acting on further change.
+Value-level reactivity. Functional reactive programming (FRP) [120] and its modern incar­
+nations (e.g., signals [121, 122] in SolidJS, Vue’s reactivity system, Angular Signals) propagate 
+change at a value-level granularity: when a signal changes, derived computations are re-evalu­
+ated synchronously or under a scheduler [123]. Cordis’s reactive coeffects act at a component-
+level granularity, adding asynchronous lifecycle semantics that value-level propagation does 
+not model. The same granularity difference runs the other way for consistency: propagating in 
+a turn, in an order the dependency graph fixes, lets FRP require that no derived computation 
+read a mixture of updated and stale inputs, which is glitch freedom [124], whereas Cordis has 
+no counterpart of a turn, orchestration actions arriving one at a time, and guarantees only 
+that no single transition straddles two resolutions of its coeffects (Theorem 64). The two are 
+complementary rather than competing: a Cordis coeffect can itself carry reactive values, and a 
+component updates on only the parts it actually consumes, refining component-level reactivity 
+into finer-grained reactive coeffects that span both levels.
+8. Conclusion
+We have presented a formal foundation for dynamic composability by lifting the classical 
+concepts of effects and coeffects to runtime mechanisms. Revertible effects address local temporal 
+composability: every context transformation carries an inverse that the runtime tracks, and 
+both tracking and recovery preserve composition, so the context is recovered upon component 
+removal. Reactive coeffects address local spatial composability: a component is notified against 
+its coeffect specification whenever the context changes, each change classified as activating, 
+deactivating, or neutral, with coeffect isolation varying what a declared key resolves to and 
+coeffect interception varying how the binding is used. We unify the effect context and the 
+coeffect context into a single context type, in which an observational equivalence on the coeffects 
+supplies the effects with independence, constituting a programming paradigm for spatiotem­
+poral composability. Combining these mechanisms into the notion of a component then gives 
+a calculus of dynamic composition, whose metatheory carries spatiotemporal composability 
+from a single component to a whole system of interleaved components. We realize this para­
+digm as the Cordis meta-framework, with a core library providing effect tracking and coeffect 
+resolution, as well as a declarative component loader with configuration reconciliation and 
+hot module replacement. The Koishi case study validates the design of Cordis in a production 
+system with over 4000 community plugins.
+Beyond human-curated plugin ecosystems, a compelling direction for future validation 
+is self-evolving agent harnesses (Section  1.2.2), where an AI agent generates and replaces 
+its own harness components continuously and with little human oversight. Applying Cordis 
+in such a setting would validate the temporal guarantees of complete recovery under rapid 
+component replacement, as well as the spatial guarantees of dependency coordination under 
+frequent topological change. Such validation would demonstrate the paradigm’s applicability 
+as a foundation for recoverable, coordinated, and continuous self-evolution in agent harnesses 
+and other autonomous systems.
+79

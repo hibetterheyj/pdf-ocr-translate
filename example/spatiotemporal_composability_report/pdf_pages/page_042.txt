@@ -1,0 +1,44 @@
+The second lookup is that an entry stripped of everything but its name is invisible to the 
+rules, which is what lets Definition 47 retire a fiber where the state it recovers has none, and 
+Lemma 72 remove the registrations a deleted episode made.
+Lemma 57. (Vestigial entries.) Call 𝑛 vestigial at 𝛾 when 𝜏𝑛= ⊤, 𝜃𝑛= 𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾(⊥), 𝜎𝑛= ⌀, and 
+no 𝑚 has 𝜋𝑚= 𝑛; a vestigial entry satisfies 𝛾≈𝛾∖𝑛. If 𝑛 is vestigial at 𝛾 then for every rule 
+and every 𝑚≠𝑛:
+1. a rule applying at 𝛾 acting on 𝑚 applies at 𝛾∖𝑛 acting on 𝑚, and the states the two reach 
+differ in the entry at 𝑛 alone, which stays vestigial;
+2. conversely a rule applying at 𝛾∖𝑛 acting on 𝑚 applies at 𝛾, unless it is an O-Insert 
+drawing the name 𝑛 or claiming a key of 𝑝𝑛.
+Proof. A vestigial 𝑛 contributes to no observation a premise of a rule acting on 𝑚≠𝑛 reads. It 
+is not 𝖠𝖼𝗍𝗂𝗏𝖾, so 𝜎𝑛 enters no 𝜎𝛾 and 𝑛 is the provider of no key, leaving 𝛾⊧𝑑𝑚 and target𝑚 
+unmoved; installed𝑛 fails, so 𝑛 contributes no disjunct to relied𝑚; no 𝜋𝑚′ names 𝑛, so the 
+premise ∀𝑚′. 𝜋𝑚′ ≠𝑚 of an O-Remove of 𝑚 is unmoved; and 𝜃𝑛, 𝜏𝑛, and 𝜋𝑛 are read by rules 
+acting on 𝑛 alone. The two premises clause (2) excepts are the two the removal relaxes, an 
+absent name being fresh and an absent provision meeting every other. By Lemma 54 no rule 
+acting on 𝑚≠𝑛 writes a field of 𝑛, so the entry survives, and the state map of the step is 
+confined to 𝑚 by Definition 48, so it leaves 𝜎𝑛 empty.
+□
+Simplifying the lifecycle states, together with the rules that match on them, yields a sub-
+calculus, and not every result survives the simplification. Dropping Section 4.3.1 is the case 
+that matters, which is the division Section 4.3 opens with, read from the metatheory’s side: its 
+guard is what establishes clauses (3) and (4) of Definition 58, and Theorem 63 rests on the 
+interval the guard creates, so those three fail without it. What the other three subsections add 
+can be simplified away without disturbing the results below, each of them only adding rules to 
+the one state space Definition 49 fixes.
+4.4.1. Preservation
+Definition 45 fixes the shape of a registry, and the rules have to be checked against it before the 
+results below can add to it. This subsection identifies the invariant the rules preserve, of which 
+the first clause is that shape and the rest what those results assume.
+Definition 58. A registry 𝐹𝛾 is well formed when, for all 𝑚, 𝑛∈dom(𝐹𝛾) and all 𝑘∈𝐾,
+1. 𝜋𝑛∈dom(𝐹𝛾) ∪{𝗋𝗈𝗈𝗍};
+2. 𝑚≠𝑛⇒𝑝𝑚∩𝑝𝑛= ⌀;
+3. installed𝑛(𝛾) ⇒𝜔𝑛 is total on 𝑑𝑛 and valued in dom(𝐹𝛾);
+4. installed𝑛(𝛾) ∧𝑘∈𝑑𝑛∧𝜔𝑛(𝑘) = 𝑚⇒installed𝑚(𝛾).
+Clause (1) is the tree of Definition 45 read one edge at a time, keeping a parent pointer landing 
+in the registry. The acyclicity that definition also requires needs no clause, since the fiber a 
+pointer names is registered before the fiber naming it.
+Theorem 59. (Preservation.) If 𝐹𝑡 is well formed then so is 𝐹𝑡+1, whichever rule step 𝑡 applies. 
+Each clause is established at 𝛾𝑡+1 from all four at 𝛾𝑡.
+Proof. Let step 𝑡 act on 𝑛.
+(1) By Table 1 only O-Insert and O-Remove write a 𝜋 or dom(𝐹𝛾). O-Insert has 𝜋𝑛∈dom(𝐹𝑡) ∪
+{𝗋𝗈𝗈𝗍} as a premise, which is the clause for the fiber it adds, and it leaves every other 𝜋 alone 
+42

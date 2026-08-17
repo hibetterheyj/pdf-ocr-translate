@@ -1,0 +1,53 @@
+Algorithm 3 Reactive notification
+1
+function notify(ctx, keys)
+2
+affected ← ⌀
+3
+for fiber in all_fibers do
+4
+for key in keys do
+5
+if key ∈ fiber.inject and fiber.ctx[@@isolate][key] = ctx[@@isolate][key] then
+6
+refresh(fiber)
+7
+affected ← affected ∪ {fiber}
+8
+break
+9
+return affected
+A binding counts as available to a dependent only while the fiber that installed it is ACTIVE, 
+so refresh resolves each declared key against an active provider rather than against the store 
+alone. This is the provided by relation of Definition  46, and it is what makes a withdrawal 
+visible to dependents one step before it happens: a provider that has entered UNLOADING has 
+stopped providing, so its dependents recompute an unsatisfied target view and begin their 
+own teardown while its bindings are all still in place.
+Isolation and interception. The two operations do structurally the same thing: each 
+derives a child context that adjusts one inherited table for key, leaving the parent untouched, 
+so recovery is implicit: discarding the child context suffices, with no explicit inverse to run. 
+ctx.isolate(key, realm) overrides the realm mapping 𝜌 with realm, or a freshly generated 
+symbol by default (realizing isolate, Definition  29), so two contexts that assign different 
+symbols to the same key resolve to independent bindings. ctx.intercept(key, metadata) 
+merges metadata into the interception table 𝜄 (realizing intercept, Definition 31): following that 
+definition, the new metadata is combined with whatever the context already carries for key and 
+takes priority over it.
+5.1.3. Component Lifecycle
+A component is instantiated as a fiber by ctx.use. This section gives the fiber (introduced in 
+Section 5.1) operational meaning as the inertial state machine of Section 4.3.3. Two fields drive 
+the algorithm below: fiber.parent, the parent context of fiber.ctx that forms the component 
+hierarchy (the recursive structure of Γ∞, Section 3.3.1), and fiber.inertia, a handle to the in-
+flight asynchronous transition (or null if idle).
+Algorithm  4 shows component instantiation. A component pairs a coeffect specification 
+component.inject (𝑑) with an effect function component.apply; instantiation binds the 
+component’s config into fiber.apply (Line 9), the config-applied effect function (𝑒) that the 
+lifecycle then runs. The callback function (Line 2) is the effect tracked in the parent fiber: when 
+executed, it initiates the child’s lifecycle by calling refresh (Algorithm 5); when recovered, 
+it forces the child’s target to ⊥ and triggers unload. This is the registration primitive of 
+Definition 47, with callback as its O-Insert and the closure callback returns as its O-Retire: an 
+instantiation is an ordinary tracked effect of the parent, so unloading a parent cascades to its 
+children.
+Algorithm 4 Component instantiation
+1
+function use(ctx, component, config)
+58

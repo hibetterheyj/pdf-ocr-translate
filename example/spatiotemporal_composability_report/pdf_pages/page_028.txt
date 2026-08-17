@@ -1,0 +1,46 @@
+4. A Calculus of Dynamic Composition
+Section 3 establishes spatial and temporal composability in their local form alone. Carrying 
+them to a whole system takes a decomposition of the system into components, each pairing a 
+coeffect specification with a witnessed effect function, so that every interaction with the shared 
+environment is attributable to one of them. The sections below give that decomposition an 
+operational semantics, and establishes spatial and temporal composability in their global form.
+Section 4.1 and Section 4.2 present the smallest calculus in which the lifecycle can be given 
+rules, one that takes each transition to be atomic, immediate, and infallible; Section 4.3 drops 
+the three assumptions, atomicity once for each direction a transition may run in, admitting the 
+forms of control flow a runtime interposes between the start of a transition and its end, and 
+arrives at the calculus a real runtime implements; and Section 4.4 establishes the metatheory of 
+that calculus, namely preservation, global temporal and spatial composability, progress, and 
+confluence.
+4.1. Components and Fibers
+This section fixes the objects the rules act on: the component; the fiber, an instantiation of a 
+component carrying a lifecycle state of its own; and the registry, which holds the fibers a state 
+carries and from which the coeffect context is read off.
+Components. A component is given as a triple, its coeffect side split into what it reads from 
+the environment and what it provides to it.
+Definition 43. A component over a context Γ carrying both effects and coeffects (Definition 32) 
+is defined as:
+ℭΓ ≔𝔇Γ × 𝔓Γ × 𝔈∗
+Γ
+(37)
+representing a triple (𝑑, 𝑝, 𝑒), where:
+• 𝑑: 𝔇Γ is the coeffect specification of Definition 25, declaring the dependencies required 
+from the environment;
+• 𝑝: 𝔓Γ ≔𝖲𝖾𝗍(𝐾) is the provision, declaring the coeffect keys the component may provide, 
+and no key outside 𝑝 is one its effect function writes;
+• 𝑒: 𝔈∗
+Γ is the witnessed effect function of Definition 8, defining the effects contributed 
+when the component is active together with the inverse that withdraws them.
+The two declarations are the two directions of one interface, 𝑑 what the component reads from 
+the environment and 𝑝 what the component writes to the environment, and Section 4.2 admits 
+no two fibers of one registry whose provisions meet. Subscripts are taken on Γ throughout, the 
+coeffect context being one of its projections (Definition 32), so the 𝔇Σ of Definition 25 is written 
+𝔇Γ here.
+Disjointness of provisions is where this chapter parts company with Section  3.2.3. The 
+isolation of Definition 28 lets one key resolve through a realm table, so that two fibers may 
+provide the same key in different realms; a calculus carrying realms would relax disjointness 
+to disjointness within a realm and would resolve a declared key against the realm of the fiber 
+declaring it. We do not introduce realms here, and read every key at one shared realm instead, 
+which is what makes the disjointness above the right condition and each key’s provider unique 
+(Definition 45). What it restricts is how often a component may be instantiated: one with a non-
+empty provision has one fiber at a time, so the many instantiations below are of components 
+28

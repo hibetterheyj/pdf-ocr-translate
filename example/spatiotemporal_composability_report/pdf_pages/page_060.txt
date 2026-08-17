@@ -1,0 +1,63 @@
+19
+notify(fiber.ctx, provided(fiber))
+20
+fiber.inertia ← null
+21
+else
+22
+fiber.state ← UNLOADING
+23
+fiber.inertia ← create_task(unload(fiber))
+24
+async function unload(fiber)
+25
+await all(notify(fiber.ctx, provided(fiber)).map(f ↦ f.await())) ▷ drain dependents
+26
+await fiber.dispose()
+27
+fiber.dispose ← id
+28
+fiber.committed ← ⊥
+29
+if fiber.target = ⊥ then
+30
+fiber.state ← INACTIVE
+31
+fiber.inertia ← null
+32
+else
+33
+fiber.state ← LOADING
+34
+fiber.inertia ← create_task(reload(fiber))
+fiber.target is computed by resolving each declared key against the current coeffect store 
+and tupling the uid of the fiber that provides it, so it is a digest of target(𝛾, 𝑛) (Definition 46). 
+Identifying a binding by its provider rather than by its value is what makes a single comparison 
+against the recorded target sufficient: a uid is drawn fresh and never reused, so a provider that 
+is replaced cannot be mistaken for the one it replaced, even when the two provide equal values. 
+Since notify (Section 5.1.2) recomputes the target on every coeffect change, a fiber reloads 
+precisely when one of its declared keys comes to be provided by a different fiber. A provider 
+that overwrites its own binding in place is therefore not observed; a component that wants its 
+replacement to propagate withdraws the binding and installs it afresh.
+The algorithm operates at two complementary levels. At the transition level, reload and 
+unload check the target at completion, enabling inertial chaining across transitions. At the 
+iteration level within each transition, the effect execution (Algorithm 1) checks the target at each 
+iteration boundary, enabling partial rollback within a single transition. These two mechanisms 
+correspond to the inter-transition chaining of Section 4.3.3 and the intra-transition staleness 
+check that Theorem 64 rests on.
+Three lines carry the coeffect ordering of Theorem 63, and where each of them sits is what 
+makes the ordering hold. reload commits the resolved view at Line 14 and unload discards it 
+only after every inverse has run, so a fiber reads the same bindings for as long as it is loaded, its 
+own teardown included. refresh marks the fiber UNLOADING at Line 10 before the transition task 
+is created, which is the L-Leave step: the fiber stops providing, and the dependents recompute 
+against that before any of its inverses is scheduled. unload then waits at Line 25 for each notified 
+dependent to reach INACTIVE, which is the guard on L-Unload; notify admits a dependent only 
+when its declared key resolves to the same realm symbol as the provider’s, which is the runtime 
+form of the guard’s demand that the dependent see the key from this fiber rather than merely 
+declare it. The wait sits ahead of the whole recovery rather than inside one of the inverses being 
+waited on, since fiber.dispose initiates a fiber’s effects concurrently and a wait placed within 
+one of them would leave the rest unordered. Termination follows Theorem 66: a fiber only ever 
+waits on dependents that have already stopped being satisfiable, and a dependent that is itself 
+a provider waits the same way for its own, so the provider graph is traversed on demand rather 
+than analyzed in advance.
+60

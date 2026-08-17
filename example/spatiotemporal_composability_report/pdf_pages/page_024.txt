@@ -1,0 +1,59 @@
+satisfaction predicate 𝜎⊧𝑑 and on the classification notify𝑑 of Definition 26, and reactivity is a 
+property of Σ/ ≃.
+Calling the relation observational is a claim about each ≃
+𝑘, namely that it separates no more 
+than the operations of 𝑘 can tell apart. An observer of a value runs those operations and reads 
+their outcomes.
+Definition 34. Let 𝑉 carry a set 𝒜︀ of operations in the sense of Definition 24, and write 𝔐(𝑎) 
+for the transformation monoid (Definition 17) of the effect functions 𝑎(𝑥) over every argument 
+𝑥: 𝑋𝑎. A test over 𝒜︀ is a finite word over the generators of the monoids 𝔐(𝑎), 𝑎∈𝒜︀, each letter 
+applied to the value the letters before it left; its outcomes are those the letters that are forward 
+maps of operations yield along the way, and it is undefined where a precondition fails. Values 
+𝑣, 𝑣′ : 𝑉 are indistinguishable, written 𝑣≈
+𝒜︀𝑣′, when every test over 𝒜︀ is defined at both or at 
+neither and yields the same outcomes at both.
+Lemma 35. Indistinguishability is the coarsest relation the operations respect. That is,
+1. every operation of 𝒜︀ respects ≈
+𝒜︀ in the sense of Definition 24;
+2. every equivalence that every operation of 𝒜︀ respects is contained in ≈
+𝒜︀.
+Every admissible choice of ≃
+𝑘 is therefore contained in ≈
+𝒜︀𝑘
+, and ≈
+𝒜︀𝑘
+ is itself admissible.
+Proof.
+1. Let 𝑣≈
+𝒜︀𝑣′ and let 𝑎∈𝒜︀ be applied to an argument. Prefixing a test by one letter is again 
+a test, so the values the forward map reaches are indistinguishable, as are the values any 
+one yielded inverse reaches from indistinguishable arguments; the one-letter test gives 
+definedness at both or neither and equality of the outcome.
+2. Let 𝑅 be such an equivalence and 𝑣𝑅𝑣′. Each letter of a test is a forward map or a yielded 
+inverse of an operation, and respect carries 𝑅 along either, keeping the values reached 
+related and the outcomes equal at every letter. Hence every test agrees at 𝑣 and 𝑣′.
+□
+Substituting ≃ for = throughout is not by itself enough, because an effect function returns 
+an inverse as well as a state, and two states that ≃ identifies have to yield inverses ≃ identifies 
+as well.
+Definition 36. A map 𝑓: Γ →Γ respects ≃ when
+∀𝛾, 𝛾′ ∈Γ.
+𝛾≃𝛾′ ⇒𝑓(𝛾) ≃𝑓(𝛾′)
+(33)
+Two maps are related when they agree at every state, and two pairs in 𝜕Γ when both compo­
+nents are:
+𝑓≃𝑔
+≔
+∀𝛾∈Γ. 𝑓(𝛾) ≃𝑔(𝛾)
+(𝛿, 𝑔) ≃(𝛿′, 𝑔′)
+≔
+𝛿≃𝛿′ ∧𝑔≃𝑔′
+(34)
+A map respecting ≃ is one that descends to Γ/ ≃, and two maps related by ≃ are two that 
+descend to the same map there. An effect function needs both: the first so that the state it 
+computes is determined on the quotient, the second so that the inverse it returns is.
+Definition 37. Read Definition 8 up to ≃: an 𝑒∈𝔈Γ lies in 𝔈∗
+Γ when 𝑒 respects ≃ as a map Γ →
+𝜕Γ and, writing (𝛿, 𝑔) = 𝑒(𝛾), for every 𝛾∈Γ
+1. 𝑔(𝛿) ≃𝛾;
+24

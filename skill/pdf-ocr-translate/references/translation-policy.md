@@ -38,9 +38,14 @@ OCR output (MinerU/Nougat) typically flattens all headings to `\subsection{}` wi
 | **Appendix** | `\subsection{A 贡献者名单}` | `\section{贡献者名单}` | Letter A-F stripped from title, kept in `\label{}` |
 | **Inline bold** | `\subsection{核心评测结果摘要}` | `\noindent\textbf{核心评测结果摘要}` | Pass via `--inline-bold` flag |
 
-The depth is determined by the count of dots in the number prefix: 0 dots → section, 1 dot → subsection, 2 dots → subsubsection.
+The depth is determined by the count of dots in the number prefix: 0 dots → section, 1 dot → subsection, 2 dots → subsubsection. The script's patterns accept both `1 引言` and `1. 引言` (trailing dot).
 
-Reference [assets/heading_examples.tex](../assets/heading_examples.tex) for before/after examples, and `example/kimi_k3_report/` for the full working result.
+**Instructions to translation subagents on headings** (so the normalizer can run afterwards):
+- Translate the title text but **keep the OCR numeric prefix** in the heading command: `\subsection{4.1. Components}` → `\subsection{4.1. 组件}` (the normalizer strips `4.1.`).
+- **Collapse multi-line heading titles onto one line**: OCR often breaks long headings across lines (`\subsection{4. A Calculus of Dynamic\nComposition}`); the normalizer matches per-line and cannot see a title split across lines.
+- Keep `\label{}` keys exactly as-is (even when they carry OCR typos like `\label{efects}`) — they are internal anchors for `\ref{}`.
+
+Reference [assets/heading_examples.tex](../assets/heading_examples.tex) for before/after examples, and `example/kimi_k3_report/` or `example/spatiotemporal_composability_report/` for full working results.
 
 ## Consistency Checklist
 

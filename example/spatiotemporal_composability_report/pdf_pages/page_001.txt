@@ -1,0 +1,21 @@
+A Programming Paradigm for Spatiotemporal Composability
+Yifan Shi1,2, Wei Zhang1, Tianyi Cui2
+1Peking University
+2DeepSeek-AI
+Abstract
+Modern software—from plugin systems to self-evolving agent harnesses—increasingly 
+requires dynamic composition, yet its formal foundations remain underdeveloped. We identify 
+two orthogonal dimensions of the problem: temporal composability, the ability to completely 
+revert a component’s side effects upon removal, and spatial composability, the ability to declare 
+and reactively manage inter-component dependencies. We address the two dimensions by 
+lifting classical effect and coeffect concepts to runtime mechanisms. In particular, we formalize 
+revertible effects, in which every context transformation carries an inverse that the runtime tracks. 
+We formalize reactive coeffects, in which each change of the context notifies a component against 
+its coeffect specification. We unify the effect context and the coeffect context into a single context 
+type, which constitutes a programming paradigm. After that, we combine these mechanisms 
+into the notion of a component and give a calculus of dynamic composition, whose metatheory 
+carries spatiotemporal composability from a single component to a whole system of interleaved 
+components. We implement these ideas in Cordis, a meta-framework of spatiotemporal com­
+posability that provides a core library with effect tracking and coeffect resolution, as well as a 
+declarative component loader with configuration reconciliation and hot module replacement.
+1

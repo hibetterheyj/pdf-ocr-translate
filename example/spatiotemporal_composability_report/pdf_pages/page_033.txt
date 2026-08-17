@@ -1,0 +1,46 @@
+only, in that no rule mentions a scheduler; the steps are any sequence of rule applications, so 
+a theorem proved over all such sequences holds for every scheduling policy a runtime might 
+adopt.
+4.3. Transitions in Progress
+This section extends the base calculus in four settings. The first supplies something Section 3.2 
+requires and Section 4.2 cannot express, a deactivation spread over an interval its dependents 
+may occupy; the other three drop the idealization that a transition is atomic, immediate, and 
+infallible, none of which a transition in a real runtime is. What is dropped is that a whole 
+transition is one step, not that a step is one application of one rule, and the four share one 
+structural consequence, taken here once: a transition that is not a step needs a state to occupy 
+while it is under way, one for each direction it may run in.
+Definition 49. The lifecycle states of this section replace ΘΓ by
+ΘΓ ≔𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾(𝜁) | 𝖱𝖾𝗅𝗈𝖺𝖽𝗂𝗇𝗀(𝑖, 𝑔, 𝜔) | 𝖠𝖼𝗍𝗂𝗏𝖾(𝑔, 𝜔) | 𝖴𝗇𝗅𝗈𝖺𝖽𝗂𝗇𝗀(𝑔, 𝜔, 𝜁)
+(43)
+where 𝑖: 𝔈iter∗
+Γ
+ is the remaining effect iterator (Definition 51 below), 𝑔: Γ →Γ the accumulator 
+built so far, 𝜔: 𝑑→𝔑 the committed view, and 𝜁: {⊥} ∪Ξ the outcome, carried by 𝖴𝗇𝗅𝗈𝖺𝖽𝗂𝗇𝗀 as 
+the one its deactivation is headed for and by 𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾 as the one it reached, either ⊥ or an error 
+drawn from the set Ξ of errors that Section 4.3.4 supplies.
+A fiber is installed when it is in one of the three states carrying an accumulator and a committed 
+view, and failed when it carries an error outcome:
+installed𝑛(𝛾) ≔𝜃𝑛≠𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾(−),
+failed𝑛(𝛾) ≔∃𝜉∈Ξ. 𝜃𝑛= 𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾(𝜉)
+(44)
+An installed fiber 𝑛 resolves 𝑘 to 𝑚 when 𝜔𝑛(𝑘) = 𝑚. The quiescence of Definition 46 is read on 
+the wider state space as
+quiet(𝛾) ≔∀𝑛∈dom(𝐹𝛾).
+{
+𝜁≠⊥∨target𝑛(𝛾) = ⊥
+if 𝜃𝑛= 𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾(𝜁)
+target𝑛(𝛾) = 𝜔𝑛
+if 𝜃𝑛= 𝖠𝖼𝗍𝗂𝗏𝖾(−, 𝜔𝑛)
+⊥
+otherwise
+(45)
+The definitions of Section 4.1 carry over to this state space, with two readings to fix. First, 
+the 𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾 of Section 4.2 is read as 𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾(⊥) in the conclusion of O-Insert and as 𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾(−) 
+in the premise of O-Remove. Second, 𝜎𝛾 still unions the tables of 𝖠𝖼𝗍𝗂𝗏𝖾 fibers alone, so a fiber 
+whose transition is under way in either direction reads its coeffects through the 𝜔 it holds 
+and provides none of its own; a key that its transition has already written is therefore not yet 
+one a dependent may activate against. In the two-state calculus the distinction is empty, every 
+installed fiber being 𝖠𝖼𝗍𝗂𝗏𝖾 there.
+Figure 2 draws the lifecycle these states form, and the four subsections below supply the 
+rules on its edges.
+33

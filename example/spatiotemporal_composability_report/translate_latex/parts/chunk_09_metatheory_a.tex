@@ -1,0 +1,203 @@
+\subsection{4.4. 元理论}\label{metatheory}
+
+第 4.3 节提供了十条规则：第 4.2 节的三条编排规则；针对一次激活的 L-Begin、L-Iter 与 L-Finish；针对激活可能提前结束的两种方式的 L-Divert 与 L-Raise；以及针对一次去激活的 L-Leave 与 L-Unload。本节以这些规则的全局形式读出可组合性的两个维度——一个纤维的保证无论其余纤维在中间做什么都成立——并加上只有整个系统才有资格被要求的东西：系统总能到达其目标所要求的配置，而且该配置正是静态装配本会产生的那个配置。下面每一条性质都是关于一串步骤的性质，因此我们为步骤编号，并按该编号读取状态的各个字段。
+
+本节沿用第 3.3.2 节的两项约定。下面状态之间的每一处相等都按定义 33 的观测等价 $\simeq$ 来读，正如引理 38 对第 3.1 节的那些相等性所做的那样；一个效应函数所要满足的见证条件正是定义 37 给出的那个，对迭代器按定义 51 给出的方式读，对注册迭代则在下面的 $\approx$ 下读。
+
+定义 53. 以 $t$ 为步骤编号，使 $\gamma ^ { t }$ 是前 $t$ 步所到达的状态，并记
+
+\[
+\operatorname { s t e p } ^ { t } : = r ( n )\tag{50}
+\]
+
+表示在 $\gamma ^ { t }$ 处所采取的一步：它应用的规则 $r$（十条之一），以及它应用该规则时所处的名字 $n \in \mathfrak { N }$。序列从 $\gamma ^ { 0 }$ 开始，其中 dom $\left( F ^ { 0 } \right) = \varnothing ,$ 因此每个纤维都经由一次 O-Insert 进入存在，无论是编排者发起的还是某次迭代采取的（定义 47）。$\gamma ^ { t }$ 的每个字段把编号作为上标携带，因此 $\theta _ { n } ^ { t } , \omega _ { n } ^ { t } , \sigma _ { n } ^ { t } , g _ { n } ^ { t }$ 与 $i _ { n } ^ { t }$ 分别是 $n$ 在 $\gamma ^ { t }$ 处的生命周期状态、已提交视图、表、累加器与剩余迭代器；而 $F ^ { t }$ 与 $\sigma ^ { t }$ 则是 $\gamma ^ { t }$ 自身的注册表与余效应上下文，即在该状态下读到的定义 45 的 $F _ { \gamma }$ 与 $\sigma _ { \gamma }$。谓词把状态作为其参数、其余一切作为下标，因此 $\mathsf{installed}_{n}^{t}$、$\mathsf{target}_{n}^{t}$、$\mathsf{relied}_{n}^{t}$ 与 $\mathsf{quiet}_{n}^{t}$ 就是定义 46、定义 49 与定义 50 的谓词在 $\gamma ^ { t }$ 处的实例。$n$ 的一段活跃期（episode）是一个极大索引区间 $[ b , u ]$，在整个区间上 $\mathsf{installed}_{n}^{t}$ 成立。它在 $b$ 处开启，其中 $b > 0$ 且 $\neg \mathsf{installed}_{n}^{b - 1}$，空注册表 $F ^ { 0 }$ 使初始时没有任何纤维处于已安装状态；它在 $u$ 处关闭，此时 $\mathsf{installed}_{n}^{u}$ 而 $\neg \mathsf{installed}_{n}^{u + 1}$，最后一段活跃期不必如此。
+
+第 4.3 节的每条规则都以 $\gamma \longrightarrow \delta [ \cdots ]$ 的形式作结：前提从 $\gamma$ 计算出 $\delta$，在没有计算任何东西的地方则把结果保留为 $\gamma$；方括号对注册表中被点名的字段进行编辑。这两半分别命名，而且两者都是定义在整个 $\Gamma$ 上的映射。在 $\gamma ^ { t }$ 处由作用于 $n$ 的规则所采取的一步，其状态映射为
+
+\[
+\Psi ^ { t } : = \left\{ \begin{array} { l l } { \mathrm { p r } _ { 1 } \circ i } & { \mathrm { a t ~ L \mathrm { - } I t e r , ~ L \mathrm { - } F i n i s h , ~ a n d ~ a ~ l a n d i n g ~ L \mathrm { - } D i v e r t } } \\ { g } & { \mathrm { a t ~ L \mathrm { - } U n l o a d } } \\ { \mathrm { i d } _ { \Gamma } } & { \mathrm { a t ~ e v e r y ~ o t h e r ~ r u l e } } \end{array} \right.\tag{51}
+\]
+
+其中 $i$ 与 $g$ 是 $\theta _ { n } ^ { t }$ 所携带的迭代器与累加器；编辑 $\mathrm{edit}^{t} : \Gamma \to \Gamma$ 则是把方括号读作一个函数，把前提在 $\gamma ^ { t }$ 处计算出的值赋给它所点名的字段。因此二者都由 $\mathrm{step}^{t}$ 连同 $\gamma ^ { t }$ 完全确定，并在每个状态上都有定义——这正是定理 61 与引理 71 得以在远离 $\gamma ^ { t }$ 处对它们求值的原因。每一步都可分解为
+
+\[
+\gamma ^ { t + 1 } = \mathrm { e d i t } ^ { t } \big ( \Psi ^ { t } \big ( \gamma ^ { t } \big ) \big )\tag{52}
+\]
+
+例如在 L-Unload 处，$\mathrm{edit}^{t}$ 就是 $[ \theta _ { n } \mapsto \mathsf{Inactive}(\zeta) ]$；在 O-Remove 处它则是移除 $\setminus n$。正因如此，后一半是一种编辑而非一次赋值。字段沿同一条接缝划分：一方面是表 $\sigma _ { m }$——一旦创建 $m$ 的 O-Insert 把它置空，任何 $\mathrm{edit}^{t}$ 都不再写它；另一方面是控制字段 $\theta _ { m } , \tau _ { m } , \pi _ { m } , d _ { m } , p _ { m } , e _ { m }$ 连同 dom $\left( F _ { \gamma } \right)$——除非经由定义 47 的原语，任何 $\Psi ^ { t }$ 都不写它们。当两个状态除控制字段外处处一致时，记 $\gamma \approx \delta$。
+
+关系 $\approx$ 并不是定义 33 的 $\simeq$，二者谁也不细化谁，因为每一个都忘掉了另一个必须保留的东西。恢复精确性是关于效应的一种论断，因此 $\approx$ 精确地比较表与周围状态，只忘掉注册表里"哪个纤维安装了它们"的记录。规则读取控制字段以决定自己是否适用，因此 $\simeq$ 必须保留它们；本节把它读作定义 33 与以下各项一致的合取：注册表的定义域一致，且每个纤维的每个控制字段都一致：
+
+\[
+\begin{array} { r l r } { \gamma \simeq \delta } & { : = } & { \sigma _ { \gamma } \simeq \sigma _ { \delta } \wedge \mathrm { d o m } \big ( F _ { \gamma } \big ) = \mathrm { d o m } ( F _ { \delta } ) \wedge \forall n , c \in \{ \theta , \tau , \pi , d , p , e \} . c ( \gamma ( n ) ) \simeq c ( \delta ( n ) ) (53) } \end{array}
+\]
+
+函数类型的字段——如 $e _ { n }$ 与 $\theta _ { n }$ 内部的 $g$——按定义 36 比较映射的方式比较；迭代器按定义 51 比较两个迭代器的方式比较；任何其他类型的字段按相等性比较。下面的结论对这两种关系都成立，各对应状态的一半；引理 55 一劳永逸地为全部十条规则建立了 $\simeq$ 这一半。
+
+表 1 把第 4.3 节的十条规则读作此类写入。累加器、已提交视图与剩余迭代器都是 $\theta _ { n }$ 的组成成分，因此第三列也记录对它们的写入；表中的 $h$ 指第四列的那次迭代所产生的逆，当 L-Divert 中止该迭代时则为 $\mathrm { i d } _ { \Gamma }$。当由迭代器构造的 $\Psi ^ { t }$ 注册一个纤维（定义 47）时，该注册在它抽取的名字处携带 O-Insert 行的写入；累加器使某个纤维退役的 L-Unload 则携带 O-Retire 行的写入。下面每一处情形分析都是对这张表的一次查表，其中五种查表重复出现的频率足够高，值得命名。
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}|l|l|l|l|l|@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\hline
+规则 & $\theta _ { n } ^ { t }$ & $\theta _ { n } ^ { t + 1 }$ & $\Psi ^ { t }$ & 被编辑的控制字段 \\
+\hline
+O-Insert & 未定义 & $\mathsf{Inactive}(\bot)$ & $\mathrm { i d } _ { \Gamma }$ & $\mathrm { d o m } \big ( F _ { \gamma } \big )$ \\
+\hline
+O-Retire & 无约束 & 不变 & $\mathrm { i d } _ { \Gamma }$ & $\tau _ { n }$ \\
+\hline
+O-Remove & $\mathsf{Inactive}(-)$ & 未定义 & $\mathrm { i d } _ { \Gamma }$ & $\mathrm { d o m } \big ( F _ { \gamma } \big )$ \\
+\hline
+L-Begin & $\mathsf{Inactive}(\bot)$ & $\mathsf{Reloading}(e _ { n } , \mathrm { i d } _ { \Gamma } , \omega)$ & $\mathrm { i d } _ { \Gamma }$ & $\theta _ { n }$ \\
+\hline
+L-Iter & $\mathsf{Reloading}(i , g , \omega)$ & $\mathsf{Reloading}(i ^ { \prime } , g \circ h , \omega)$ & $\operatorname { p r } _ { 1 } \circ i$ & $\theta _ { n }$ \\
+\hline
+L-Finish & $\mathsf{Reloading}(i , g , \omega)$ & $\mathsf{Active}(g \circ h , \omega)$ & $\operatorname { p r } _ { 1 } \circ i$ & $\theta _ { n }$ \\
+\hline
+L-Divert & $\mathsf{Reloading}(i , g , \omega)$ & $\mathsf{Unloading}(g \circ h , \omega , \bot)$ & $\mathrm { i d } _ { \Gamma }$ 或 $\operatorname { p r } _ { 1 } \circ i$ & $\theta _ { n }$ \\
+\hline
+L-Raise & $\mathsf{Reloading}(i , g , \omega)$ & $\mathsf{Unloading}(g , \omega , \xi)$ & $\mathrm { i d } _ { \Gamma }$ & $\theta _ { n }$ \\
+\hline
+L-Leave & $\mathsf{Active}(g , \omega)$ & $\mathsf{Unloading}(g , \omega , \bot)$ & $\mathrm { i d } _ { \Gamma }$ & $\theta _ { n }$ \\
+\hline
+L-Unload & $\mathsf{Unloading}(g , \omega , \zeta)$ & $\mathsf{Inactive}(\zeta)$ & $g$ & $\theta _ { n }$ \\
+\hline
+\end{longtable}
+}
+
+表 1 | 把各规则读作对它们所作用的纤维 $n$ 的写入，其中 $\mathrm{step}^{t}$ 就是把该规则应用于 $n$ 的那一步。
+
+引理 54. 将表 1 与定义 48 一起读，则对每一步 $t$ 以及 $\gamma ^ { t }$ 中出现的所有纤维 $m$、$n$：
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  仅当 step $t$ 作用于 $m$ 时才有 $\sigma _ { m } ^ { t + 1 } \neq \sigma _ { m } ^ { t }$，且该写入位于 $\Psi ^ { t }$ 内部；
+\end{enumerate}
+
+$\omega _ { n }$ 仅在 $\mathrm { s t e p } ^ { t } = \mathrm { L } \mathrm { - B e g i n } ( n )$ 处进入存在，仅当 $\mathrm { s t e p } ^ { t } = \mathrm { L } \mathrm { - U n l o a d } ( n )$ 时停止存在，因此 $\omega _ { n } ^ { t }$ 在 $n$ 的一段活跃期内保持恒定；
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{2}
+\item
+  仅当 step$^t$ = L-Unload($n$) 时才有 $\Psi ^ { t } = g _ { n } ^ { t }$，且没有其他步骤把 $g _ { n }$ 作用到状态上；
+\item
+  $\neg \mathsf{installed}_{n}^{t} \wedge \mathsf{installed}_{n}^{t + 1} \Rightarrow \mathrm { s t e p } ^ { t } = \mathrm { L } \mathrm { - B e g i n } ( n )$，且 $\mathsf{installed}_{n}^{t} \wedge \neg \mathsf{installed}_{n}^{t + 1} \Rightarrow \mathrm { s t e p } ^ { t } = \mathrm { L } \mathrm { - U n l o a d } ( n )$；
+\item
+  $\pi _ { n } , d _ { n } , p _ { n }$ 与 $e _ { n }$ 随 $n$ 的条目一起进入存在，此后永不再被写入；$\tau _ { n }$ 是单调的，只在 $\top$ 处、且只由 O-Retire 写入。
+\end{enumerate}
+
+证明. 设 step $t$ 在 $n$ 处应用规则 $r$。由定义 53，它可分解为 $\mathrm{edit}^{t} \circ \Psi ^ { t }$，其中 $\mathrm{edit}^{t}$ 写入表 1 第五列所点名的那些字段、此外不写别的；$\Psi ^ { t }$ 或是 $\mathrm { i d } _ { \Gamma }$，或是 $n$ 的某个迭代的一次应用，或是累加器 $g _ { n } ^ { t }$——它是那些迭代所产生的各个逆的复合。由定义 48，三者中的每一个都局限于 $n$，因此 $\Psi ^ { t }$ 除 $\sigma _ { n }$ 外不写 $\gamma ^ { t }$ 中任何纤维的字段，连同注册所添加的条目与其逆所写的 $\tau$。因此这两半把写入分割开来，而每一条款就是把这一分割读到某一个字段上。对第二列与第三列的一种读法被用到了两次：$\mathsf{Inactive}$ 是唯一不携带已提交视图的生命周期状态，L-Begin 是唯一离开它的规则，L-Unload 是唯一进入它的规则，而其余每一行都把自己前提的 $\omega$ 原封不动地带进结论。
+
+\begin{enumerate}
+\def\labelenumi{(\arabic{enumi})}
+\item
+  $\mathrm{edit}^{t}$ 不写任何表（第五列没有点名任何表），而 $\Psi ^ { t }$ 对出现的 $m \neq n$ 不写任何 $\sigma _ { m }$。因此 $\sigma _ { m }$ 只可能在 $m = n$ 处、且只在 $\Psi ^ { t }$ 内部发生变化。
+\item
+  $\omega _ { n }$ 是 $\theta _ { n }$ 的组成成分，而 $\theta _ { n }$ 只有 $\mathrm{edit}^{t}$ 才写、且只在步骤所作用的那个纤维处写，因此由上面的读法，$\omega _ { n }$ 在 $n$ 的一次 L-Begin 处进入存在，在 $n$ 的一次 L-Unload 处停止存在。$n$ 的一段活跃期是 $\mathsf{installed}_{n}$ 成立的区间，因而也是 $\omega _ { n }$ 全程有定义的区间，所以这两条规则都不会落在其内部。
+\item
+  看第四列：累加器只在 L-Unload 一处出现。其余规则取正向映射 $\operatorname { p r } _ { 1 } \circ i$ 或 $\mathrm { i d } _ { \Gamma }$，而任何 $\mathrm{edit}^{t}$ 根本不会把映射作用到状态上。
+\item
+  installed 即 $\theta _ { n } \neq \mathsf { I n a c t i v e } ( - )$；由上面的读法，L-Begin 与 L-Unload 是仅有的两条前提与结论中 $\theta _ { n }$ 是否 $\mathsf{Inactive}$ 不同的规则。作用于某个 $m \neq n$ 的步骤不写 $\theta _ { n }$，而注册所添加的条目位于 $\gamma ^ { t }$ 中不存在的名字处。
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{(\arabic{enumi})}
+\setcounter{enumi}{4}
+\tightlist
+\item
+  第五列没有任何一行点名 $\pi , d , p$ 或 $e$；这些字段随 O-Insert 添加的条目一起进入存在，其结论会写它们，注册采取的 O-Insert 同样如此。只有 O-Retire 写 $\tau$，且写在 $\top$ 处，无论它由编排者采取还是作为注册的逆（定义 47）；O-Insert 在尚不存在的名字处把 $\tau$ 置为 $\bot$，因此没有哪一步会把 $\tau$ 送回 $\bot$。∎
+\end{enumerate}
+
+还有三种进一步的查表说明规则无法看到什么。第一种是，规则只通过上面的那些观测来读取状态，因此整个演算可以下降到 $\Gamma / \simeq$。
+
+引理 55（$\simeq$-不变性）. 设 $\gamma \simeq \gamma ^ { \prime }$ 按上面的读法成立。则第 4.3 节的一条规则在 $\gamma$ 处作用于 $n$ 适用，当且仅当它在 $\gamma ^ { \prime }$ 处作用于 $n$ 适用，且两次应用所到达的状态仍由 $\simeq$ 关联。
+
+证明. 第 4.3 节的每条前提都属于四种之一，每一种都读取关系所保留的某个成分。把 $\theta _ { n }$ 或 $\tau _ { n }$ 与一个模式匹配的前提，以及 O-Remove 的前提 $\forall m. \pi _ { m } \neq n$，读取的是控制字段。O-Insert 的前提 $( d , p , e ) \in \mathfrak { C } _ { \Gamma }$ 与 $\forall m. p \cap p _ { m } = \emptyset$ 读取的是 $d , p$ 与 $e$。提及 $\mathsf{target}_{n}$ 或 $\mathsf{relied}_{n}$ 的前提读取的是 $\tau _ { n }$、$\theta _ { m }$ 内部的已提交视图以及 dom $\left( \sigma _ { \gamma } \right)$——后者由定义 45 从 $\theta _ { m }$ 与 dom $( \sigma _ { m } )$ 计算而来——而定义 33 只在两个余效应上下文定义域一致时才把它们关联起来。其余前提读取的是 dom $\left( F _ { \gamma } \right)$。没有任何前提以超出 $\simeq_{k}$ 的方式读取一个值 $\sigma _ { \gamma } ( k )$，因此没有任何前提能把两个 $\simeq$-相关状态区分开。
+
+对结论而言，由定义 53 有 $\gamma ^ { t + 1 } = \mathrm { e d i t } ^ { t } \big ( \Psi ^ { t } \big ( \gamma ^ { t } \big ) \big )$。$\mathrm{edit}^{t}$ 所赋的值是它所匹配的那些前提的成分，由上面的段落与定义 51 在两个状态之间关联起来；定义 51 把迭代器在 $\simeq$-相关状态下产生的三元组关联起来。而 $\Psi ^ { t }$ 尊重 $\simeq$：它或是 $\mathrm { i d } _ { \Gamma }$，或是 $e _ { n }$ 的一次迭代（定义 51 要求迭代尊重 $\simeq$），或是 $\theta _ { n }$ 内部的累加器——由同一定义，它是若干各自尊重 $\simeq$ 的逆的复合。∎
+
+一个状态携带的名字被上述观测中的两种读到：dom $\left( F _ { \gamma } \right)$ 与控制字段的索引；抽取名字的规则会抽取任何一个尚未使用的名字（定义 47）。因此在 $\simeq$ 的意义下读取下面的结论，也就要求把它们读到一重命名之下——这正是第 4.1 节的纪律的具体兑现。
+
+引理 56（等变性）. 设 $\chi : \mathfrak { N } \to \mathfrak { N }$ 是一个双射，并设 $\chi \cdot \gamma$ 是携带注册表 $F _ { \gamma } \circ \chi ^ { - 1 }$ 的状态，其中出现在某个 $\pi _ { m }$ 或 $\omega _ { m }$ 中的每个名字都被替换为它的像。则 $\chi \cdot \gamma$ 是一个状态，且在 $\gamma$ 良构处良构；并且 $\mathrm { s t e p } ^ { t } = r ( n )$ 把 $\gamma ^ { t }$ 带到 $\gamma ^ { t + 1 }$，当且仅当 $r ( \chi ( n ) )$ 把 $\chi \cdot \gamma ^ { t }$ 带到 $\chi \cdot \gamma ^ { t + 1 }$。
+
+证明. 前提只在把某个名字与另一个名字作比较时才读它，无论是直接比较——如 O-Insert 的新鲜性 $n \not \in$ dom $\left( F _ { \gamma } \right)$ 与 O-Remove 的 $\forall m. \pi _ { m } \neq n$——还是经由一张名字表，如 $\mathsf{target}_{n}$ 与 $\mathsf{relied}_{n}$ 读取 $\pi _ { m }$ 与 $\omega _ { m }$。双射保留每一处这样的比较。规则写入的唯一名字是 O-Insert 设置的 $\pi$ 与 L-Begin 设置的 $\omega$，二者都取自其前提所读的内容，因此这些写入与 $\chi$ 可交换；效应函数根本不写任何名字，只通过定义 47 的原语抽取一个名字，而定义 48 把该名字局限于该原语所添加的条目。良构性（定义 58）是四条把名字与名字进行比较的条件。∎
+
+因此一个序列与其重命名以同样的顺序采取同样的规则，所到达的状态只相差一个 $\chi$。两个除了各自注册所抽取的名字之外一致的序列由此被等同起来，下面的结论即在识别它们的那一重命名意义下读取。
+
+第二种查表是，一个被剥去一切、只剩名字的条目对规则不可见；正是这一点使定义 47 能在其恢复的状态中没有该纤维时让它退役，也使引理 72 得以移除一段被删除的活跃期所留下的注册。
+
+引理 57（残留条目）. 当 $\tau _ { n } = \top$、$\theta _ { n } = \mathsf { I n a c t i v e } ( \bot )$、$\sigma _ { n } = \emptyset$，且没有任何 $m$ 使 $\pi _ { m } = n$ 时，称 $n$ 在 $\gamma$ 处为残留的；残留条目满足 $\gamma \approx \gamma \setminus n$。若 $n$ 在 $\gamma$ 处残留，则对每条规则和每个 $m \neq n$：
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  在 $\gamma$ 处作用于 $m$ 的规则也在 $\gamma \setminus n$ 处作用于 $m$ 适用，且两次应用所到达的状态只在 $n$ 处的条目上不同，而该条目仍保持残留；
+\item
+  反之，在 $\gamma \setminus n$ 处作用于 $m$ 的规则也在 $\gamma$ 处适用，除非它是一次抽取名字 $n$ 或索取 $p _ { n }$ 的某个键的 O-Insert。
+\end{enumerate}
+
+证明. 作用于 $m \neq n$ 的规则的前提所读的任何观测中，残留的 $n$ 都不作出贡献。它不是 $\mathsf{Active}$，因此 $\sigma _ { n }$ 不进任何 $\sigma _ { \gamma }$，$n$ 也不是任何键的提供者，从而 $\gamma \models d _ { m }$ 与 $\mathsf{target}_{m}$ 都不受影响；$\mathsf{installed}_{n}$ 不成立，因此 $n$ 不向 $\mathsf{relied}_{m}$ 提供任何析取项；没有任何 $\pi _ { m ^ { \prime } }$ 点名 $n$，因此对 $m$ 的 O-Remove 的前提 $\forall m ^ { \prime } . \pi _ { m ^ { \prime } } \neq m$ 不受影响；而 $\theta _ { n } , \tau _ { n } , \pi _ { n }$ 只有作用于 $n$ 的规则才会读。条款 (2) 所排除的两个前提，正是移除所放宽的两个：不存在的名字是新鲜的，不存在的供给满足所有其余要求。由引理 54，作用于 $m \neq n$ 的规则不写 $n$ 的任何字段，因此该条目得以存活；又由定义 48，该步的状态映射局限于 $m$，因此它使 $\sigma _ { n }$ 保持为空。∎
+
+简化生命周期状态、连同对它们进行匹配的规则，会得到一个子演算，而并非每条结论都能在简化后存活。去掉第 4.3.1 节正是关键情形——这是第 4.3 节开篇就做出的划分，现在从元理论一侧来看：它的护栏正是建立定义 58 的条款 (3) 与 (4) 的东西，定理 63 则依赖于该护栏所创造的区间，因此没有它这三条都会失效。其余三个小节所增加的内容可以简化掉而不影响下面的结论，它们各自只是向定义 49 所确定的同一个状态空间添加规则。
+
+\subsection{4.4.1. 保持性}\label{preservation}
+
+定义 45 确定了注册表的形状；在下面的结论可以向其添加内容之前，必须先按它检查规则。本小节确定规则所保持的不变式，其中第一条条款就是那种形状，其余各条则是那些结论所假定的东西。
+
+定义 58. 当对一切 $m , n \in \mathop { \mathrm { d o m } } \bigl ( F _ { \gamma } \bigr )$ 与一切 $k \in K$ 都有：
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  $\pi _ { n } \in \mathrm { d o m } \bigl ( F _ { \gamma } \bigr ) \cup \{ \mathsf{root} \}$；
+\item
+  $m \neq n \Rightarrow p _ { m } \cap p _ { n } = \emptyset$；
+\item
+  $\mathsf{installed}_{n}(\gamma) \Rightarrow \omega _ { n }$ 在 $d _ { n }$ 上全定义，且取值于 dom $\left( F _ { \gamma } \right)$；
+\item
+  $\mathsf{installed}_{n}(\gamma) \wedge k \in d _ { n } \wedge \omega _ { n } ( k ) = m \Rightarrow \mathsf{installed}_{m}(\gamma)$。
+\end{enumerate}
+
+时，注册表 $F _ { \gamma }$ 是良构的。
+
+条款 (1) 是把定义 45 的树逐条边读出，保证父指针落在注册表之内。该定义还要求的无环性无需单独条款，因为指针所指名的纤维总是在指名的纤维之前被注册。
+
+定理 59（保持性）. 若 $F ^ { t }$ 良构，则无论 step $t$ 应用哪条规则，$F ^ { t + 1 }$ 都良构。每一条条款都从 $\gamma ^ { t }$ 处的全部四条在 $\gamma ^ { t + 1 }$ 处被建立。
+
+证明. 设 step $t$ 作用于 $n$。
+
+\begin{enumerate}
+\def\labelenumi{(\arabic{enumi})}
+\tightlist
+\item
+  由表 1，只有 O-Insert 与 O-Remove 写 $\pi$ 或 dom $\left( F _ { \gamma } \right)$。O-Insert 以 $\pi _ { n } \in \mathrm { d o m } ( F ^ { t } ) \cup \{ \mathsf{root} \}$ 为前提，这正是为它添加的纤维而设的条款；它在扩大 dom $\left( F _ { \gamma } \right)$ 的同时让其他每个 $\pi$ 保持不变。O-Remove 有前提 $\forall m. \pi _ { m } \neq n$，因此任何幸存的 $\pi _ { m }$ 都不点名它移除的那个纤维。
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{(\arabic{enumi})}
+\setcounter{enumi}{1}
+\item
+  O-Insert 的最后一条前提是 $\forall m. p _ { n } \cap p _ { m } = \emptyset$，这正是为它添加的纤维而设的条款；且由表 1，没有其他规则写 $p$ 或扩大 dom $\left( F _ { \gamma } \right)$。下面用到两个推论：由定义 43 有 dom $( \sigma _ { m } ) \subseteq p _ { m }$，因此不同的表互不相交，$\sigma _ { \gamma }$ 是一个函数；且 $k \in p _ { m } \cap p _ { m ^ { \prime } }$ 迫使 $m = m ^ { \prime }$，因此 $k$ 至多有一个可能的提供者。
+\item
+  由引理 54(2)，写 $\omega _ { n }$ 的唯一规则是 L-Begin，其前提 $\omega = \mathsf { t a r g e t } _ { n } ^ { t } \neq \bot$ 使它在 $d _ { n }$ 上全定义且取值于 dom $\left( F ^ { t } \right)$（target 所点名的正是提供者）。由表 1，缩小 dom $\left( F _ { \gamma } \right)$ 的唯一规则是 O-Remove，其前提 $\theta _ { n } ^ { t } = \mathsf { I n a c t i v e } ( - )$ 给出 $\neg \mathsf { i n s t a l l e d } _ { n } ^ { t }$，从而由 $\gamma ^ { t }$ 处的条款 (4)，在 $\mathsf { i n s t a l l e d } _ { m } ^ { t }$ 成立时，没有任何 $m$ 对某个 $k \in d _ { m }$ 有 $\omega _ { m } ^ { t } ( k ) = n$；而 $n$ 自身不携带任何 $\omega$。
+\item
+  由引理 54(2) 与 (4)，该条款在 $\gamma ^ { t + 1 }$ 处只可能在以下情形失效：某个已安装者失陷、某个 $\omega$ 被写入、或者某个 $\omega$ 所指名的纤维离开了 dom $\left( F _ { \gamma } \right)$。
+\end{enumerate}
+
+最后一种情形是一次 O-Remove，其被移除的纤维未处于已安装状态，从而由 $\gamma ^ { t }$ 处的条款 (4)，它不被任何已安装的 $m$ 的 $\omega _ { m } ^ { t }$ 所点名。第一种情形是一次对 $n$ 的 L-Unload，其前提 $\neg \mathsf { r e l i e d } _ { n } ^ { t }$ 读作
+
+\[
+\forall m \neq n , k \in d _ { m } . \mathsf { i n s t a l l e d } _ { m } ^ { t } \Rightarrow \omega _ { m } ^ { t } ( k ) \neq n
+\]
+
+并且它不写任何 $m \neq n$ 的 $\omega _ { m }$，留下 $\neg \mathsf { i n s t a l l e d } _ { n } ^ { t + 1 }$，因此该条款对 $n$ 同样成立。第二种情形是一次对 $n$ 的 L-Begin，写入 $\mathsf { t a r g e t } _ { n } ^ { t }$，其值正是 $d _ { n }$ 各键的提供者，因而在 $\gamma ^ { t }$ 处处于 $\mathsf{Active}$；该步骤不改变任何其他纤维的 $\theta$，因此它们在 $\gamma ^ { t + 1 }$ 处仍处于已安装状态。∎
+
+L-Unload 上的护栏正是承载条款 (3) 与 (4) 的东西。O-Remove 的前提 $\forall m. \pi _ { m } \neq n$ 只涉及父指针；使已提交视图不能点名一个被移除纤维的，是那个护栏——它在若干步之前、出于另一个原因就被施加。由于失败同样经由 $\mathsf{Unloading}$ 路由，这一论证无需针对错误结局再重复一遍。由此得出两条基础演算并不具备的结论。O-Remove 释放的名字可以被 O-Insert 重新签发，因为没有过期的已提交视图会点名它；而且一个纤维一旦处于 $\mathsf{Inactive}$ 就可以被移除，无需另加一项"没有谁依赖它"的单独检查。

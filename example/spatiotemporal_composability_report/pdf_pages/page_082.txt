@@ -1,0 +1,56 @@
+[31]
+T. Petricek, D. Orchard, and A. Mycroft, “Coeffects: a calculus of context-dependent 
+computation,” in Proceedings of the 19th ACM SIGPLAN International Conference on 
+Functional Programming, in ICFP '14. Gothenburg, Sweden: Association for Computing 
+Machinery,  2014, pp. 123–135. doi: 10.1145/2628136.2628160.
+[32]
+T. Uustalu and V. Vene, “Comonadic Notions of Computation,” Electronic Notes in Theo­
+retical Computer Science, vol. 203, no. 5, pp. 263–284, 2008, doi: 10.1016/j.entcs.2008.05.029.
+[33]
+A. Brunel, M. Gaboardi, D. Mazza, and S. Zdancewic, “A Core Quantitative Coeffect 
+Calculus,” in Proceedings of the 23rd European Symposium on Programming Languages and 
+Systems - Volume 8410, Berlin, Heidelberg: Springer-Verlag,  2014, pp. 351–370. doi: 
+10.1007/978-3-642-54833-8_19.
+[34]
+J. Reed and B. C. Pierce, “Distance makes the types grow stronger: a calculus 
+for differential privacy,” SIGPLAN Not., vol. 45, no. 9, pp. 157–168, Sep. 2010, doi: 
+10.1145/1932681.1863568.
+[35]
+M. Abadi, A. Banerjee, N. Heintze, and J. G. Riecke, “A core calculus of dependency,” in 
+Proceedings of the 26th ACM SIGPLAN-SIGACT Symposium on Principles of Programming 
+Languages, in POPL '99. San Antonio, Texas, USA: Association for Computing Machinery, 
+1999, pp. 147–160. doi: 10.1145/292540.292555.
+[36]
+D. E. Denning, “A lattice model of secure information flow,” Commun. ACM, vol. 19, no. 
+5, pp. 236–243, May 1976, doi: 10.1145/360051.360056.
+[37]
+U. Dal Lago and F. Gavazzo, “A relational theory of effects and coeffects,” Proc. ACM 
+Program. Lang., vol. 6, no. POPL, Jan. 2022, doi: 10.1145/3498692.
+[38]
+M. Fowler, “Inversion of Control Containers and the Dependency Injection pattern.” 
+[Online]. Available: https://martinfowler.com/articles/injection.html
+[39]
+A. M. Pitts and I. D. B. Stark, “Observable Properties of Higher Order Functions that 
+Dynamically Create Local Names, or What's New?,” in Mathematical Foundations of 
+Computer Science 1993 (MFCS 1993), in Lecture Notes in Computer Science, vol. 711. 
+Springer,  1993, pp. 122–141. doi: 10.1007/3-540-57182-5\_8.
+[40]
+G. D. Plotkin, “LCF Considered as a Programming Language,” Theoretical Computer 
+Science, vol. 5, no. 3, pp. 223–255, 1977, doi: 10.1016/0304-3975(77)90044-5.
+[41]
+D. R. Ghica, K. Muroya, and T. Waugh Ambridge, “A Robust Graph-Based Approach to 
+Observational Equivalence,” Logical Methods in Computer Science, vol. 21, no. 2, p. 8:1–
+8:95, 2025, doi: 10.46298/LMCS-21(2:8)2025.
+[42]
+X. Leroy and S. Blazy, “Formal Verification of a C-like Memory Model and Its Uses for 
+Verifying Program Transformations,” Journal of Automated Reasoning, vol. 41, no. 1, pp. 
+1–31, 2008, doi: 10.1007/s10817-008-9099-0.
+[43]
+R. P. James and A. Sabry, “Yield: Mainstream Delimited Continuations,” in First Interna­
+tional Workshop on the Theory and Practice of Delimited Continuations (TPDC 2011),  2011, 
+pp. 20–32. [Online].  Available: https://homes.luddy.indiana.edu/sabry/files/yield.pdf
+[44]
+A. W. Mazurkiewicz, “Trace Theory,” in Petri Nets: Central Models and Their Properties, 
+Advances in Petri Nets 1986, Part II, in Lecture Notes in Computer Science, vol. 255. 
+Springer,  1986, pp. 279–324. doi: 10.1007/3-540-17906-2_30.
+82

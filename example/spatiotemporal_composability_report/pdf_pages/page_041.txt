@@ -1,0 +1,46 @@
+(5) No row of the fifth column names a 𝜋, 𝑑, 𝑝, or 𝑒; those come into existence with the entry 
+O-Insert adds, which its conclusion writes, as does the O-Insert a registration takes. Only O-
+Retire writes a 𝜏, at ⊤, whether taken by the orchestrator or as the inverse of a registration 
+(Definition 47); O-Insert sets 𝜏= ⊥ at a name not already present, so no step returns a 𝜏 to ⊥.□
+Three further lookups say what the rules cannot see. The first is that they read the state only 
+through the observations above, so that the whole calculus descends to Γ/ ≃.
+Lemma 55. (≃-invariance.) Let 𝛾≃𝛾′ as read above. Then a rule of Section 4.3 applies at 𝛾 
+acting on 𝑛 if and only if it applies at 𝛾′ acting on 𝑛, and the states the two applications reach 
+are again related by ≃.
+Proof. Every premise of Section 4.3 is of one of four kinds, and each reads a constituent the 
+relation keeps. A premise matching 𝜃𝑛 or 𝜏𝑛 against a pattern, and the premise ∀𝑚. 𝜋𝑚≠𝑛 
+of O-Remove, read control fields. The premises (𝑑, 𝑝, 𝑒) ∈ℭΓ and ∀𝑚. 𝑝∩𝑝𝑚= ⌀ of O-Insert 
+read 𝑑, 𝑝, and 𝑒. A premise mentioning target𝑛 or relied𝑛 reads 𝜏𝑛, the committed views inside 
+the 𝜃𝑚, and dom(𝜎𝛾), which Definition 45 computes from the 𝜃𝑚 and the dom(𝜎𝑚), and Defin­
+ition 33 relates two coeffect contexts only where their domains agree. The remaining premises 
+read dom(𝐹𝛾). None reads a value 𝜎𝛾(𝑘) otherwise than up to ≃
+𝑘, so no premise separates two 
+≃-related states.
+For the conclusion, 𝛾𝑡+1 = edit𝑡(Ψ𝑡(𝛾𝑡)) by Definition 53. The values an edit𝑡 assigns are the 
+constituents of the premises it matched, related at the two states by the paragraph above and 
+by Definition 51, which relates the triples an iterator yields at ≃-related states. And Ψ𝑡 respects 
+≃: it is idΓ, or an iteration of 𝑒𝑛, which Definition 51 requires to respect ≃, or the accumulator 
+inside 𝜃𝑛, a composite of inverses each respecting ≃ by the same definition.
+□
+The names a state carries are read by two of those observations, dom(𝐹𝛾) and the indexing 
+of the control fields, and the rule that draws a name draws any name not already in use 
+(Definition 47). Reading the results below up to ≃ therefore also calls for reading them up to 
+a renaming, which is the discipline of Section 4.1 cashed out.
+Lemma 56. (Equivariance.) Let 𝜒: 𝔑→𝔑 be a bijection and let 𝜒⋅𝛾 be the state carrying the 
+registry 𝐹𝛾∘𝜒−1, with every name occurring in a 𝜋𝑚 or an 𝜔𝑚 replaced by its image. Then 𝜒⋅
+𝛾 is a state, well formed where 𝛾 is, and step𝑡= 𝑟(𝑛) carries 𝛾𝑡 to 𝛾𝑡+1 if and only if 𝑟(𝜒(𝑛)) 
+carries 𝜒⋅𝛾𝑡 to 𝜒⋅𝛾𝑡+1.
+Proof. A premise reads a name only by comparing it with another, whether directly, as in the 
+freshness 𝑛∉dom(𝐹𝛾) of O-Insert and the ∀𝑚. 𝜋𝑚≠𝑛 of O-Remove, or through a table of 
+names, as target𝑛 and relied𝑛 read the 𝜋𝑚 and the 𝜔𝑚. A bijection preserves each such compar­
+ison. The only names a rule writes are the 𝜋 that O-Insert sets and the 𝜔 that L-Begin sets, both 
+taken from what its premises read, so the writes commute with 𝜒; an effect function writes 
+no name at all, drawing one only through the primitive of Definition 47, which Definition 48 
+confines to the entry that primitive adds. Well-formedness (Definition 58) is four conditions 
+comparing names with names.
+□
+A sequence and its renaming therefore take the same rules in the same order and reach 
+states differing by 𝜒 alone. Two sequences agreeing save in the names their registrations draw 
+are accordingly identified, and the results below are read up to the renaming that identifies 
+them.
+41

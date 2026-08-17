@@ -1,0 +1,47 @@
+What a component performs is a sequence of operations in which each may depend on 
+what the ones before it yielded, and effect functions of that shape are what the theorem below 
+speaks of.
+Definition 41. The coeffect-mediated effect functions form the least set 𝔈𝒜︀
+Σ ⊆𝔈Σ that contains the 
+unit 𝜂Σ and is closed under the following: for a key 𝑘, an operation 𝑎∈𝒜︀𝑘, an argument 𝑥:
+𝑋𝑎, and a family (𝑒𝑏)𝑏∈𝐵𝑎 of members,
+𝜎↦𝐥𝐞𝐭(𝛿, 𝑠, 𝑏) = 𝑎Σ(𝑥)(𝜎) 𝐢𝐧𝐥𝐞𝐭(𝜀, 𝑡) = 𝑒𝑏(𝛿) 𝐢𝐧(𝜀, 𝑠∘𝑡)
+(36)
+is again a member. Each stage performs one operation and chooses what follows it by the 
+outcome, so an argument may depend on the outcomes already obtained. The operations 
+occurring in a member are the ones its stages perform, over every choice of outcome.
+Theorem 42. Let 𝑒1, 𝑒2 ∈𝔈𝒜︀
+Σ and let every key at which operations of both occur be commu­
+tative (Definition 39). Then 𝑒1 and 𝑒2 are independent (Definition 19).
+Proof. By induction on the construction of Definition 41, 𝔐(𝑒𝑖) lies in the submonoid generated 
+by the generators of the operations occurring in 𝑒𝑖: the unit generates the trivial monoid, and 
+a stage is a ⋄-composite of 𝑎Σ(𝑥) with a member, to which Lemma 18(2) applies.
+For clause (1) of Definition 19 it is therefore enough, by Lemma 18(1), that a generator of an 
+operation occurring in 𝑒1 commute with a generator of one occurring in 𝑒2. Where the two 
+operations lie at distinct keys this is Theorem 40, and where they lie at one key that key carries 
+operations of both and is commutative by hypothesis.
+For clause (2), take 𝑔∈𝔐(𝑒2), a composite of generators of the operations occurring in 𝑒2, and 
+induct on the construction of 𝑒1. The unit yields idΣ at every state. At a stage, let (𝛿, 𝑠, 𝑏) =
+𝑎Σ(𝑥)(𝜎) and (𝜀, 𝑡) = 𝑒𝑏(𝛿), so that the stage yields 𝑠∘𝑡 at 𝜎. Independence of the operations, 
+applied to one generator of 𝑔 at a time, yields 𝑠 and 𝑏 again at 𝑔(𝜎), so the same continuation 
+𝑒𝑏 is chosen, and clause (1) puts the state it runs from at 𝑔(𝛿), where the induction hypothesis 
+yields 𝑡 again. The stage therefore yields 𝑠∘𝑡 at 𝑔(𝜎).
+□
+Every interaction between a component and its environment passes through the context, 
+and the type family 𝒱︀ is unconstrained, so a system may bind every location it shares across 
+components at a key of its own (Section 3.3.1). A component’s effect function is then the lift of 
+a coeffect-mediated one along the coeffect projection, and independence transfers to that lift, 
+whose transformations move the projection alone. The assumption Section 3.1.3 leaves open is 
+met that way, and with it the temporal composability of a whole system of components.
+What the decomposition divides is a computation’s commuting part from its order-sensitive 
+part. The commuting part is carried by the effects: a component performs them in whatever 
+order its task calls for, and Corollary 21 reverts them in whatever order the system finds conve­
+nient, no two components constraining each other. The order-sensitive part is carried by the 
+coeffects, since a key whose operations do not commute is one whose order has to be imposed 
+from outside the effects, and two places are available for imposing it. Within one component 
+the accumulator imposes it, reverting in LIFO order whatever the effects (Theorem 16). Across 
+components a declared coeffect imposes it, one component providing what another declares 
+and the provision preceding the declaration’s satisfaction (Section 3.2.2). Composability is 
+thereby had at the grain of components rather than of single effects, which is the scale Section 4 
+works at.
+26

@@ -1,0 +1,48 @@
+reload unless placed in a longer-lived dependency, and layering DSU-style forward migration 
+atop revertible effects is future work. Cordis’s approach is nonetheless more general in two 
+respects: it needs no hand-written migration functions of the kind DSU and HMR require, and 
+it supports unloading a component entirely and recovering its resources, not merely updating 
+one in place.
+Developer-authored recovery. A second family recovers a component’s effects through 
+cleanup or compensation logic that the developer writes by hand. Plugin lifecycle conventions 
+(e.g., OSGi [50], Eclipse’s extension points, IntelliJ and VSCode) delegate cleanup to developer-
+written unload callbacks; the Command pattern [103] encapsulates an operation together with 
+an undo method for undo/redo stacks; the saga model [49] structures a long-lived transaction 
+as steps each paired with a compensating action; algebraic effect handlers can attach finalizers 
+that run on teardown [104]; and event sourcing [105] retracts state by appending compensating 
+events rather than executing an inverse at all. In all of them the inverse is an unenforced duty, 
+decoupled from the operation, so that a forgotten one leaks resources silently (as documented 
+empirically in Section 1.2.1). React’s useEffect hook [106] comes closest to pairing an effect 
+with its inverse structurally, returning a cleanup the runtime invokes before each re-execution 
+and on unmount. Its shortfall is composability: a hook may be called only at the top level of 
+a component or another hook, never inside a conditional, loop, or nested function, and its 
+effect body accepts neither an async function nor an iterator. Effects thus cannot be assembled 
+from other effects or interleaved with control flow, leaving nothing from which a composite 
+inverse could be derived. Cordis effects carry no such restriction: they are ordinary operations 
+that compose freely and may run asynchronously, and require a hand-written inverse only for 
+each atomic effect, from which the inverse of any composite is derived by composition, so that 
+assembling existing effects requires writing no inverses at all. This structural pairing of every 
+effect with its inverse makes complete recovery an invariant of the system rather than a matter 
+of developer discipline.
+Statically scoped reversal. A third family reverses effects automatically, by construction, 
+but confines reversal to a scope fixed in advance. Software transactional memory [107, 108], 
+descended from hardware transactional memory [109], records a read/write log so that a 
+group of memory operations either commits or aborts, rolling memory back to its pre-trans­
+action state. Reversible computing, from Landauer and Bennett’s thermodynamic analyses 
+[110, 111] to reversible languages such as Janus [112], goes further and makes every step of a 
+whole computation globally invertible. Reversible process calculi build backtracking into the 
+semantics itself: RCCS [113] carries a memory alongside each process and admits a step to be 
+taken back when the past it leads to is causally equivalent, and Phillips and Ulidowski [114] 
+derive reversible operators for CCS, ACP, and CSP uniformly while preserving their forward 
+operational semantics. Their causal-consistency criterion is the concurrent counterpart of the 
+order Cordis’s recovery follows, an accumulator applying a component’s own inverses in last-
+in-first-out order and the guard of Section 4.3.1 deferring a provider’s withdrawal until its 
+consumers have deactivated (Theorem 63). The reach, however, is fixed by the semantics, every 
+action performed remaining undoable, whereas a Cordis component supplies an inverse for 
+each atomic effect and its accumulator brings the context back to where its composition began. 
+Linear types [115], RAII [4], and Rust’s ownership system [61] tie a resource’s release to a 
+lexical region. Each fixes the scope and reach of reversal statically; Cordis, by contrast, fixes no 
+such scope in advance: it reverts arbitrary context operations over a component’s lifecycle, and 
+treats lexical resource management as complementary, appropriate for local resources within 
+a single component.
+77

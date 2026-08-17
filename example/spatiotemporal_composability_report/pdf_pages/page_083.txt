@@ -1,0 +1,58 @@
+[45]
+U. A. Acar, G. E. Blelloch, and R. Harper, “Adaptive functional programming,” ACM 
+Transactions on Programming Languages and Systems, vol. 28, no. 6, pp. 990–1034, 2006, 
+doi: 10.1145/1186632.1186634.
+[46]
+webpack, “Hot Module Replacement.” [Online]. Available: https://webpack.js.org/api/
+hot-module-replacement/
+[47]
+Vite, “HMR API.” [Online]. Available: https://vite.dev/guide/api-hmr
+[48]
+E. N. (M. Elnozahy, L. Alvisi, Y.-M. Wang, and D. B. Johnson, “A Survey of Rollback-
+Recovery Protocols in Message-Passing Systems,” ACM Computing Surveys, vol. 34, no. 
+3, pp. 375–408, 2002, doi: 10.1145/568522.568525.
+[49]
+H. Garcia-Molina and K. Salem, “Sagas,” in Proceedings of the 1987 ACM SIGMOD 
+International Conference on Management of Data, in SIGMOD '87.  1987, pp. 249–259. doi: 
+10.1145/38713.38742.
+[50]
+OSGi Alliance, OSGi Core Release 8. OSGi Alliance, 2020. [Online].  Available: https://
+docs.osgi.org/specification/osgi.core/8.0.0/
+[51]
+J. Kramer and J. Magee, “The Evolving Philosophers Problem: Dynamic Change Man­
+agement,” IEEE Transactions on Software Engineering, vol. 16, no. 11, pp. 1293–1306, 1990, 
+doi: 10.1109/32.60317.
+[52]
+Y. Vandewoude, P. Ebraert, Y. Berbers, and T. D'Hondt, “Tranquility: A Low Disruptive 
+Alternative to Quiescence for Ensuring Safe Dynamic Updates,” IEEE Transactions on 
+Software Engineering, vol. 33, no. 12, pp. 856–868, 2007, doi: 10.1109/tse.2007.70733.
+[53]
+J. S. Rellermeyer, G. Alonso, and T. Roscoe, “R-OSGi: Distributed Applications 
+Through Software Modularization,” in Proceedings of the ACM/IFIP/USENIX 8th 
+International Middleware Conference, in Middleware '07.  2007, pp. 1–20. doi: 
+10.1007/978-3-540-76778-7_1.
+[54]
+J. B. Dennis and E. C. Van Horn, “Programming Semantics for Multiprogrammed 
+Computations,” Communications of the ACM, vol. 9, no. 3, pp. 143–155, 1966, doi: 
+10.1145/365230.365252.
+[55]
+M. S. Miller, K.-P. Yee, and J. Shapiro, “Capability Myths Demolished,” technical report 
+SRL2003–2, 2003. [Online].  Available: http://zesty.ca/capmyths/usenix.pdf
+[56]
+R. N. M. Watson, J. Anderson, B. Laurie, and K. Kennaway, “Capsicum: Practical Capa­
+bilities for UNIX,” in Proceedings of the 19th USENIX Security Symposium,  2010, pp. 29–46. 
+[Online].  Available: https://www.usenix.org/legacy/events/sec10/tech/full_papers/
+Watson.pdf
+[57]
+R. Wahbe, S. Lucco, T. E. Anderson, and S. L. Graham, “Efficient Software-Based Fault 
+Isolation,” in Proceedings of the 14th ACM Symposium on Operating Systems Principles, in 
+SOSP '93.  1993, pp. 203–216. doi: 10.1145/168619.168635.
+[58]
+A. Barth, A. P. Felt, P. Saxena, and A. Boodman, “Protecting Browsers from Extension 
+Vulnerabilities,” in Proceedings of the 17th Annual Network and Distributed System Security 
+Symposium, in NDSS '10.  2010. [Online].  Available: https://www.ndss-symposium.org/
+ndss2010/protecting-browsers-extension-vulnerabilities/
+[59]
+W. W. Ho and R. A. Olsson, “An Approach to Genuine Dynamic Linking,” Software: 
+Practice and Experience, vol. 21, no. 4, pp. 375–390, 1991, doi: 10.1002/SPE.4380210404.
+83

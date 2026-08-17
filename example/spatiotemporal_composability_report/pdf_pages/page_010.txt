@@ -1,0 +1,52 @@
+Definition 2. Given a context Γ, define its effect context as:
+𝜕Γ ≔Γ × (Γ →Γ)
+(5)
+It can be understood as a pair (𝛾, 𝜑), where:
+• 𝛾: Γ is the current context state;
+• 𝜑: Γ →Γ is the accumulator, the composite of the inverses of the effects performed so far, 
+and the function that recovers the context to its initial state.
+In particular, the initial effect context can be represented as (𝛾0, idΓ).
+We also write 𝜕2Γ = 𝜕Γ × (𝜕Γ →𝜕Γ), and so on up the tower.
+Given the presence of the accumulator 𝜑, all effects performed on 𝜕Γ can be tracked and 
+recovered. We now give the concrete constructions for tracking and recovery.
+Definition 3. Define the transformation trackΓ on pairs of context functions:
+trackΓ
+:
+(Γ →Γ) × (Γ →Γ) →
+𝜕Γ
+→
+𝜕Γ
+trackΓ
+=
+(𝑓, 𝑔)
+↦(𝛾, 𝜑) ↦(𝑓(𝛾), 𝜑∘𝑔)
+(6)
+This transformation converts a forward function 𝑓 together with a candidate inverse 𝑔 into 
+a transformation of the effect context 𝜕Γ. Applying trackΓ(𝑓, 𝑔) to a state (𝛾, 𝜑) transforms 𝛾 
+by 𝑓 and composes the inverse 𝑔 onto 𝜑, thereby tracking the effect of 𝑓 in the context.
+Theorem 4. For every (𝑓, 𝑔) ∈(Γ →Γ) × (Γ →Γ) the following diagram commutes, that is,
+pr1 ∘trackΓ(𝑓, 𝑔) = 𝑓∘pr1
+(7)
+𝑓
+𝑓′
+pr1
+pr1
+track
+Γ
+Γ
+𝜕Γ
+𝜕Γ
+Proof. For all (𝛾, 𝜑) ∈𝜕Γ:
+(pr1 ∘trackΓ(𝑓, 𝑔))(𝛾, 𝜑) = pr1(𝑓(𝛾), 𝜑∘𝑔)
+= 𝑓(𝛾)
+= (𝑓∘pr1)(𝛾, 𝜑)
+□
+Theorem 5. trackΓ is a monoid homomorphism from 𝔗Γ into 𝜕Γ →𝜕Γ. That is,
+1. trackΓ(idΓ, idΓ) = id𝜕Γ;
+2. for all (𝑓1, 𝑔1), (𝑓2, 𝑔2) ∈𝔗Γ,
+trackΓ((𝑓1, 𝑔1) ∘(𝑓2, 𝑔2)) = trackΓ(𝑓1, 𝑔1) ∘trackΓ(𝑓2, 𝑔2)
+(8)
+Proof.
+1. The unit is carried to the unit, since trackΓ(idΓ, idΓ)(𝛾, 𝜑) = (𝛾, 𝜑∘idΓ) = (𝛾, 𝜑).
+2. For the multiplication, take any (𝛾, 𝜑) ∈𝜕Γ:
+10

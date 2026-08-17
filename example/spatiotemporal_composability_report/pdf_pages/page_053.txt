@@ -1,0 +1,44 @@
+Episodes are sorted and made contiguous, by induction on |𝐴|. Let 𝑛1 be ⊲-minimal in 𝐴. Then 𝑑𝑛1 =
+⌀ and 𝜋𝑛1 = 𝗋𝗈𝗈𝗍, since Definition 67 puts a provider of a key of 𝑑𝑛1 and the fiber registering 𝑛1 
+in 𝐴 while ⊲ puts both below 𝑛1. So target𝑛1 reads no field of another fiber and, no orchestration 
+step remaining to write 𝜏𝑛1 and no fiber below 𝑛1 remaining to retire it, is constant. Every 
+step acting on 𝑛1 is an activation step, no episode closing, and its remaining premises read 
+𝜃𝑛1 and 𝑖𝑛1, which by Table 1 only 𝑛1 writes; each is therefore applicable at every earlier state, 
+and Lemma 71 moves it one place earlier without moving the endpoint. The number of steps 
+of other fibers preceding a step of 𝑛1 drops by one at each application, so the episode of 𝑛1 
+becomes an initial contiguous block. The argument repeats on 𝐴∖{𝑛1} over the suffix that 
+follows the block, where 𝑛1 is 𝖠𝖼𝗍𝗂𝗏𝖾 throughout and takes no further step, so it too contributes 
+a constant target. The enumeration this produces linearizes ⊲ by construction.
+For (2), both sequences reduce by (1) to a canonical one, and the two reductions run over the 
+same 𝐴 up to a renaming. Definition 67 reads 𝜏, 𝜋, 𝑑, and 𝑝, of which the last three are written 
+once with a fiber’s entry (Lemma 54(5)), so what has to be seen is that the same names come 
+into existence carrying the same 𝑑, 𝑝, and 𝜋, and that the same names are retired. Insertions 
+the two sequences share by hypothesis. Registrations they share as well: an activation of a 
+fiber of 𝐴 registers, at each of its iterations, the component the iterator names there, which the 
+second condition of Definition 60 holds fixed across interleavings, so the tree of registrations 
+below an 𝐴-fiber is a function of that fiber’s component; the names those registrations draw 
+are not shared, and it is here that Lemma 56 is applied, matching the two trees by a bijection. 
+And a retirement is either an orchestration step, shared, or the O-Retire an accumulator takes, 
+which retires exactly the names the same activation registered. Two enumerations linearizing ⊲ 
+differ by transpositions of incomparable episodes, which Lemma 71 again leaves the endpoint 
+unchanged by, so the two canonical sequences agree. With the termination of Theorem 66, the 
+lifecycle relation therefore has unique normal forms.
+□
+Failure is excluded from the statement because it is a genuine source of divergence, and 
+the calculus should not be read as denying it: whether a step raises depends on the state it ran 
+against, so one schedule may fail a fiber where another completes it, and the two quiescent 
+states then differ in that fiber’s lifecycle state. They do not differ in anything else, by Corol­
+lary 62, which puts a failed fiber’s contribution to the state at nothing.
+In the base calculus of Section 4.2 the same theorem holds, and the proof needs no substi­
+tution beyond dropping one clause. L-Unload carries no guard there, so the last paragraph of 
+Lemma 72 is vacuous; the rest of that lemma appeals to quiet𝑇 alone, which the base calculus 
+supplies unchanged.
+The theorem is what licenses reasoning about a Cordis application as though it were stati­
+cally assembled. An orchestrator that adds a component, removes it, replaces a provider, and 
+reverts the replacement is guaranteed to arrive at the state it would have obtained by writing the 
+final composition down at the outset, and a component author reasoning about which coeffects 
+are in scope may reason about the quiescent state alone. It also delimits the guarantee: it speaks 
+of the state, not of the emissions the system produced along the way, which is the distinction 
+Section 6.1 draws between an acquisition, tracked inside the boundary, and an emission, which 
+crosses it.
+53

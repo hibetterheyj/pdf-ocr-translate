@@ -1,0 +1,22 @@
+[118] C. Escoffier, R. S. Hall, and P. Lalanda, “iPOJO: an Extensible Service-Oriented Compo­
+nent Framework,” in IEEE International Conference on Services Computing,  2007, pp. 474–
+481. doi: 10.1109/SCC.2007.74.
+[119] H. Cervantes and R. S. Hall, “Autonomous Adaptation to Dynamic Availability Using a 
+Service-Oriented Component Model,” in Proceedings of the 26th International Conference 
+on Software Engineering, in ICSE '04.  2004, pp. 614–623. doi: 10.1109/ICSE.2004.1317483.
+[120] C. Elliott and P. Hudak, “Functional Reactive Animation,” in Proceedings of the Second 
+ACM SIGPLAN International Conference on Functional Programming, in ICFP '97.  1997, pp. 
+263–273. doi: 10.1145/258948.258973.
+[121] G. H. Cooper and S. Krishnamurthi, “Embedding Dynamic Dataflow in a Call-by-Value 
+Language,” in Programming Languages and Systems (ESOP 2006), in Lecture Notes in 
+Computer Science, vol. 3924. Springer,  2006, pp. 294–308. doi: 10.1007/11693024_20.
+[122] I. Maier and M. Odersky, “Deprecating the Observer Pattern with Scala.React,” technical 
+report EPFL-REPORT-176887, 2012. [Online].  Available: https://infoscience.epfl.ch/
+record/176887
+[123] E. Bainomugisha, A. L. Carreton, T. Van Cutsem, W. De Meuter, and others, “A 
+Survey on Reactive Programming,” ACM Comput. Surv., vol. 45, no. 4, 2013, doi: 
+10.1145/2501654.2501666.
+[124] A. Margara and G. Salvaneschi, “On the Semantics of Distributed Reactive Program­
+ming: The Cost of Consistency,” IEEE Trans. Software Eng., vol. 44, no. 7, pp. 689–711, 
+2018, doi: 10.1109/TSE.2018.2833109.
+88

@@ -1,0 +1,61 @@
+𝜃𝑛= 𝖱𝖾𝗅𝗈𝖺𝖽𝗂𝗇𝗀(𝑖, 𝑔, 𝜔)
+𝑖(𝛾) = 𝖫𝖾𝖿𝗍(𝜉)
+𝛾⟶𝛾[𝜃𝑛↦𝖴𝗇𝗅𝗈𝖺𝖽𝗂𝗇𝗀(𝑔, 𝜔, 𝜉)]
+L-Raise
+L-Raise recovers before it records. The fiber routes into 𝖴𝗇𝗅𝗈𝖺𝖽𝗂𝗇𝗀 carrying the error as 
+its outcome, the accumulator built up to the failing iteration is applied there, and the fiber 
+arrives at 𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾(𝜉) having installed nothing, at a state differing from the one an aborting L-
+Divert would have produced only in the outcome the fiber carries. Routing a failure like every 
+other deactivation is what makes every outcome reachable only through L-Unload, which is 
+the single fact Theorem 59 turns on. L-Begin has 𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾(⊥) as a premise, so the lifecycle is 
+not re-entered from an error outcome; this is the substance of the outcome, which withholds 
+a fiber whose effect function has shown itself to be unsound in the state it ran against rather 
+than retrying it against an unchanged environment. A failed fiber also obstructs nothing: it is 
+𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾, so it carries no committed view and cannot make relied hold.
+A failure is recorded on the fiber rather than propagated to its parent, so a component whose 
+transition fails leaves its siblings running, which is the behavior a plugin host wants and the 
+reason the outcome is per-fiber rather than a property of the whole state.
+4.4. Metatheory
+Section  4.3 supplies ten rules: the three orchestration rules of Section  4.2; L-Begin, L-Iter, 
+and L-Finish for an activation; L-Divert and L-Raise for the two ways an activation may end 
+early; and L-Leave and L-Unload for a deactivation. This section reads the two dimensions 
+of composability off those rules in their global form, one fiber’s guarantee holding whatever 
+the other fibers do in between, and adds what only a whole system can be asked for: that it 
+always reaches the configuration its targets call for, and that the configuration is the one a static 
+assembly would have produced. Every property below is a property of a sequence of steps, so 
+we index the steps and read the fields of a state off that index.
+Two conventions carry Section 3.3.2 into this section. Every equality between states below 
+is read up to the observational equivalence ≃ of Definition 33, as Lemma 38 reads those of 
+Section 3.1, and the witness condition an effect function is held to is the one Definition 37 gives, 
+read of an iterator as Definition 51 gives it and of a registering iteration at the ≈ below.
+Definition 53. Index the steps by 𝑡, so that 𝛾𝑡 is the state the first 𝑡 of them reach, and write
+step𝑡≔𝑟(𝑛)
+(50)
+for the step taken at 𝛾𝑡: the rule 𝑟 it applies, one of the ten, and the name 𝑛∈𝔑 it applies that 
+rule at. The sequence starts at a 𝛾0 with dom(𝐹0) = ⌀, so every fiber comes into existence by 
+an O-Insert, whether the orchestrator’s or one an iteration takes (Definition 47). A field of 𝛾𝑡 
+carries the index as a superscript, so that 𝜃𝑡
+𝑛, 𝜔𝑡
+𝑛, 𝜎𝑡
+𝑛, 𝑔𝑡
+𝑛, and 𝑖𝑡
+𝑛 are the lifecycle state, committed 
+view, table, accumulator, and remaining iterator of 𝑛 at 𝛾𝑡, and 𝐹𝑡 and 𝜎𝑡 the registry and 
+coeffect context of 𝛾𝑡 itself, the 𝐹𝛾 and 𝜎𝛾 of Definition 45 read there. Predicates take the state 
+as their argument and everything else as a subscript, so installed𝑡
+𝑛, target𝑡
+𝑛, relied𝑡
+𝑛, and quiet𝑡 
+are the predicates of Definition 46, Definition 49, and Definition 50 at 𝛾𝑡. An episode of 𝑛 is a 
+maximal interval [𝑏, 𝑢] of indices throughout which installed𝑡
+𝑛 holds. It opens at 𝑏, where 𝑏>
+0 and ¬ installed𝑏−1
+𝑛
+, the empty 𝐹0 leaving no fiber installed at the outset; it closes at 𝑢 when 
+installed𝑢
+𝑛 and not installed𝑢+1
+𝑛
+, which a final episode need not do.
+Every rule of Section 4.3 concludes in the shape 𝛾⟶𝛿[⋯], where the premises compute 𝛿 from 
+𝛾 and leave it as 𝛾 where they compute nothing, and the bracket edits named fields of the 
+38

@@ -1,0 +1,57 @@
+(trackΓ(𝑓1, 𝑔1) ∘trackΓ(𝑓2, 𝑔2))(𝛾, 𝜑) = trackΓ(𝑓1, 𝑔1)(𝑓2(𝛾), 𝜑∘𝑔2)
+= (𝑓1(𝑓2(𝛾)), 𝜑∘𝑔2 ∘𝑔1)
+= trackΓ(𝑓1 ∘𝑓2, 𝑔2 ∘𝑔1)(𝛾, 𝜑)
+□
+Definition 6. Define the transformation recoverΓ on 𝜕Γ:
+recoverΓ
+:
+𝜕Γ
+→
+𝜕Γ
+recoverΓ
+= (𝛾, 𝜑) ↦(𝜑(𝛾), idΓ)
+(9)
+This transformation applies the recovery function 𝜑 to the current state 𝛾 and resets 𝜑 to the 
+identity. The following diagram illustrates how recover recovers the context to its initial state 
+after a sequence of effects track(𝑓1, 𝑔1), ⋯, track(𝑓𝑛, 𝑔𝑛) has been applied to 𝜕Γ:
+𝑓1
+𝑓𝑛
+𝑓′
+1
+𝑓′
+𝑛
+track
+track
+track
+recover
+Γ
+Γ
+Γ
+Γ
+𝜕Γ
+𝜕Γ
+𝜕Γ
+𝜕Γ
+The diagram shows that the tracked effects followed by recover carry the initial effect context 
+back to itself. What each tracking step preserves is the result of recovery itself, from whatever 
+state it is taken:
+Theorem 7. For every (𝛾, 𝜑) ∈𝜕Γ and every pair (𝑓, 𝑔) with 𝑔(𝑓(𝛾)) = 𝛾,
+recoverΓ(trackΓ(𝑓, 𝑔)(𝛾, 𝜑)) = recoverΓ(𝛾, 𝜑)
+(10)
+Proof.
+recoverΓ(trackΓ(𝑓, 𝑔)(𝛾, 𝜑)) = recoverΓ(𝑓(𝛾), 𝜑∘𝑔)
+= (𝜑(𝑔(𝑓(𝛾))), idΓ)
+= (𝜑(𝛾), idΓ) = recoverΓ(𝛾, 𝜑)
+□
+A sequence of pairs needs no separate argument. Let (𝑓1, 𝑔1), ⋯, (𝑓𝑛, 𝑔𝑛) be applied in order 
+from (𝛾, 𝜑), and write 𝛿0 = 𝛾 and 𝛿𝑖= 𝑓𝑖(𝛿𝑖−1). By Theorem 5 the composite trackΓ(𝑓𝑛, 𝑔𝑛) ∘⋯∘
+trackΓ(𝑓1, 𝑔1) is trackΓ of the twisted composite (𝑓𝑛∘⋯∘𝑓1, 𝑔1 ∘⋯∘𝑔𝑛), and if 𝑔𝑖(𝛿𝑖) = 𝛿𝑖−1 for 
+every 𝑖 then (𝑔1 ∘⋯∘𝑔𝑛)(𝛿𝑛) = 𝛿0 = 𝛾. That pair therefore meets the hypothesis of Theorem 7 
+at 𝛾, and one application of the theorem gives
+recoverΓ((trackΓ(𝑓𝑛, 𝑔𝑛) ∘⋯∘trackΓ(𝑓1, 𝑔1))(𝛾, 𝜑)) = recoverΓ(𝛾, 𝜑)
+(11)
+Taking (𝛾, 𝜑) = (𝛾0, idΓ), recovery carries every state reached this way back to (𝛾0, idΓ). A 
+pair with 𝑔∘𝑓= idΓ meets the hypothesis at every state.
+Recovery reads a state through the quantity 𝜑(𝛾), and we refer to 𝜑(𝛾) = 𝛾0 as the soundness 
+invariant of a state in 𝜕Γ.
+11

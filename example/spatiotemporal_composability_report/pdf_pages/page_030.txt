@@ -1,0 +1,47 @@
+A fiber’s name is what gives it an identity that survives its own mutation: every rule below 
+rewrites the lifecycle state of one fiber and leaves the others alone, so the rule has to say which 
+one, and two fields refer to fibers rather than describe them, the parent 𝜋 and the committed 
+view 𝜔. Names are atoms: no rule computes one, inspects its structure, or relates two of them 
+by anything but equality, and introducing a fiber simply draws one not already in use. This is 
+the discipline of dynamically created local names [39], used here for fiber identity.
+Each fiber owning a table means the coeffect context is derived rather than stored: it is what 
+the active fibers jointly provide.
+𝜎𝛾≔⋃{𝜎𝑚| 𝑚∈dom(𝐹𝛾), 𝜃𝑚= 𝖠𝖼𝗍𝗂𝗏𝖾(−, −)}
+(40)
+The union is well defined because a fiber writes only the keys it declares, dom(𝜎𝑛) ⊆𝑝𝑛, 
+and the provisions of distinct fibers are disjoint (Definition 43), so each 𝑘∈dom(𝜎𝛾) lies in the 
+table of exactly one 𝖠𝖼𝗍𝗂𝗏𝖾 fiber, whose name we write provider𝑘(𝛾) ∈𝔑 and call the provider of 
+𝑘. Each key therefore has one possible provider, fixed by the provisions and not by the state. 
+No rule writes 𝜎𝑛 directly: a fiber’s provisions are the set operations its own effect function 
+performs, which land in 𝜎𝑛 and so are already part of the state 𝑒𝑛 returns, and they leave again 
+with the accumulator. Only the coeffect part of an effect is recorded this way, because only the 
+coeffect part is what other fibers declare against; effects that mutate state elsewhere in 𝛾 are 
+tracked by 𝑔 like any other, but no fiber can name them in a specification, so they contribute no 
+ordering constraint.
+The satisfaction relation of Section 3.2.2 then applies unchanged, with 𝛾⊧𝑑 abbreviating 
+𝜎𝛾⊧𝑑. A key lies in dom(𝜎𝛾) exactly when some 𝖠𝖼𝗍𝗂𝗏𝖾 fiber has installed it, its provision being 
+the keys it may install rather than the ones it has, so 𝛾⊧𝑑 already requires that every declared 
+key have an 𝖠𝖼𝗍𝗂𝗏𝖾 provider. Taking the union over 𝖠𝖼𝗍𝗂𝗏𝖾 fibers alone is what lets a fiber 
+cease to provide before it has withdrawn anything, which Section 4.3.1 turns into the ordering 
+discipline.
+4.2. The Base Calculus
+This section gives the calculus of the two-state lifecycle of Figure 1 and nothing more: the target 
+each fiber is compared against, and the five rules that move it.
+Target views. The rules compare each fiber against a target, namely whether it ought to 
+be running and against which resolution of its dependencies. The target is not a property of 
+the fiber alone, since the keys a fiber declares are resolved against the whole state, so it is a 
+predicate on that state.
+Definition 46. The target view of 𝑛 at 𝛾 maps each declared key to its provider, so it is a total 
+map 𝑑𝑛→𝔑, and is ⊥ when 𝑛 ought not to be running at all:
+target𝑛(𝛾) ≔{⊥
+if 𝜏𝑛∨¬(𝛾⊧𝑑𝑛)
+(𝑘∈𝑑𝑛) ↦provider𝑘(𝛾)
+otherwise
+(41)
+A state is quiescent when every fiber has reached its target view:
+quiet(𝛾) ≔∀𝑛∈dom(𝐹𝛾). {target𝑛(𝛾) = ⊥
+if 𝜃𝑛= 𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾
+target𝑛(𝛾) = 𝜔𝑛
+if 𝜃𝑛= 𝖠𝖼𝗍𝗂𝗏𝖾(−, 𝜔𝑛)
+(42)
+30

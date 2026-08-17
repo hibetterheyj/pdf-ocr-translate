@@ -1,0 +1,103 @@
+rule
+𝜃𝑡
+𝑛
+𝜃𝑡+1
+𝑛
+Ψ𝑡
+control fields edited
+O-Insert
+undefined
+𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾(⊥)
+idΓ
+dom(𝐹𝛾)
+O-Retire
+unconstrained
+unchanged
+idΓ
+𝜏𝑛
+O-Remove
+𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾(−)
+undefined
+idΓ
+dom(𝐹𝛾)
+L-Begin
+𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾(⊥)
+𝖱𝖾𝗅𝗈𝖺𝖽𝗂𝗇𝗀(𝑒𝑛, idΓ, 𝜔)
+idΓ
+𝜃𝑛
+L-Iter
+𝖱𝖾𝗅𝗈𝖺𝖽𝗂𝗇𝗀(𝑖, 𝑔, 𝜔)
+𝖱𝖾𝗅𝗈𝖺𝖽𝗂𝗇𝗀(𝑖′, 𝑔∘ℎ, 𝜔)
+pr1 ∘𝑖
+𝜃𝑛
+L-Finish
+𝖱𝖾𝗅𝗈𝖺𝖽𝗂𝗇𝗀(𝑖, 𝑔, 𝜔)
+𝖠𝖼𝗍𝗂𝗏𝖾(𝑔∘ℎ, 𝜔)
+pr1 ∘𝑖
+𝜃𝑛
+L-Divert
+𝖱𝖾𝗅𝗈𝖺𝖽𝗂𝗇𝗀(𝑖, 𝑔, 𝜔)
+𝖴𝗇𝗅𝗈𝖺𝖽𝗂𝗇𝗀(𝑔∘ℎ, 𝜔, ⊥)
+idΓ or pr1 ∘𝑖
+𝜃𝑛
+L-Raise
+𝖱𝖾𝗅𝗈𝖺𝖽𝗂𝗇𝗀(𝑖, 𝑔, 𝜔)
+𝖴𝗇𝗅𝗈𝖺𝖽𝗂𝗇𝗀(𝑔, 𝜔, 𝜉)
+idΓ
+𝜃𝑛
+L-Leave
+𝖠𝖼𝗍𝗂𝗏𝖾(𝑔, 𝜔)
+𝖴𝗇𝗅𝗈𝖺𝖽𝗂𝗇𝗀(𝑔, 𝜔, ⊥)
+idΓ
+𝜃𝑛
+L-Unload
+𝖴𝗇𝗅𝗈𝖺𝖽𝗂𝗇𝗀(𝑔, 𝜔, 𝜁)
+𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾(𝜁)
+𝑔
+𝜃𝑛
+Table 1 | The rules as writes on the fiber 𝑛 they act on, where step𝑡 is that rule applied at 𝑛.
+Lemma 54. Reading Table 1 together with Definition 48, for every step 𝑡 and all fibers 𝑚, 𝑛 
+present at 𝛾𝑡:
+1. 𝜎𝑡+1
+𝑚
+≠𝜎𝑡
+𝑚 only where step 𝑡 acts on 𝑚, the write lying inside Ψ𝑡;
+2. 𝜔𝑛 comes into existence only where step𝑡= L-Begin(𝑛) and ceases only where step𝑡=
+L-Unload(𝑛), so 𝜔𝑡
+𝑛 is constant for 𝑡 in an episode of 𝑛;
+3. Ψ𝑡= 𝑔𝑡
+𝑛 only where step𝑡= L-Unload(𝑛), and no other step applies 𝑔𝑛 to the state;
+4. ¬ installed𝑡
+𝑛∧installed𝑡+1
+𝑛
+⇒step𝑡= L-Begin(𝑛), 
+and 
+installed𝑡
+𝑛∧¬ installed𝑡+1
+𝑛
+⇒
+step𝑡= L-Unload(𝑛);
+5. 𝜋𝑛, 𝑑𝑛, 𝑝𝑛, and 𝑒𝑛 come into existence with the entry of 𝑛 and are never written again, 
+and 𝜏𝑛 is monotone, written only at ⊤ and only by an O-Retire.
+Proof. Let step 𝑡 apply 𝑟 at 𝑛. By Definition 53 it factors as edit𝑡∘Ψ𝑡, where edit𝑡 writes the fields 
+the fifth column of Table 1 names and nothing else, and Ψ𝑡 is idΓ, an application of one of 𝑛’s 
+iterations, or the accumulator 𝑔𝑡
+𝑛, which is a composite of the inverses those iterations yielded. 
+Each of the three is confined to 𝑛 by Definition 48, so Ψ𝑡 writes no field of a fiber present at 𝛾𝑡 
+but 𝜎𝑛, together with the entry a registration adds and the 𝜏 its inverse writes. The two halves 
+therefore partition the writes, and each clause is that partition read at one field. One reading 
+of the second and third columns is used twice: 𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾 is the one lifecycle state carrying no 
+committed view, L-Begin the one rule leading out of it, and L-Unload the one rule leading into 
+it, while every other row carries the 𝜔 of its premise into its conclusion unchanged.
+(1) An edit𝑡 writes no table, the fifth column naming none, and a Ψ𝑡 writes no 𝜎𝑚 for a present 
+𝑚≠𝑛. So 𝜎𝑚 can move only at 𝑚= 𝑛, and only inside Ψ𝑡.
+(2) 𝜔𝑛 is a constituent of 𝜃𝑛, which only an edit𝑡 writes and only at the fiber the step acts on, 
+so by the reading above 𝜔𝑛 comes into existence at an L-Begin of 𝑛 and ceases at an L-Unload 
+of 𝑛. An episode of 𝑛 is an interval on which installed𝑛 holds, hence one throughout which 𝜔𝑛 
+is defined, so neither rule falls in its interior.
+(3) The fourth column, where an accumulator appears at L-Unload alone: the other rules take 
+a forward map pr1 ∘𝑖 or idΓ, and no edit𝑡 applies a map to the state at all.
+(4) installed𝑛 is 𝜃𝑛≠𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾(−), and by the reading above L-Begin and L-Unload are the only 
+rules whose premise and conclusion differ in whether 𝜃𝑛 is 𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾. A step acting on some 𝑚≠
+𝑛 writes no 𝜃𝑛, and the entry a registration adds is at a name not present at 𝛾𝑡.
+40

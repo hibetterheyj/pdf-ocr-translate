@@ -1,0 +1,74 @@
+2
+function callback()
+3
+refresh(fiber)
+4
+return function()
+5
+fiber.target ← ⊥
+6
+unload(fiber)
+7
+fiber ← Fiber(parent: ctx, inject: component.inject)
+8
+fiber.ctx ← ctx[fiber ↦ fiber]
+9
+fiber.apply ← () ↦ component.apply(fiber.ctx, config)
+10
+ctx.effect(callback)
+11
+return fiber
+Algorithm 5 realizes the inertial state machine of Section 4.3.3, in which reload and unload 
+are inertial: once entered, a transition runs to completion before the system responds to a target-
+state change. It uses two auxiliary lookups over the coeffect store: resolve(inject) returns the 
+bindings the declared keys currently resolve to, and provided(fiber) returns the keys whose 
+binding this fiber installed. The refresh function recomputes fiber.target from the coeffect 
+store and, if the fiber is not already in a transition, initiates either a reload or unload task2. The 
+reload function records the current target and executes the component’s effect function apply. 
+Upon completion, it checks whether the target still matches: if so, the fiber enters ACTIVE; if not 
+(regardless of whether the new target is ⊥ or a different set of providers), it chains into unload. 
+Symmetrically, unload recovers all tracked effects in LIFO order and then either enters INACTIVE 
+or chains into reload. This mutual recursion implements the inertial property: once a transition 
+begins, it completes before any new transition can start.
+Algorithm 5 Component lifecycle
+1
+function refresh(fiber)
+2
+target ← target(𝛾, 𝑛)
+3
+if target = fiber.target then return
+4
+fiber.target ← target
+5
+if fiber.inertia then return
+6
+if target ≠ ⊥ then
+7
+fiber.state ← LOADING
+8
+fiber.inertia ← create_task(reload(fiber))
+9
+else
+10
+fiber.state ← UNLOADING ▷ out of service before any inverse is scheduled
+11
+fiber.inertia ← create_task(unload(fiber))
+12
+async function reload(fiber)
+13
+target0 ← fiber.target
+14
+fiber.committed ← resolve(fiber.inject) ▷ commit the view
+15
+recover ← await execute(fiber.apply, () ↦ fiber.target = target0)
+16
+fiber.dispose ← recover ∘ fiber.dispose
+17
+if fiber.target = target0 then
+18
+fiber.state ← ACTIVE
+2create_task schedules an async function to run concurrently and returns a handle to it (stored in fiber.inertia). 
+We write it explicitly for language independence: with eager scheduling (e.g., TypeScript promises), the call 
+is implicit and the returned promise is the handle, whereas with lazy scheduling (e.g., Python coroutines, Rust 
+futures) the host must spawn the task for it to progress.
+59

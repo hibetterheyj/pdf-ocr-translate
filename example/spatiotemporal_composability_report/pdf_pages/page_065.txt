@@ -1,0 +1,77 @@
+6
+pending ← pending ∪ (get_imports(url) ∖ (accepted ∪ declined))
+7
+repeat
+8
+progress ← false
+9
+for url in pending do
+10
+if get_imports(url) ∩ accepted ≠ ⌀ then
+11
+accepted ← accepted ∪ {url}
+12
+pending ← pending ∖ {url}
+13
+progress ← true
+14
+else if get_imports(url) ⊆ declined then
+15
+declined ← declined ∪ {url}
+16
+pending ← pending ∖ {url}
+17
+progress ← true
+18
+else
+19
+pending ← pending ∪ (get_imports(url) ∖ (accepted ∪ declined))
+20
+until not progress
+21
+declined ← declined ∪ pending
+22
+return (accepted, declined)
+Seeded with the imports of the stashed files, the fixed point accepts a module once one of 
+its imports is accepted and declines one once all of its imports are declined; any module left 
+undecided, caught in an import cycle, defaults to declined.
+Phase 2: Stale-entry detection. Using accepted and declined, the engine then filters the 
+component entries down to the stale ones, whose dependency tree reaches a changed module. It 
+walks each entry’s tree with get_dependencies, which collects the transitive imports of a module 
+while respecting declined as a boundary:
+Algorithm 9 Stale-entry detection
+1
+function get_dependencies(root, declined)
+2
+deps ← ⌀
+3
+function traverse(url)
+4
+if url ∈ deps or url ∈ declined then return
+5
+deps ← deps ∪ {url}
+6
+for child in get_imports(url) do traverse(child)
+7
+traverse(root)
+8
+return deps
+9
+function detect(entries, accepted, declined)
+10
+stale_entries ← ⌀
+11
+for entry in entries do
+12
+tree ← get_dependencies(entry.url, declined)
+13
+if tree ∩ accepted ≠ ⌀ then
+14
+accepted ← accepted ∪ tree
+15
+stale_entries ← stale_entries ∪ {entry}
+16
+return stale_entries
+An entry is stale exactly when its tree intersects accepted; that tree is then folded into 
+accepted, so every stale module along it is invalidated in the next phase.
+65

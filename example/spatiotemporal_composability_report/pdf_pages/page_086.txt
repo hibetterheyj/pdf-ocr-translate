@@ -1,0 +1,53 @@
+[90]
+R. Bianchini, F. Dagnino, P. Giannini, and E. Zucca, “A Java-like calculus with heteroge­
+neous coeffects,” Theoretical Computer Science, vol. 971, p. 114063, 2023, doi: https://doi.
+org/10.1016/j.tcs.2023.114063.
+[91]
+C. Torczon, E. Suárez Acevedo, S. Agrawal, J. Velez-Ginorio, and S. Weirich, “Effects and 
+Coeffects in Call-by-Push-Value,” Proc. ACM Program. Lang., vol. 8, no. OOPSLA2, Oct. 
+2024, doi: 10.1145/3689750.
+[92]
+R. Hirschfeld, P. Costanza, and O. Nierstrasz, “Context-oriented Programming,” Journal 
+of Object Technology, vol. 7, no. 3, pp. 125–151, 2008, doi: 10.5381/jot.2008.7.3.a4.
+[93]
+P. Costanza and R. Hirschfeld, “Language constructs for context-oriented programming: 
+an overview of ContextL,” in Proceedings of the 2005 Symposium on Dynamic Languages 
+(DLS '05), ACM,  2005, pp. 1–10. doi: 10.1145/1146841.1146842.
+[94]
+G. Salvaneschi, C. Ghezzi, and M. Pradella, “Context-oriented programming: A software 
+engineering perspective,” Journal of Systems and Software, vol. 85, no. 8, pp. 1801–1817, 
+2012, doi: 10.1016/j.jss.2012.03.024.
+[95]
+G. Kiczales et al., “Aspect-Oriented Programming,” in ECOOP'97 — Object-Oriented 
+Programming, 11th European Conference, in Lecture Notes in Computer Science, vol. 1241. 
+Springer,  1997, pp. 220–242. doi: 10.1007/BFb0053381.
+[96]
+G. Kiczales, E. Hilsdale, J. Hugunin, M. Kersten, J. Palm, and W. G. Griswold, “An 
+Overview of AspectJ,” in ECOOP 2001 — Object-Oriented Programming, 15th European 
+Conference, in Lecture Notes in Computer Science, vol. 2072. Springer,  2001, pp. 327–353. 
+doi: 10.1007/3-540-45337-7_18.
+[97]
+A. Popovici, T. Gross, and G. Alonso, “Dynamic Weaving for Aspect-Oriented Program­
+ming,” in Proceedings of the 1st International Conference on Aspect-Oriented Software 
+Development (AOSD 2002), ACM,  2002, pp. 141–147. doi: 10.1145/508386.508404.
+[98]
+J. Bonér, “What Are the Key Issues for Commercial AOP Use: How Does AspectWerkz 
+Address Them?,” in Proceedings of the 3rd International Conference on Aspect-Oriented 
+Software Development (AOSD 2004), ACM,  2004, pp. 5–6. doi: 10.1145/976270.976273.
+[99]
+M. Hicks, J. T. Moore, and S. Nettles, “Dynamic Software Updating,” in Proceedings of 
+the ACM SIGPLAN 2001 Conference on Programming Language Design and Implementation, 
+in PLDI '01.  2001, pp. 13–23. doi: 10.1145/378795.378798.
+[100] G. Stoyle, M. Hicks, G. Bierman, P. Sewell, and I. Neamtiu, “Mutatis Mutandis: Safe 
+and Predictable Dynamic Software Updating,” in Proceedings of the 32nd ACM SIGPLAN-
+SIGACT Symposium on Principles of Programming Languages, in POPL '05.  2005, pp. 183–
+194. doi: 10.1145/1040305.1040321.
+[101] C. M. Hayden, K. Saur, E. K. Smith, and M. Hicks, “Kitsune: Efficient, General-Purpose 
+Dynamic Software Updating for C,” ACM Trans. Program. Lang. Syst., vol. 36, no. 4, 2014, 
+doi: 10.1145/2629460.
+[102] M. Overeem, M. Spoor, and S. Jansen, “The Dark Side of Event Sourcing: Managing 
+Data Conversion,” in IEEE 24th International Conference on Software Analysis, Evolution 
+and Reengineering, in SANER '17.  2017, pp. 193–204. doi: 10.1109/SANER.2017.7884621.
+[103] E. Gamma, R. Helm, R. Johnson, and J. Vlissides, Design Patterns: Elements of Reusable 
+Object-Oriented Software. Boston, MA: Addison-Wesley, 1994.
+86

@@ -1,0 +1,152 @@
+\subsection{4. 动态组合的演算}\label{a-calculus-of-dynamic-composition}
+
+第~3 节仅在局部形式下确立了空间可组合性与时间可组合性。要把它们带到整个系统，需要把系统分解为若干组件，每个组件把一个余效应规格与一个见证效应函数配对，从而使与共享环境的每一次交互都可归因于其中一个组件。接下来的各节为这一分解给出操作语义，并确立全局形式下的空间可组合性与时间可组合性。
+
+第~4.1 节与第~4.2 节给出最小的演算，在其中生命周期可以被赋予规则；该演算把每次转移都视为原子的、即时的且不会失败的。第~4.3 节放弃这三项假定——其中原子性按转移可能运行的每个方向各放松一次——从而容纳运行时在转移开始与结束之间插入的各种控制流形式，最终得到真实运行时实现所采用的演算。第~4.4 节确立该演算的元理论，即保真性、全局时间与空间可组合性、进展性与汇合性。
+
+\subsection{4.1. 组件与纤维}\label{components-and-fibers}
+
+本节确定规则作用的对象：组件；纤维——组件的一次实例化，携带自己的生命周期状态；以及注册表——状态所持有的纤维的容器，余效应上下文即从此读取。
+
+组件。组件以三元组给出，其余效应一侧分为从环境读取的部分与向环境提供的部分。
+
+定义 43. 携带效应与余效应的上下文 $\Gamma$ 之上的组件（定义~32）定义为：
+
+\[
+\mathfrak { C } _ { \Gamma } : = \mathfrak { D } _ { \Gamma } \times \mathfrak { P } _ { \Gamma } \times \mathfrak { E } _ { \Gamma } ^ { * }\tag{37}
+\]
+
+表示一个三元组 \(( d , p , e )\)，其中：
+
+\(d : { \mathfrak { D } } _ { \Gamma }\) 是定义~25 的余效应规格，声明从环境所需的依赖；
+
+\(p : \mathfrak { P } _ { \Gamma } : = \mathsf { S e t } ( K )\) 是供给，声明该组件可以提供的余效应键，且 $p$ 之外的任何键都不是其效应函数所写的键；
+
+\(e : { \mathfrak { E } } _ { \Gamma } ^ { * }\) 是定义~8 的见证效应函数，定义该组件在激活时贡献的效应，以及撤回这些效应的逆操作。
+
+这两个声明是一个接口的两个方向：$d$ 是组件从环境读取的内容，$p$ 是组件向环境写入的内容；第~4.2 节不允许同一注册表中的两个纤维供给相交。全文都取 $\Gamma$ 上的下标，余效应上下文是它的一个投影（定义~32），因此定义~25 的 \(\mathfrak { D } _ { \Sigma }\) 在此写作 \(\mathfrak { D } _ { \Gamma }\)。
+
+供给的不相交性是本章与第~3.2.3 节分道扬镳之处。定义~28 的隔离性允许一个键通过领域表解析，因此两个纤维可以在不同领域中提供同一个键；携带领域的演算会把不相交性放宽为领域内的不相交性，并按声明该键的纤维所在的领域来解析已声明的键。我们在此不引入领域，而是在一个共享领域处读取每个键，这正是使上述不相交性成为正确条件、并使每个键的提供者唯一的原因（定义~45）。它限制的是组件可以被实例化的频次：带有非空供给的组件同一时刻只有一个纤维，因此下文的众多实例化都是针对不提供任何东西的组件——这正是只消费、或只注册其他组件的常见情形。
+
+在运行系统中实例化的组件会随时间被激活和停用，因此它携带一个生命周期状态；转移正是把它从一个生命周期状态移动到另一个的机制：一次激活执行 \(e ,\) 在上下文上累积副作用，一次停用应用累加器以恢复上下文。其最简单的形式就是图~1 的两状态模型，第~4.2 节为其给出规则；第~4.3 节在引入每种控制流特性时对它加以精化。
+
+\pandocbounded{\includegraphics[keepaspectratio,alt={image}]{images/c9b00b199db222cfb0193b2f0ebef72a856b36de345a57c56aa072acf4f5736f.jpg}}
+
+图 1：组件基础生命周期
+
+纤维。一个组件可以被多次实例化，每次实例化都携带自己的生命周期状态。我们称这样的实例化为纤维。纤维记录产生它的组件、它在哪个纤维之下被实例化、它提供的余效应，以及它处于生命周期中的哪个阶段。
+
+定义 44. 固定一个纤维名集合 $\mathfrak { N }$。实例化组件 \(( d , p , e ) \in \mathfrak { C } _ { \Gamma }\) 的纤维是一个元组 \(\langle d , p , e , \pi , \sigma , \tau , \theta \rangle\)，其中
+
+\(d : \mathfrak { D } _ { \Gamma } , p : \mathfrak { P } _ { \Gamma }\) 与 \(e : { \mathfrak { E } } _ { \Gamma } ^ { * }\) 分别是定义~43 的余效应规格、供给与效应函数；
+
+• $\pi : \mathfrak { N } \cup \{ \mathsf { r o o t } \}$ 是父节点，即这个纤维在其下被实例化的那个纤维，或是根标记 $\mathsf { r o o t }$；
+
+• $\sigma : \Sigma$ 是纤维自身的余效应表（定义~22），在激活之前为空，由纤维的效应在运行过程中写入；
+
+\(\tau : \{ \bot , \top \}\) 是退役标志，新纤维中为 $\bot$，一旦编排器退役了该纤维则为 $\top$；
+
+\(\theta : \Theta _ { \Gamma }\) 是生命周期状态，在第~4.2 节的两状态模型中是
+
+\[
+\Theta _ { \Gamma } : = \mathsf { I n a c t i v e } | \mathsf { A c t i v e } ( g , \omega )\tag{38}
+\]
+
+其中 \(g : \Gamma \to \Gamma\) 是累加器，$\omega : d \to \mathfrak { N }$ 是已提交视图。
+
+已提交视图 \(\omega\) 把纤维声明的每个键发送到转移提交时提供该键的纤维的名字。第~4.3 节把 \(\Theta _ { \Gamma }\) 替换为进行中的转移所需的扩展；定义~44 的其余部分对两者只给出一次，只是 \(e\) 以第~4.3 节各层引入的更丰富的效应类型来读取。
+
+注册表。状态以其名字持有它的纤维，纤维的身份以及第~3.2 节的余效应上下文都从这一安排读取。
+
+定义 45. 以 \(\mathfrak { F } _ { \Gamma }\) 记 $\Gamma$ 上纤维的集合。状态 \(\gamma \in \Gamma\) 携带一个注册表
+
+\[
+F _ { \gamma } : \mathfrak { N } \rightharpoonup \mathfrak { F } _ { \Gamma }\tag{39}
+\]
+
+一个有限部分函数，其父指针构成一棵以 $\mathsf { r o o t }$ 为根的树，连同 $\Gamma$ 中任何没有纤维的 \(\sigma\) 提及的其余内容。我们以 \(\gamma ( n )\) 记 \(F _ { \gamma } ( n )\)，并在状态明确时以加下标 $n$ 的方式简写 \(\gamma ( n )\) 的一个字段，于是 \(d _ { n } , p _ { n } , e _ { n } , \pi _ { n } , \sigma _ { n } , \tau _ { n } , \theta _ { n }\) 是定义~44 的各字段，\(g _ { n } , \omega _ { n }\) 是 \(\theta _ { n }\) 携带的累加器与已提交视图；\(\gamma [ \theta _ { n } \mapsto \theta ^ { \prime } ]\)、$\gamma [ n \mapsto \langle \cdots \rangle ]$ 与 \(\gamma \setminus n\) 分别是与 \(\gamma\) 在某一字段、某一个纤维、以及某个纤维的存在性上不同的状态。
+
+纤维的名字赋予它一个在其自身变更后依然存续的身份：下面每条规则都只重写一个纤维的生命周期状态，而让其他纤维保持不动，因此规则必须指明是哪一个；并且有两个字段是引用纤维而非描述纤维的，即父节点 $\pi$ 与已提交视图 $\omega$。名字是原子：没有规则计算一个名字、检查它的结构、或以相等以外的任何方式关联两个名字；引入一个纤维只是抽取一个尚未使用的名字。这正是动态创建局部名字的纪律 {[}39{]}，此处用于纤维身份。
+
+每个纤维拥有一张表，意味着余效应上下文是被推导出来的而非被存储的：它就是活跃纤维共同提供的那些内容。
+
+\[
+\sigma _ { \gamma } : = \bigcup \{ \sigma _ { m } ~ | ~ m \in \mathrm { d o m } ( F _ { \gamma } ) , \theta _ { m } = \mathsf { A c t i v e } ( - , - ) \}\tag{40}
+\]
+
+该并集是良定义的，因为纤维只写它声明的键，\(\operatorname { d o m } ( \sigma _ { n } ) \subseteq p _ { n }\)，且不同纤维的供给不相交（定义~43），所以每个 \(k \in \mathrm { d o m } ( \sigma _ { \gamma } )\) 都恰好位于一个 $\mathsf { A c t i v e }$ 纤维的表中，我们把这个纤维的名字写作 \(\mathrm { p r o v i d e r } _ { k } ( \gamma ) \in \mathfrak { N }\)，并称之为 $k$ 的提供者。因此每个键只有一个可能的提供者，它由供给决定而非由状态决定。没有规则直接写 \(\sigma _ { n }\)：纤维的供给就是其自身效应函数执行的集合运算，这些运算落入 \(\sigma _ { n }\)，因此已包含在 \(e _ { n }\) 返回的状态中，它们也会随累加器一并离开。只有效应的余效应部分以这种方式被记录，因为只有余效应部分是其他纤维的声明所针对的；修改 $\gamma$ 中其他状态的效应与任何其他效应一样由 $g$ 追踪，但没有任何纤维能在规格中提及它们，因此它们不构成任何排序约束。
+
+第~3.2.2 节的满足关系于是原样适用，其中 \(\gamma \models d\) 缩写 \(\sigma _ { \gamma } \models d\)。一个键位于 \(\operatorname { d o m } \left( \sigma _ { \gamma } \right)\) 中，当且仅当某个 $\mathsf { A c t i v e }$ 纤维已安装它——它的供给是它可以安装的键，而非它已经安装的键——所以 \(\gamma \models d\) 已经要求每个已声明的键都有一个 $\mathsf { A c t i v e }$ 提供者。仅对 $\mathsf { A c t i v e }$ 纤维取并集，正是让一个纤维能够在撤回任何东西之前就停止供给的原因，第~4.3.1 节将其转化为排序纪律。
+
+\subsection{4.2. 基础演算}\label{the-base-calculus}
+
+本节给出图~1 的两状态生命周期的演算，仅此而已：每个纤维被与之比较的目标，以及移动它的五条规则。
+
+目标视图。各规则把每个纤维与一个目标比较，即它是否应当运行、以及应当按依赖的哪种解析来运行。目标并非纤维自身的性质，因为纤维声明的键是针对整个状态来解析的，因此它是该状态上的一个谓词。
+
+定义 46. 纤维 $n$ 在状态 $\gamma$ 下的目标视图把每个已声明的键映射到其提供者，因此它是一个全映射 \(d _ { n } \to \mathfrak { N }\)；当 $n$ 根本不应运行时，它为 $\bot$：
+
+\[
+\mathrm { t a r g e t } _ { n } ( \gamma ) : = \left\{ \begin{array} { l l } { \hfill \perp } & { \mathrm { i f } \ \tau _ { n } \vee \neg ( \gamma \models d _ { n } ) } \\ { \hfill ( k \in d _ { n } ) \mapsto \mathrm { p r o v i d e r } _ { k } ( \gamma ) } & { \mathrm { o t h e r w i s e } } \end{array} \right.\tag{41}
+\]
+
+当每个纤维都达到其目标视图时，称状态是静止的：
+
+\[
+\operatorname { q u i e t } ( \gamma ) : = \forall n \in \operatorname { d o m } \bigl ( F _ { \gamma } \bigr ) . \left\{ \begin{array} { l l } { \operatorname { t a r g e t } _ { n } ( \gamma ) = \perp } & { \mathrm { i f ~ } \theta _ { n } = \mathsf { I n a c t i v e } } \\ { \operatorname { t a r g e t } _ { n } ( \gamma ) = \omega _ { n } } & { \mathrm { i f ~ } \theta _ { n } = \mathsf { A c t i v e } ( - , \omega _ { n } ) } \end{array} \right.\tag{42}
+\]
+
+目标只对两件事作答，别无其他：退役，通过 \(\tau _ { n }\) 体现；余效应解析，通过 \(\gamma \models d _ { n }\) 与 \(\mathrm { p r o v i d e r } _ { k }\) 体现，每个已声明的键都从定义~43 的单一共享领域中的 \(\sigma _ { \gamma }\) 读取。
+
+定义~44 的已提交视图与目标视图类型相同，生命周期由比较二者来驱动：\(\omega _ { n }\) 是 $n$ 激活时针对的解析，\(\mathrm { t a r g e t } _ { n } ( \gamma )\) 是它应当运行所针对的解析，下面每条规则都在二者一致或相异时触发。记录提供者而非值，正是使比较可用的关键：否则一个提供相等值的不同纤维也会比较相等。组件读取的值经由视图到达，因为提供者的表中存有该值；实现把该映射保存在 fiber.committed 中，并在 fiber.target 中保存它的哈希（第~5.1.3 节）。
+
+规则。基础演算把每次转移都视为原子的、即时的且不会失败的：一次激活一步应用其效应函数，一次停用一步应用累加器，二者都能成功完成。第~4.3 节将去掉这三项假定。
+
+五条规则生成两种关系。编排规则以 O- 为前缀、写作 \(\gamma \Rightarrow \delta\)，是编排器可以执行的动作；其前提说明该动作何时合法，而非何时发生。生命周期规则以 L- 为前缀、写作 \(\gamma \longrightarrow \delta\)，是系统在其前提成立时无需提示即采取的步骤。步骤序列交替使用二者，下文中的 \(\stackrel { * } {  }\) 仅指生命周期步骤。
+
+\[
+\begin{array} { r l }
+{ \frac { n \not \in \mathrm { d o m } \left( F _ { \gamma } \right) \quad \pi \in \mathrm { d o m } \left( F _ { \gamma } \right) \cup \{ \mathsf { r o o t } \} \quad ( d , p , e ) \in \mathfrak { C } _ { \Gamma } \quad \forall m \in \mathrm { d o m } \left( F _ { \gamma } \right) \cdot p \cap p _ { m } = \emptyset } { \gamma \Rightarrow \gamma [ n \mapsto \langle d , p , e , \pi , \emptyset , \bot , \mathsf { I n a c t i v e } \rangle ] } } & { \mathrm { O } \text {-Insert} } \\
+& { \qquad \quad \frac { n \in \mathrm { d o m } \left( F _ { \gamma } \right) } { \gamma \Rightarrow \gamma [ \tau _ { n } \mapsto \top ] } \quad \mathrm { O } \text {-Retire} } \\
+& { \qquad \frac { \tau _ { n } = \top \quad \theta _ { n } = \mathsf { I n a c t i v e } \quad \forall m . \pi _ { m } \neq n } { \gamma \Rightarrow \gamma \setminus n } \quad \mathrm { O } \text {-Remove} }
+\end{array}
+\]
+
+插入与退役是仅有的外部输入：编排器请求某个纤维存在或停止存在，且从不直接设置其生命周期状态。O-Retire 不附带对纤维状态的条件，因为退役是一个请求，执行它的是生命周期规则。基于同样的原因，退役与移除是分开的：仍处于 $\mathsf { A c t i v e }$ 的已退役纤维必须首先被停用，过早移除会丢弃累加器并造成泄漏。前提 \(\forall m . \pi _ { m } \neq n\) 通过先移除子节点再移除父节点来保持树的良构性。O-Insert 的最后一条前提正是单源纪律被施加之处：一个键只有一个可能的提供者，因为编排器不允许第二个声明它的组件进入。
+
+\[
+\begin{array} { r }
+{ \frac { \theta _ { n } = \mathsf { I n a c t i v e } \quad \omega = \mathrm { t a r g e t } _ { n } ( \gamma ) \neq \perp \quad e _ { n } ( \gamma ) = ( \delta , g ) } { \gamma \longrightarrow \delta [ \theta _ { n } \mapsto \mathsf { A c t i v e } ( g , \omega ) ] } \mathrm { L } \text {-Reload} } \\
+{ \frac { \theta _ { n } = \mathsf { A c t i v e } ( g , \omega ) \quad \mathrm { t a r g e t } _ { n } ( \gamma ) \neq \omega \quad g ( \gamma ) = \delta } { \gamma \longrightarrow \delta [ \theta _ { n } \mapsto \mathsf { I n a c t i v e } ] } \mathrm { L } \text {-Unload} }
+\end{array}
+\]
+
+L-Reload 将已提交视图与逆操作一并安装；L-Unload 应用逆操作并丢弃已提交视图。二者都由同一比较驱动：当纤维未持有已提交视图且其目标视图不是 $\bot$ 时 L-Reload 触发；当纤维持有的已提交视图不是其目标视图时 L-Unload 触发。这正是第~3.2 节的响应式纪律，但目标是同时响应退役与余效应的：只要目标视图发生变化，无论引起变化的是两者中的哪一个，都会发起一次转移。
+
+实例化。组件在安装其效应的过程中可以实例化另一个组件，插件宿主在插件加载自己的插件时正是这样做的。此前的规则把注册表完全留给编排规则，因此这样的实例化无处发生。一个原语为它提供了场所。
+
+定义 47. \(\boldsymbol { e } _ { n }\) 的一次应用（或在第~4.3.2 节适用时，其某次迭代）可以注册一个组件 \(( d , p , e ) \in \mathfrak { C } _ { \Gamma }\)。它代替状态映射执行该组件的 O-Insert（其中 \(\pi = n\)），并把所注册纤维的 O-Retire 作为其逆操作交出。该规则抽取一个名字，受 O-Insert 的新鲜性前提约束，并把它交给效应函数。
+
+逆操作做的是退役而非移除，原因在于逆操作无论在哪里被到达都必须能够应用。O-Remove 带有前提，因此由它构造的逆操作可能失败：若父节点的子节点仍处于 $\mathsf { A c t i v e }$，父节点将无法运行其累加器，而由于定义~46 不读取纤维树，也没有规则会移动该子节点。O-Retire 的唯一前提是 \(n \in \mathop { \mathrm { d o m } } \mathop { \left( F _ { \gamma } \right) }\)。它在注册被取走的状态处留下的条目已退役，处于 \(\mathsf { I n a c t i v e } ( \bot )\) 并持有一张空表，这正是引理~57 的残留条目：它与纤维的缺失仅在控制字段上不同，且没有规则能区分这两者。
+
+退役子节点会设置 \(\tau\)，从而把它的目标视图置为 $\bot$，此后常规规则将其带回 $\mathsf { I n a c t i v e }$。父节点无需等待——O-Retire 是无条件的——因此无论子节点是否已离开，L-Unload 都适用于父节点。孙节点一级一级地被触及：子节点自己的累加器退役子节点所注册的内容。定理~66 一并覆盖这一级联与第~4.3.1 节沿余效应施加的级联。
+
+受限性。手握这一例外之后，就可以给出效应函数所受的纪律。它约束一次应用写入的内容，使应用它的规则能为其余每项变化负责；也约束一次应用读取的内容，使纤维只能看到它声明的余效应，而看不到注册表中更多的东西。约束写入正是第~4.4 节能把表~1 当作其完整清单来读的前提。
+
+定义 48. 当对每个满足 \(n \in \mathop { \mathrm { d o m } } \mathop { \left( F _ { \gamma } \right) }\) 的 \(\gamma \in \Gamma\)，记 \(\delta = f ( \gamma )\) 时，称映射 \(f : \Gamma \to \Gamma\) 被限制于 $n$：
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  （写入）。\(\mathrm { d o m } ( F _ { \delta } ) = \mathrm { d o m } \big ( F _ { \gamma } \big )\)，对每个满足 $m$ \(\neq n\) 的 \(m \in \mathop { \mathrm { d o m } } \bigl ( F _ { \gamma } \bigr )\) 有 \(\delta ( m ) = \gamma ( m )\)，且 \(\delta ( n )\) 与 \(\gamma ( n )\) 仅在 $\sigma$ 上不同；
+\item
+  （读取）。若两个状态在 \(\sigma _ { n }\) 上、在对每个 \(m \in \mathop { \mathrm { d o m } } \bigl ( F _ { \gamma } \bigr )\) 的限制 \(\sigma _ { m } | _ { d _ { n } }\) 上、以及在没有任何纤维的表提及的状态部分上一致，则 $f$ 把它们带到在同样这三处一致的状态。
+\end{enumerate}
+
+当效应函数 $e$ 的每次应用（以及在~第 4.3.2 节适用时其每次迭代）要么注册一个组件（定义~47），要么其状态映射 \(\mathrm { p r } _ { 1 } \circ e\) 与它产出的逆操作都被限制于 $n$ 时，称 $e$ 被限制于 $n$。每个纤维的效应函数都被要求限制于该纤维。
+
+一次注册写入 O-Insert 所写入的条目，发生在它抽取的那个名字上，此外不写任何东西；作为逆操作交出的 O-Retire 只写那个名字的 \(\tau\)，此外不写任何东西。因此，任一类的应用都不写已在场的纤维的任何控制字段（除那一个 \(\tau\) 外），并且完全不读取控制字段。
+
+第 (2) 条是组件能读取它所声明的值的原因：这些值位于其提供者的表中，因此一个只读 \(\sigma _ { n }\) 而不读其他表的效应函数将无法使用自己的余效应。它不能读取的是 \(d _ { n }\) 之外的任何表或任何控制字段，这正是阻止组件依据它未声明的纤维的生命周期状态进行分支的原因。
+
+这些规则是非确定性的：多个纤维可能持有与其目标视图不同的已提交视图，而关系不承诺它们之间的任何次序。它们也仅仅是反应性的：没有规则提及调度器；步骤是规则应用的任意序列，因此在所有此类序列上证明的定理，对运行时可能采用的每种调度策略都成立。

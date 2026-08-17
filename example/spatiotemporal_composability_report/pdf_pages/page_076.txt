@@ -1,0 +1,47 @@
+COP’s global, value-driven fragment: context-dependent selection among implementations, 
+but not dynamically-scoped activation.
+Aspect-oriented programming. AOP [95, 96] modularizes a crosscutting concern into an 
+aspect: a pointcut that quantifies over join points selected in the base program, and advice woven 
+in at each. Cordis addresses the same problem of contextual behavior that would otherwise 
+scatter across components, but its analogue of an aspect is a coeffect: a shared point of media­
+tion many components declare a dependence on, so that crosscutting behavior can be reshaped 
+there without editing any of them. The two paradigms then differ on two axes. (1) Declaration 
+versus obliviousness: an AOP pointcut is oblivious and quantified, matching arbitrary join points 
+whose code is unaware it is advised, whereas Cordis confines crosscutting to the coeffects each 
+component declares, so its reach is exactly that declared surface. This yields determinacy and 
+traceability: an application orchestrator can inspect and govern what cross-cuts a component 
+at the configuration layer, without reading or analyzing its source, whereas an AOP concern 
+is legible only through the aspects that quantify over it. (2) Lifecycle integration: a crosscutting 
+change in Cordis is carried by a component’s effects, reverted when the component unloads 
+and propagated reactively to its dependents, so it is one move within the dynamic composition 
+model; dynamic-AOP systems [97, 98] can also weave and unweave at runtime, but as a stand­
+alone operation, neither bound to a component’s lifecycle nor triggering re-resolution among 
+the advised code.
+7.3. Temporal Composability
+Temporal composability concerns replacing or removing a component in a running program 
+while recovering the effects it installed. Prior approaches divide by how they treat a departing 
+component’s state and effects: carrying state forward to a successor version, recovering effects 
+through developer-authored cleanup, reversing effects automatically within a scope fixed in 
+advance, or reclaiming resources from a record the runtime accumulates by interposing on an 
+interface.
+Stateful forward migration. A broad family of systems replaces components in a running 
+program without downtime by carrying their state forward across versions. All observe the 
+same timing discipline: a component may be swapped only once it reaches a safe, interaction-
+free point. Kramer and Magee established this criterion as quiescence [51], which Vandewoude 
+et al. later relaxed to the less disruptive tranquility [52]; our rolling-update pattern (Section 6.2) 
+enforces it by draining in-flight requests before unloading a provider. Dynamic software 
+updating (DSU) then migrates state forward through hand-written transformation functions: 
+Hicks et al.‘s general-purpose DSU for C [99], Stoyle et al.’s type-safe update points via 
+con-freeness analysis [100], and Hayden et al.‘s Kitsune [101] all map old-version data to new-
+version representations, inheriting heap objects, open files, and connections in place while 
+re-initializing whatever is left unmigrated. The same discipline extends to persistent state: 
+Overeem et al. [102] convert a running event store’s data between schema versions through 
+hand-written upgrade operations while keeping the system available. Erlang/OTP [15] takes 
+the same stance at the process level, migrating state through code_change/3 and recovering 
+from faults by restarting supervised processes rather than reverting their effects; JavaScript’s 
+Hot Module Replacement (e.g., webpack [46], Vite [47]) does the same at the module level, 
+handing state forward through the module.hot or import.meta.hot API across a reload. Com­
+pared with Cordis’s module replacement (Section 5.2), these approaches migrate in-memory 
+state more gracefully: Cordis reverts the old component’s tracked effects and reapplies the new 
+component’s from a clean slate, so a component’s own in-memory state does not survive a 
+76

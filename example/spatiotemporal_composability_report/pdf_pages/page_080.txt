@@ -1,0 +1,62 @@
+References
+[1]
+D. L. Parnas, “On the criteria to be used in decomposing systems into modules,” Com­
+munications of the ACM, vol. 15, no. 12, pp. 1053–1058, 1972, doi: 10.1145/361598.361623.
+[2]
+D. Birsan, “On Plug-ins and Extensible Architectures,” ACM Queue, vol. 3, no. 2, pp. 40–
+46, 2005, doi: 10.1145/1053331.1053345.
+[3]
+B. Burns, B. Grant, D. Oppenheimer, E. Brewer, and J. Wilkes, “Borg, Omega, and Kuber­
+netes,” Communications of the ACM, vol. 59, no. 5, pp. 50–57, 2016, doi: 10.1145/2890784.
+[4]
+B. Stroustrup, The Design and Evolution of C++. Addison-Wesley, 1994.
+[5]
+S. Marlow, S. Peyton Jones, A. Moran, and J. Reppy, “Asynchronous Exceptions in 
+Haskell,” in Proceedings of the ACM SIGPLAN 2001 Conference on Programming Language 
+Design and Implementation, in PLDI '01. New York, NY, USA: Association for Computing 
+Machinery,  2001, pp. 274–285. doi: 10.1145/378795.378858.
+[6]
+L. Cardelli, “Program Fragments, Linking, and Modularization,” in Proceedings of the 
+24th ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages (POPL 
+1997), ACM Press,  1997, pp. 266–277. doi: 10.1145/263699.263735.
+[7]
+C. Szyperski, Component Software: Beyond Object-Oriented Programming, 2nd ed. Addison-
+Wesley, 2002.
+[8]
+R. Lopopolo, “Harness Engineering: Leveraging Codex in an Agent-First World.” [On­
+line]. Available: https://openai.com/index/harness-engineering/
+[9]
+Anthropic, 
+“Harness 
+Design 
+for 
+Long-Running 
+Application 
+Development.” 
+[Online]. Available: https://www.anthropic.com/engineering/harness-design-long-
+running-apps
+[10]
+L. Wang et al., “A Survey on Large Language Model Based Autonomous Agents,” Fron­
+tiers of Computer Science, vol. 18, no. 6, p. 186345, 2024, doi: 10.1007/s11704-024-40231-1.
+[11]
+Y. Qin et al., “Tool Learning with Foundation Models,” ACM Computing Surveys, 2025, 
+doi: 10.1145/3704435.
+[12]
+C. Packer, V. Fang, S. G. Patil, K. Lin, S. Wooders, and J. E. Gonzalez, “MemGPT: Towards 
+LLMs as Operating Systems,” CoRR, vol. abs/2310.08560, 2023.
+[13]
+T. Guo et al., “Large Language Model Based Multi-Agents: A Survey of Progress and 
+Challenges,” in Proceedings of the Thirty-Third International Joint Conference on Artificial 
+Intelligence, in IJCAI 2024.  2024, pp. 8048–8057. doi: 10.24963/ijcai.2024/890.
+[14]
+T. Cai, X. Wang, T. Ma, X. Chen, and D. Zhou, “Large Language Models as Tool Makers,” 
+in Proceedings of the Twelfth International Conference on Learning Representations, in ICLR 
+2024.  2024. [Online].  Available: https://openreview.net/forum?id=qV83K9d5WB
+[15]
+J. Armstrong, “Making Reliable Distributed Systems in the Presence of Software 
+Errors,” Doctoral dissertation, 2003. [Online].  Available: https://erlang.org/download/
+armstrong_thesis_2003.pdf
+[16]
+E. Moggi, “Notions of computation and monads,” Information and Computation, vol. 93, 
+no. 1, pp. 55–92, 1991, doi: 10.1016/0890-5401(91)90052-4.
+80

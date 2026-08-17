@@ -50,7 +50,10 @@ doc = fitz.open("source.pdf")
 for i, page in enumerate(doc):
     text = page.get_text('text')
     # Save per-page text for later cross-validation
+    Path(f"pdf_pages/page_{i+1:03d}.txt").write_text(text)
 ```
+
+Save one file per page (e.g. `pdf_pages/page_001.txt`). Subagents then receive the page-range files for their section as the authoritative reference — essential for reconstructing `�` (U+FFFD) symbols and verifying numbers. Map each LaTeX section to PDF pages once at split time (the OCR Contents gives printed page numbers; TOC pages 1-3 match PDF page indices 1-3 in this case, but verify per document).
 
 If poppler is available:
 ```bash
@@ -78,6 +81,8 @@ Splitting strategy (from Kimi K3 example):
 - Chunk 8: References (keep English, translate section title only)
 - Chunk 9: Appendices (keep math proofs, translate prose)
 
+For a long formal-methods paper, split at **subsection** boundaries too (see the spatiotemporal example): 17 chunks from 8 sections, with the two biggest sections (S3 ~1578 lines, S4 ~2160 lines) each split into 3-5 chunks. Budget chunk size by `�` density, not just line count — a 500-line proof chunk with 300 `�` symbols takes longer than an 800-line prose chunk with none. Keep the preamble + `\begin{document}` in chunk 00/01 so each body chunk starts at a heading.
+
 ### 6. Translate Chunks in Parallel
 
 Launch subagents for each chunk. Each agent receives:
@@ -85,7 +90,7 @@ Launch subagents for each chunk. Each agent receives:
 - Translation policy (preserve LaTeX, math, citations; translate prose + captions)
 - Write-back instruction (overwrite the same file)
 
-Reference the [example/kimi_k3_report/](../../example/kimi_k3_report/) — 9 chunks handled by 6 parallel agents.
+Reference the [example/kimi_k3_report/](../../example/kimi_k3_report/) — 9 chunks handled by 6 parallel agents; and [example/spatiotemporal_composability_report/](../../example/spatiotemporal_composability_report/) — 17 chunks handled by 16 agents in two waves of 8.
 
 Translation policy:
 - Translate English prose to Chinese
@@ -93,6 +98,8 @@ Translation policy:
 - **Keep in English**: Model names, benchmark names, technical identifiers, citation keys, library/framework names, author names
 - Translate figure captions: `Figure X: ...` → `图 X: ...`
 - Translate table captions and column headers
+- Translate heading titles but **keep the OCR numeric prefix** in the heading (`\subsection{4.1. Components}` → `\subsection{4.1. 组件}`) — the normalizer strips it later; collapse multi-line heading titles onto one line
+- Each agent gets the section's `pdf_pages/*.txt` files and must: fix systematic OCR spelling (e.g. "efects"→"effects"), replace every `�` from the PDF text, verify definition/theorem numbers and equation tags
 
 ### 7. Merge, Fix Fonts, and Clean Again
 
@@ -104,11 +111,13 @@ python3 scripts/fix_ocr_artifacts.py main_cn.tex -v
 
 ### 8. Normalize Headings (if needed)
 
-If the OCR output uses numbered headings (e.g., `\section{2.3.4. Title}`):
+If the OCR output uses numbered headings (e.g., `\section{2.3.4. Title}` or `\subsection{4.1. 组件}`):
 
 ```bash
-python3 scripts/normalize_heading_levels.py --write path/to/parts/*.md
+python3 scripts/normalize_heading_levels.py --write main_cn.tex
 ```
+
+The patterns accept both `1 引言` and `1. 引言` (trailing dot). Also: replace any hand-built Contents enumerate with `\tableofcontents` (+ `\renewcommand{\contentsname}{目录}` in the body), and convert the document title `\section` to a centered block manually when the preamble pushes it past the script's 30-line title window.
 
 Most MinerU output already uses proper `\section{}` / `\subsection{}` commands, so this step is often skipped.
 
@@ -133,7 +142,9 @@ xelatex -interaction=nonstopmode main_cn.tex
 xelatex -interaction=nonstopmode main_cn.tex
 ```
 
-Expect 20-50 non-fatal errors from OCR artifacts. The `-interaction=nonstopmode` flag skips past them. Check that the page count is reasonable and key elements (images, tables, math) render correctly.
+Earlier OCR papers expect 20-50 non-fatal errors from OCR artifacts; the `-interaction=nonstopmode` flag skips past them. With a full `�`-reconstruction pass + missing-glyph sweep (below), zero-error compiles are achievable. Check that the page count is reasonable and key elements (images, tables, math) render correctly.
+
+**Missing-glyph sweep**: `grep 'Missing character' main_cn.log | sort -u` finds raw Unicode math left in prose (⋄, ≃, ∎, ⊥, ⌀, ▷, ↦, ∘). Wrap each in math mode with a stateful tracker — never a global replace on a mutating string.
 
 ### 11. Optional: Pandoc Wrapper
 
@@ -153,6 +164,8 @@ This compiles native LaTeX first, then wraps the result with `pdfpages` via pand
 - Prefer page rendering plus crop for vector plots or multi-panel figures that OCR exported as tiny fragments.
 - Prefer native XeLaTeX compilation over direct pandoc ingestion of OCR-LaTeX.
 - For large papers (2000+ lines), split into chunks and translate in parallel. For short papers (<300 lines), translate inline without splitting.
+- Feed each translator the section's per-page PDF text (`pdf_pages/page_NNN.txt`); every `�` reconstruction and number check reads from it.
+- Fix missing-glyph Unicode in prose with a stateful math-mode tracker; never mutate a string while iterating over positions collected from it.
 
 ## Deliverables
 
@@ -168,3 +181,10 @@ See [example/kimi_k3_report/](../../example/kimi_k3_report/) for a complete work
 - 9 chunks translated by 6 parallel subagents
 - Final output: 65-page Chinese PDF
 - Includes: split chunks, merged `main_cn.tex`, compiled PDF
+
+See [example/spatiotemporal_composability_report/](../../example/spatiotemporal_composability_report/) for the math-heavy formal-methods case:
+- Source: 6570-line PL paper, 88 PDF pages, 91 images
+- 17 chunks, 16 parallel subagents in two waves; per-page `pdf_pages/` cross-validation reference
+- ~900 `�` symbols reconstructed from the source PDF; systematic "efects"→"effects" fix
+- Final output: 80-page Chinese PDF, 0 compilation errors
+- Includes: chunks, `main_cn.tex`, patched normalizer, compiled PDF, README with lessons

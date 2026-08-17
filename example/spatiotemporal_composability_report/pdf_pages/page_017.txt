@@ -1,0 +1,51 @@
+2. By (1) the state 𝛿𝑖−1 is 𝑓𝑗(𝛿′
+𝑖−1), and 𝑓𝑗∈𝔐(𝑒𝑗), so clause (2) of Definition 19 for 𝑒𝑖 and 
+𝑒𝑗 gives pr2(𝑒𝑖(𝑓𝑗(𝛿′
+𝑖−1))) = pr2(𝑒𝑖(𝛿′
+𝑖−1)).
+□
+Clause (1) locates the state an inverse reaches: it is the state the same sequence would have 
+reached had the effect never been applied, whatever effects were applied after it. Clause (2) 
+locates the inverses the others hold there, and together the two let the theorem be applied again 
+to the shorter sequence:
+Corollary 21. Let 𝑒1, ⋯, 𝑒𝑛∈𝔈∗
+Γ be pairwise independent and applied in order from 𝛾0, and let 
+𝑔1, ⋯, 𝑔𝑛 be as above. Applying the 𝑛 inverses at 𝛿𝑛 in the order of any permutation of {1, ⋯, 𝑛} 
+reaches 𝛾0.
+Proof. By downward induction on 𝑛. Let the permutation begin with 𝑗. By Theorem 20(1) ap­
+plying 𝑔𝑗 at 𝛿𝑛 reaches 𝛿′
+𝑛, the state the sequence with 𝑒𝑗 omitted reaches, and by Theorem 20(2) 
+the inverses the remaining effects yielded there are the 𝑔𝑖 in hand. That sequence is pairwise 
+independent, being a subfamily, so the induction hypothesis applies to it and to the rest of the 
+permutation; the empty sequence reaches 𝛾0.
+□
+LIFO order is one such permutation, and Theorem 16 reverts in it with no hypothesis at all. 
+What independence buys is every other order, and with it the sequence that interleaves several 
+components, which Section 4.4.2 carries to a trace of a whole system.
+Together, these constructions constitute revertible effects: each effect function in 𝔈∗
+Γ explicitly 
+provides its own inverse, effect tracks these inverses on the effect context 𝜕Γ, and the ⋄ operation 
+composes them while preserving revertibility. What they deliver is local temporal composability, 
+local in that the guarantee is read of one component’s effects taken by themselves. We take that 
+to be the following criterion: for every sequence of effect functions a component applies, the 
+accumulator recovers the context it began at (Theorem 7), and reverting the sequence hands 
+each inverse the state its own application ran against (Theorem 16). Loading a component is 
+applying such a sequence and accumulating its inverses in 𝜑; unloading it is applying 𝜑.
+Two things the criterion leaves out, and both arrive once several components are in play: 
+reverting out of the order the accumulator imposes, and a sequence that interleaves the 
+effects of others. Independence delivers them (Corollary  21), and it is a condition on the 
+effects rather than a property of the construction, Section 3.3.2 being where the discipline that 
+meets it is identified and Section 4.4.2 where the guarantee is read of a whole system’s trace. 
+Where independence fails, the order has to be carried elsewhere: within one component by 
+the accumulator, which reverts in LIFO order whatever the effects (Section 4.3.2), and across 
+components by a declared coeffect, which orders one activation against another (Section 4.3.1).
+3.2. Reactive Coeffects
+Spatial composability is the ability for components to declare dependencies on one another and 
+for the system to resolve, provide, and withdraw those dependencies at runtime. This requires 
+that dependency satisfaction be re-evaluated whenever the shared context changes, so that a 
+component activates when its dependencies become available and deactivates when they are 
+withdrawn. We therefore model dependencies of a component as a specification and classify 
+each change to the context, against that specification, as activating, deactivating, or neutral. 
+Classifying against the specification is what detects a change in satisfaction; responding to 
+that classification is what drives activation and deactivation. We call such coeffects reactive: by 
+17

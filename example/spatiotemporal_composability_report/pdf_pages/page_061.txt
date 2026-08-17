@@ -1,0 +1,47 @@
+5.1.4. Context Access
+The coeffect operations of Section  5.1.2 form a reflective API: a coeffect is written with 
+ctx.set(key, value) and read with ctx.get(key), both keyed by name. Cordis layers a second, 
+more native way to extend and consume the context on top of this reflective API: property access. 
+A component can access a coeffect as the property ctx[key], as if it were native structure of 
+the context, rather than through a method call. In TypeScript, Cordis realizes this with a Proxy 
+whose get trap mediates every property access. Algorithm 6 shows how a context resolves such 
+an access to a coeffect, atop the primitive get of Section 5.1.2.
+Algorithm 6 Proxy-mediated context access
+1
+function resolve(ctx, key)
+2
+fiber ← ctx.fiber
+3
+repeat
+4
+if key ∈ fiber.committed then return fiber.committed[key]
+5
+if key ∈ fiber.inject then throw INACTIVE_ACCESS
+6
+if fiber = root then throw UNDECLARED_ACCESS
+7
+fiber ← fiber.parent.fiber
+Algorithm 6 walks the fiber chain upward from the accessing context: at the first fiber 
+whose committed view binds key, the access is authorized and that binding is returned; if the 
+walk reaches a fiber that declares key without having committed it, the fiber is not loaded 
+and the access fails; and if it reaches the root without any declaration, the access is rejected as 
+undeclared. This is where the proxy differs from the bare ctx.get: ctx.get(key) is a lookup 
+against the store that returns the bound value or nothing and never fails, whereas the proxy 
+resolves against the accessing fiber’s own view and enforces the coeffect specification 𝑑 at the 
+point of use. Reading the view rather than the store is also what Theorem 63 rests on, since it 
+is what keeps a dependency readable to a component whose teardown was triggered by that 
+dependency going away.
+This rejection is a runtime check performed at the point of access. Because a component’s 
+coeffect specification 𝑑 is declared statically, the same violation is in principle detectable at 
+compile time, by resolving each ctx[key] against the declared 𝑑 before execution; Section 6.4 
+discusses how a host language’s type-level dependency declarations and compile-time 
+metaprogramming can carry out exactly this mediation.
+5.2. Component Loader
+The core library equips component developers with imperative primitives for dynamic compo­
+sition, such as ctx.effect, ctx.use, and ctx.set. A separate concern arises for application 
+orchestrators, who assemble pre-existing components into a running system and adjust the 
+composition over its lifetime. The component loader addresses this concern by introducing a de­
+clarative configuration layer: the orchestrator specifies the desired composition as a persistent 
+data structure, and the loader translates changes to this specification into the corresponding 
+imperative fiber operations.
+61

@@ -1,0 +1,45 @@
+Sandboxing untrusted components. When a component’s code cannot be trusted, lan­
+guage-level access control is insufficient, since a malicious component with access to the host 
+runtime can reach the underlying objects directly, rendering such checks moot. Sandboxing 
+requires an execution boundary beyond the reach of language-level means, such as software 
+fault isolation [57], a separate language runtime, a sandboxed process, or a virtualized con­
+tainer [58]. Whatever the mechanism, the untrusted component runs in its own sandboxed 
+context and reaches host-provided dependencies through a bridge, generalizing the cross-
+process invocation of Section 6.2: the same transparency argument renders this bridged access 
+indistinguishable from local injection. On the host side, the bridge is an ordinary fiber whose 
+capabilities can be attenuated by the access control described above.
+6.4. Language Independence and Selection
+Although Cordis is implemented in TypeScript, the context paradigm is language-agnostic: 
+spatiotemporal composability is defined only by its two composability dimensions, and thus 
+can be realized in any language that meets certain requirements along both. We analyze these 
+requirements along each dimension in turn.
+Temporal composability. At its most basic, temporal composability requires closures: a 
+revertible effect pairs an action with an inverse, and that inverse must be captured as a value, 
+along with the state it restores, so it can be replayed on teardown. Beyond this, a component’s 
+code and the side effects of loading it must be introducible and retractable at runtime.
+How a language meets this second requirement depends on its execution model. In 
+managed runtimes, this takes the form of a programmatic module registry, where a loaded 
+module can be evicted from the registry and garbage-collected once unreferenced; Node.js, 
+for instance, exposes such a registry.6 Native code exposes no module registry, so introduction 
+and retraction take the form of explicit dynamic linking and unlinking (e.g., dlopen/dlclose 
+on Unix, LoadLibrary/FreeLibrary on Windows) [59], i.e., loading object code into a running 
+process and later detaching it. WebAssembly takes one path or the other depending on its 
+embedder: a module instance is reclaimed by the host’s collector under a managed embedder 
+(e.g., a JavaScript host), or released when a native embedder drops it (e.g., Wasmtime). Across 
+these mechanisms, the revertible effects model treats loading as an effect on the context, with 
+inverses that undo the registration of symbols, types, or handlers the module introduced.
+Spatial composability. Spatial composability requires a mechanism for components to 
+declare their dependencies and for the runtime to provide and inject these dependencies. This 
+reduces to a dependency injection (DI) problem [38], which manifests at two levels that differ 
+across languages: how dependencies are typed and how their access is mediated.
+At the type level, the language should provide a way for developers to express well-typed 
+dependency access. A consumer obtains a coeffect by reading its key from the context, so the 
+context type (Section 3.2.1) must record each key’s coeffect. Typeclasses (Haskell) [60] and 
+traits (Rust) [61] achieve this by letting a provider extend the context type from its own 
+module through an instance or impl [62]. TypeScript’s module augmentation [63] likewise lets 
+a provider module merge declarations into the context type.
+At the runtime level, dependency access must be dynamically mediated: the coeffect behind 
+a key may change as providers are loaded and unloaded, and may be resolved differently across 
+6CommonJS exposes the module cache via require.cache; ES modules provide no public eviction API, though 
+modules can still be managed through engine-internal interfaces.
+70

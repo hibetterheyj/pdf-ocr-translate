@@ -1,0 +1,47 @@
+holding it. An operation 𝑎∈𝒜︀𝑘 carries an argument type 𝑋𝑎 and an outcome type 𝐵𝑎, and acts 
+on the value alone:
+𝑎: 𝑋𝑎→𝒱︀𝑘⇀𝒱︀𝑘× (𝒱︀𝑘⇀𝒱︀𝑘) × 𝐵𝑎
+(22)
+its first two constituents forming an effect function on 𝒱︀𝑘 witnessed as Definition 8 requires, 
+and its third an outcome. Each operation is required to respect ≃
+𝑘: at ≃
+𝑘-related values it is defined 
+at both or at neither, and where defined it yields ≃
+𝑘-related successors, inverses that again carry 
+≃
+𝑘-related values to ≃
+𝑘-related values, and equal outcomes. An operation acts on the coeffect 
+context through its lift
+𝑎Σ(𝑥)(𝜎) ≔𝐥𝐞𝐭(𝑣, 𝑔, 𝑏) = 𝑎(𝑥)(𝜎(𝑘)) 𝐢𝐧(𝜎[𝑘↦𝑣], 𝜆𝜎′.𝜎′[𝑘↦𝑔(𝜎′(𝑘))], 𝑏)
+(23)
+defined when 𝑘∈dom(𝜎), whose first two constituents are an effect function on Σ.
+Typing an operation of 𝑘 on 𝒱︀𝑘 is what confines it to the binding at 𝑘: the lift reads and 
+writes that binding and leaves every other key as it stands, so no side condition is needed 
+to say so. Where isolation is in force the binding it reaches is the one the realm resolves to 
+(Definition 28), two keys sharing a realm sharing one binding. An operation whose behaviour 
+turns on another key reads that key’s value into its argument 𝑋𝑎, and the reactive discipline of 
+the next subsection is what holds the value fixed for as long as the component that read it runs 
+(Theorem 63).
+3.2.2. Specification and Notification
+The preceding definitions describe how individual dependencies are registered and accessed. 
+Accessing an absent dependency, however, is a runtime failure. A component should therefore 
+activate only once all the dependencies it declares are present, rather than accessing them opti­
+mistically and failing when one is missing. This raises two questions: whether a component’s 
+declared dependencies are jointly satisfied, and how the system should respond when that 
+status changes. The coeffect context Σ carries a natural observational structure that makes both 
+questions tractable: for any coeffect specification 𝑑⊆𝐾, define the satisfaction predicate:
+𝜎⊧𝑑≔∀𝑘∈𝑑. 𝑘∈dom(𝜎)
+(24)
+This predicate is decidable (since dom(𝜎) is finite). Since all mutations to 𝜎 pass through 
+effect functions (whose inverses recover the previous domain), changes to satisfaction are 
+detectable at each effect boundary. This is the algebraic basis of reactivity: the effect system 
+guarantees that every coeffect change is observed.
+Definition 25. A coeffect specification is:
+𝔇Σ ≔𝖲𝖾𝗍(𝐾)
+(25)
+representing the set of dependencies a component declares from the environment.
+What makes this specification reactive is how it classifies state transitions. Any effect that 
+transforms 𝜎 to 𝜎′ can be classified by a specification 𝑑∈𝔇Σ according to whether 𝑑’s satis­
+faction status is altered:
+Definition 26. Given a coeffect specification 𝑑⊆𝐾 and states 𝜎, 𝜎′ ∈Σ, define:
+19

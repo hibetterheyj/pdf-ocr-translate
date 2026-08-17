@@ -94,12 +94,25 @@ Key lessons from real runs:
 
 MinerU/Nougat/Mathpix output has predictable noise. Run `scripts/fix_ocr_artifacts.py` before translation and again on the merged file before compilation.
 
+### Hand-Built TOC Replacement
+
+OCR papers carry a hand-built Contents (an `enumerate` with dotted leaders and the **English-version page numbers**). Those page numbers are wrong in the translated PDF. Replace with:
+
+```latex
+\renewcommand{\contentsname}{目录}
+\tableofcontents
+```
+
+Placed **in the document body** (before the first `\section`). A preamble-level `\renewcommand{\contentsname}` is silently lost because `polyglossia` re-defines `\contentsname` when the document language activates. Bonus: `\tableofcontents` also keeps TOC titles consistent with the actual headings (the OCR TOC often abbreviates or diverges from heading text).
+
 ### Common OCR Failures
 
+- **Repeated-letter drops**: MinerU sometimes drops doubled letters consistently (observed: "effects/coeffects" → "efects/coefects" throughout a 6570-line paper). Cross-check one occurrence against the source PDF text; if systematic, fix globally in translation. `\label{}` keys keep the OCR spelling — they are internal anchors and renaming them would break `\ref{}`.
 - **Escaped dollar signs**: `\$ \{ \boldsymbol { z } \} \_ \{ t \} \$` → should be `$\{ \boldsymbol { z } \} _ { t }$`. The `\$` produces a literal `$` in text mode, but the content needs math mode. This is the #1 source of `Missing $ inserted` errors.
 - **Unicode math chars**: ϕ (U+03D5), α (U+03B1), β (U+03B2), ∈ (U+2208), × (U+00D7) appearing outside math mode. XeLaTeX can't render these in text fonts.
+- **U+FFFD replacement chars (`�`)**: the worst failure mode on math-heavy papers — up to several hundred occurrences where OCR failed on a symbol (observed 900+ in a PL-style paper, ~305 in one proof-heavy chunk alone). The source PDF text (pymupdf) preserves the symbols as Unicode math; reconstruct LaTeX from it during translation. Budget for this in chunk sizing.
 - **Control characters**: U+0001 (SOH), U+0016 (SYN) from OCR processing artifacts. Cause "invalid character" errors.
-- **section titles encoded as** `\section{2.3.4. ...}`
+- **section titles encoded as** `\section{2.3.4. ...}` (note: the number prefix may keep its trailing dot — normalizer accepts both)
 - **literal `??` placeholders** from failed OCR recognition
 - **malformed math delimiters** such as `\$ ... \$` or unbalanced `$`
 - **literal escaped newlines** inside prose prompts
@@ -141,6 +154,32 @@ for page in doc:
 ```
 
 Verify: numerical values (parameter counts, percentages, scores), model names, benchmark results, citation keys. This catches OCR errors that silently corrupt data — e.g., "2.5×" becoming "2.5 倍" is fine, but "104B" becoming "10.4B" is a critical error.
+
+**Practical pattern from the spatiotemporal example**: save per-page text to `pdf_pages/page_NNN.txt` at setup time, and hand each translation subagent its section's page-range files alongside the chunk. This makes the authoritative reference cheap for agents to consult for every `�` reconstruction and every number check.
+
+## Missing-Glyph Sweep (post-compile)
+
+After the first compile that produces a PDF, grep the log:
+
+```bash
+grep 'Missing character' compile.log | sort -u
+```
+
+This finds raw Unicode math left in prose (not in math mode). Common offenders from MinerU + translation:
+
+| Char | Meaning | Replacement |
+|------|---------|-------------|
+| `⋄` (U+22C4) | effect composition | `$\diamond$` |
+| `≃` (U+2243) | approx-equal / equivalence | `$\simeq$` |
+| `∎` (U+220E) | QED | `$\blacksquare$` |
+| `∘` (U+2218) | function composition | `$\circ$` |
+| `⊥` (U+22A5) | bottom | `$\bot$` |
+| `⌀` (U+2300) | empty set | `$\emptyset$` |
+| `▷` (U+25B7) | lookup/action operator | `$\triangleright$` |
+| `↦` (U+21A6) | maplet | `$\mapsto$` |
+| `•` (U+2022) / `‣` (U+2023) | bullets | keep as text bullets (or `\item`) |
+
+**Fix with a stateful text/math-mode tracker**, not a global regex: walk the file tracking `\(...\)`, `\[...\]`, `$...$`, and `\begin{math-env}`; replace each occurrence only when outside math. A naive loop that collects match positions on the original string and then writes into a mutating string corrupts the text (positions go stale once a replacement changes string length — observed replacement of CJK glyphs adjacent to the target char). Either iterate once building a new string, or replace from the end backwards.
 
 ## Packaging Strategy
 

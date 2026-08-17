@@ -1,0 +1,45 @@
+[3] yield spatial composability at the granularity of a service. In practice, most software toler­
+ates the lack of fine-grained composability by deferring to these coarse-grained mechanisms: 
+a misbehaving module is handled by restarting the process, and a service dependency is 
+managed by the container orchestrator.
+However, this workaround imposes substantial costs. Temporally, each restart discards all 
+process-local accumulated state (e.g., caches, connections, partial computations), and rebuild­
+ing it takes seconds to minutes [15]; maintaining availability in the interim requires redundant 
+replicas, incurring resource overhead to compensate for the inability to recover a single 
+component. Spatially, container-level orchestration cannot express dependencies between com­
+ponents sharing an address space, and introduces network overhead for interactions that could 
+be local function calls. Both mechanisms operate at the boundary of processes and containers, 
+yet modern systems increasingly compose at a finer level. This granularity mismatch demands 
+a compositional abstraction that manages effects and dependencies at the same level as the 
+components themselves.
+1.3. Contributions
+The two dimensions of dynamic composability concern, respectively, how computations modify 
+and how they depend on their environment. These two directions are what effect systems [16, 
+17] and coeffect systems [18, 19] formalize: effects provide the formal vocabulary for reasoning 
+about environmental modifications, and coeffects for reasoning about environmental require­
+ments. However, existing formulations restrict reasoning to compile-time analysis over lexically 
+fixed scopes, and do not extend to dynamic scenarios where components arrive and depart at 
+runtime. By lifting effects to a revertible runtime model and coeffects to a reactive dependency 
+resolution mechanism, we obtain a unified formal foundation for dynamic composability, 
+one that is language-agnostic and applicable to any software architecture requiring dynamic 
+composition. We make the following contributions:
+1. We formalize revertible effects (Section 3.1): every context transformation carries an 
+explicit inverse that the runtime tracks, and both tracking and recovery preserve com­
+position, so the context is recovered upon component removal. This establishes local 
+temporal composability.
+2. We formalize reactive coeffects (Section  3.2): a component declares the coeffects it 
+requires as a specification, and each change of the context notifies the component against 
+that specification as activating, deactivating, or neutral. This establishes local spatial 
+composability.
+3. We unify the effect context and the coeffect context into a single context type (Sec­
+tion 3.3), in which an observational equivalence on the coeffects supplies the effects with 
+independence, constituting a programming paradigm for spatiotemporal composability.
+4. We give a calculus of dynamic composition (Section  4), which combines the two 
+mechanisms into the notion of a component and equips its lifecycle with an operational 
+semantics. Its metatheory carries spatiotemporal composability from a single component 
+to a whole system of interleaved components.
+5. We implement these ideas in Cordis (Section 5), a meta-framework of spatiotemporal 
+composability that provides a core library realizing the formal model with effect tracking 
+and coeffect resolution, as well as a declarative component loader with configuration 
+reconciliation and hot module replacement.
+6

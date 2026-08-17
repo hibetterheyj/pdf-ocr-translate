@@ -1,0 +1,43 @@
+code and can be removed freely. Among the top 100 extensions by install count, however, 87 
+contain executable code1 and will therefore require such a restart upon removal. Although 
+VSCode provides a deactivate hook, it serves only as a graceful shutdown callback during the 
+host process’ termination, and thus does not enable live removal. Moreover, the hook separates 
+effect disposal from effect creation (in activate), violating locality of concern and making 
+complete cleanup difficult to verify.
+Spatial limitation. VSCode does provide extensionDependencies for declaring dependen­
+cies between extensions, but it sees little use: among the top 100 extensions by install count, 
+only 7 declare extensionDependencies on non-built-in extensions.1 This scarcity reflects the 
+shape of the extension API, which exposes fixed, surface-level extension points such as com­
+mands, views, and language features. Extensions contribute to the host through these points 
+rather than depending on one another, so inter-extension dependencies rarely arise. Moreover, 
+VSCode’s mechanism for inter-extension interaction provides no structural contract: it exposes 
+an extension’s functionality to others through vscode.extensions.getExtension(...).exports, 
+but the returned value is untyped (any by default), so the dependent cannot rely on a checked 
+interface. In short, VSCode steers extensions toward a fixed set of host-provided extension 
+points, and offers no safe, structured way for them to depend on one another.
+These two limitations are not unique to VSCode; they recur across plugin systems generally 
+[2, 7], differing only in degree.
+1.2.2. Self-Evolving Agent Harnesses
+Modern AI agents rely on runtime agent harnesses [8–10]. These systems may compose diverse 
+tool suites [11] and execution environments, govern permissions and sandboxing, maintain 
+session state and persistence, provide context management and memory systems [12], orches­
+trate subagents and multi-agent workflows [13], and expose interfaces to users and automation. 
+A future harness may generate and deploy modifications to its own components while contin­
+uously serving requests. Model-synthesized reusable tools provide a narrower precursor to 
+component-level self-modification [14]. Each such modification is itself an instance of dynamic 
+composition.
+Because these modifications occur continuously and with limited or no human oversight, 
+dynamic composability becomes indispensable. Without temporal composability, each self-
+modification forces a full restart that discards all process-local accumulated state; at such 
+frequency the cumulative unavailability becomes substantial, and in-flight tasks are disrupted 
+repeatedly; even worse, a faulty self-modification can disable the very process needed to 
+recover. Without spatial composability, each module must itself detect and adapt to changes in 
+the modules it depends on as they appear, disappear, or change identity, and can do so only by 
+ad hoc means; even worse, a naive code-replacement strategy may silently break dependents 
+or introduce circular dependencies that surface only at reload time.
+1.2.3. The Coarse-Grained Workaround
+One reason dynamic composability has received limited formal attention is that operating 
+systems and container orchestrators already provide a coarse-grained substitute. Operating 
+systems yield temporal composability at the granularity of a process; container orchestrators 
+1Data retrieved from the Visual Studio Code Marketplace on June 9, 2026.
+5

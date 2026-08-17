@@ -1,0 +1,45 @@
+registry to the orchestration rules alone, so such an instantiation has nowhere to happen. One 
+primitive gives it somewhere.
+Definition 47. An application of 𝑒𝑛, or one of its iterations where Section 4.3.2 applies, may 
+register a component (𝑑, 𝑝, 𝑒) ∈ℭΓ. In place of a state map it takes the O-Insert of that component 
+with 𝜋= 𝑛, and it yields as its inverse the O-Retire of the fiber so registered. The rule draws 
+the name, subject to the freshness premise of O-Insert, and hands it to the effect function.
+The inverse retires rather than removes, and the reason is that an inverse has to apply 
+wherever it is reached. O-Remove carries premises, so an inverse built from it can fail to: a 
+parent whose child is still 𝖠𝖼𝗍𝗂𝗏𝖾 could not run its accumulator, and no rule would move the 
+child, since Definition 46 does not read the fiber tree. O-Retire has 𝑛∈dom(𝐹𝛾) as its only 
+premise. The entry it leaves behind at the state the registration was taken is retired, 𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾(⊥), 
+and holds an empty table, which is the vestigial entry of Lemma 57: it differs from the absence 
+of the fiber in control fields alone, and no rule tells the two apart.
+Retiring a child sets 𝜏 and so takes its target view to ⊥, after which the ordinary rules carry 
+it back to 𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾. The parent is not made to wait, O-Retire being unconditional, so L-Unload 
+applies to the parent whether or not the child has left. A grandchild is reached one level at a 
+time, the child’s own accumulator retiring what the child registered. Theorem 66 covers this 
+cascade and the one Section 4.3.1 imposes along coeffects together.
+Confinement. With the one exception in hand, the discipline an effect function is held to can 
+be given. It bounds what an application writes, so that the rule applying it accounts for every 
+other change, and what an application reads, so that a fiber sees the coeffects it declared and 
+no more of the registry. Bounding the writes is what lets Section 4.4 read Table 1 as a complete 
+inventory of them.
+Definition 48. A map 𝑓: Γ →Γ is confined to 𝑛 when for every 𝛾∈Γ with 𝑛∈dom(𝐹𝛾), writing 
+𝛿= 𝑓(𝛾),
+1. (Writes.) dom(𝐹𝛿) = dom(𝐹𝛾), 𝛿(𝑚) = 𝛾(𝑚) for every 𝑚∈dom(𝐹𝛾) with 𝑚≠𝑛, and 𝛿(𝑛) 
+and 𝛾(𝑛) differ in 𝜎 alone;
+2. (Reads.) two states agreeing on 𝜎𝑛, on the restrictions 𝜎𝑚|𝑑𝑛 for every 𝑚∈dom(𝐹𝛾), and 
+on the part of the state that no fiber’s table names are carried by 𝑓 to states agreeing on 
+the same three.
+An effect function 𝑒 is confined to 𝑛 when every application of it, and of each of its iterations 
+where Section 4.3.2 applies, either registers a component (Definition 47) or has both its state 
+map pr1 ∘𝑒 and the inverse it yields confined to 𝑛. Every fiber’s effect function is required to 
+be confined to that fiber.
+A registration writes the entry O-Insert writes, at the one name it draws, and nothing else; the 
+O-Retire it yields as its inverse writes the 𝜏 of that name and nothing else. An application of 
+either kind therefore writes no control field of a fiber already present, save that one 𝜏, and reads 
+none at all.
+Clause (2) is why a component may read the values it declared: those lie in the tables of 
+its providers, so an effect function that reads no table but 𝜎𝑛 would be unable to use its own 
+coeffects. What it may not read is a table outside 𝑑𝑛, or any control field, which is what keeps 
+a component from branching on the lifecycle state of a fiber it did not declare.
+The rules are nondeterministic: several fibers may hold a committed view differing from 
+their target view, and the relation commits to no order among them. They are also reactive 
+32

@@ -1,0 +1,73 @@
+tion outright: each produces a fresh context whose own table differs from the inherited one, so 
+each is typed below as a map from context to context rather than as an effect function. Nothing 
+in the shared table changes, so there is no inverse to track and nothing for Definition 12 to lift, 
+and recovery discards the derived context along with the adjustment it carried. Assignment 
+on a derived table overrides whatever the inherited table held at the key, which is why neither 
+operation carries a precondition.
+Coeffect Isolation. By introducing isolation realms, coeffect isolation allows the same depen­
+dency to bind to different values in different contexts. This has broad applications in multi-
+tenant systems, testing environments, and component sandboxes.
+Definition 28. Define the coeffect context with isolation as:
+Σiso ≔(𝐾⇀𝑅) × ((𝑟: 𝑅) ⇀𝒱︀𝑟)
+(27)
+It can be represented as a pair (𝜌, 𝜎), where:
+• 𝜌: 𝐾⇀𝑅 is the isolation realm table, assigning a realm identifier to each isolated key; a 
+key outside dom(𝜌) resolves to its own realm, so we write 𝜌(𝑘) = 𝑘 there (𝑅⊇𝐾);
+• 𝜎: (𝑟: 𝑅) ⇀𝒱︀𝑟 is the dependency table, a partial dependent function from realm identi­
+fiers to typed values.
+The two-layer mapping structure decouples the logical layer from the storage layer, making 
+dependency access context-aware. When accessing a key 𝑘, the system first resolves 𝜌(𝑘) to 
+obtain a realm identifier 𝑟, then accesses 𝜎(𝑟) for the actual value.
+Definition 29. The get, set, and isolate operations on Σiso are:
+get
+:
+(𝑘: 𝐾)
+→
+Σiso
+⇀
+𝒱︀𝜌(𝑘)
+get
+=
+𝑘
+↦(𝜌, 𝜎) ↦
+𝜎(𝜌(𝑘))
+set
+:
+(𝑘: 𝐾) × 𝒱︀𝜌(𝑘)
+→
+Σiso
+⇀
+Σiso × (Σiso ⇀Σiso)
+set
+=
+(𝑘, 𝑣)
+↦(𝜌, 𝜎) ↦((𝜌, 𝜎[𝜌(𝑘) ↦𝑣]), 𝜆(𝜌′, 𝜎′).(𝜌′, 𝜎′ ∖𝜌′(𝑘)))
+isolate
+:
+𝐾× 𝑅
+→
+Σiso
+→
+Σiso
+isolate =
+(𝑘, 𝑟)
+↦(𝜌, 𝜎) ↦
+(𝜌[𝑘↦𝑟], 𝜎)
+(28)
+where get and set carry the preconditions of Definition 23 transported along 𝜌, namely 𝜌(𝑘) ∈
+dom(𝜎) and 𝜌(𝑘) ∉dom(𝜎). The context that isolate(𝑘, 𝑟) derives assigns the realm 𝑟 to 𝑘 and 
+inherits the dependency table unchanged, so a key already isolated is reassigned rather than 
+refused.
+The coeffect isolation mechanism essentially implements a runtime ad-hoc polymorphism 
+system. Through isolation realm identifiers, the same dependency key can resolve to entirely 
+different values in different contexts, and this polymorphism can be dynamically adjusted 
+at runtime. Compared to traditional dependency injection, coeffect isolation provides finer-
+grained control, enabling customized isolation for specific components; set remains an effect 
+function (𝔈∗
+Σiso) and thus inherits revertibility, whereas isolate needs none, deriving a context 
+instead of writing the shared table.
+Coeffect Interception. The second mechanism, coeffect interception, attaches cross-cutting 
+metadata to dependency access, adding behavior without modifying the dependency value. 
+This metadata can be either context-carried or component-declared, so we extend both the 
+coeffect context and the coeffect specification:
+21

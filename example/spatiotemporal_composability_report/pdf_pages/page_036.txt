@@ -1,0 +1,72 @@
+effectiter
+Γ
+:
+𝔈iter
+Γ
+→
+𝜕Γ
+→
+𝜕2Γ
+effectiter
+Γ
+=
+𝑖
+↦(𝛾, 𝜑) ↦
+𝐥𝐞𝐭(𝛿, 𝑔, 𝑜) = 𝑖(𝛾) 𝐢𝐧
+𝐥𝐞𝐭𝑡= trackΓ(𝑔, pr1 ∘𝑖) 𝐢𝐧
+𝐦𝐚𝐭𝐜𝐡𝑜
+| 𝖭𝗈𝗍𝗁𝗂𝗇𝗀⇒((𝛿, 𝜑∘𝑔), 𝑡)
+| 𝖩𝗎𝗌𝗍(𝑖′) ⇒𝐥𝐞𝐭(𝑠, 𝑟) = effectiter
+Γ (𝑖′)(𝛿, 𝜑∘𝑔) 𝐢𝐧
+(𝑠, 𝑡∘𝑟)
+(48)
+At each iteration, the inverse 𝑔 is composed onto 𝜑 in application order, so the accumulator 
+𝜑∘𝑔1 ∘⋯∘𝑔𝑘 naturally recovers effects in LIFO order when applied. Because effectiter
+Γ lands in 
+the same 𝜕Γ →𝜕2Γ as effectΓ does, an iterator is an effect in its own right and can be used 
+wherever an effect can. A component’s whole activation is one such use, which is what the 
+rest of this section formalizes, and the implementation admits an iterator at every mutation 
+site (Section 5.1.1). The 𝖬𝖺𝗒𝖻𝖾(𝔈iter) continuation makes a boundary available between any 
+two consecutive iterations, at which the context is whatever the iterations so far have made 
+it and the accumulator recovers those and nothing more. In this sense the effect iterator is a 
+reified delimited continuation, the structure that mainstream languages expose through the 
+yield operator [43], so the model maps directly onto the generators they already provide.
+In the calculus, the 𝑒𝑛 of Definition 44 is read at 𝔈iter∗
+Γ
+ from here on, and replacing the atomic 
+effect function by an iterator splits the base L-Reload into a begun state that the trace passes 
+through, and gives the fiber a second way out of that state.
+𝜃𝑛= 𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾(⊥)
+𝜔= target𝑛(𝛾) ≠⊥
+𝛾⟶𝛾[𝜃𝑛↦𝖱𝖾𝗅𝗈𝖺𝖽𝗂𝗇𝗀(𝑒𝑛, idΓ, 𝜔)]
+L-Begin
+𝜃𝑛= 𝖱𝖾𝗅𝗈𝖺𝖽𝗂𝗇𝗀(𝑖, 𝑔, 𝜔)
+target𝑛(𝛾) ≠𝜔
+(𝛿, ℎ) = (𝛾, idΓ) ∨𝑖(𝛾) = (𝛿, ℎ, −)
+𝛾⟶𝛿[𝜃𝑛↦𝖴𝗇𝗅𝗈𝖺𝖽𝗂𝗇𝗀(𝑔∘ℎ, 𝜔, ⊥)]
+L-Divert
+𝜃𝑛= 𝖱𝖾𝗅𝗈𝖺𝖽𝗂𝗇𝗀(𝑖, 𝑔, 𝜔)
+target𝑛(𝛾) = 𝜔
+𝑖(𝛾) = (𝛿, ℎ, 𝖩𝗎𝗌𝗍(𝑖′))
+𝛾⟶𝛿[𝜃𝑛↦𝖱𝖾𝗅𝗈𝖺𝖽𝗂𝗇𝗀(𝑖′, 𝑔∘ℎ, 𝜔)]
+L-Iter
+𝜃𝑛= 𝖱𝖾𝗅𝗈𝖺𝖽𝗂𝗇𝗀(𝑖, 𝑔, 𝜔)
+target𝑛(𝛾) = 𝜔
+𝑖(𝛾) = (𝛿, ℎ, 𝖭𝗈𝗍𝗁𝗂𝗇𝗀)
+𝛾⟶𝛿[𝜃𝑛↦𝖠𝖼𝗍𝗂𝗏𝖾(𝑔∘ℎ, 𝜔)]
+L-Finish
+Each iteration composes the newly yielded inverse onto the accumulator as 𝑔∘ℎ, following 
+Definition 52, so that the accumulator applies the inverses in last-in-first-out order. Between any 
+two consecutive iterations the system may divert the transition if its target view has changed, 
+applying the inverse accumulated so far to recover the context. L-Divert routes through 
+𝖴𝗇𝗅𝗈𝖺𝖽𝗂𝗇𝗀 like every other deactivation rather than applying the accumulator where it stands, 
+and the guard it meets there is vacuous, a fiber that has never been 𝖠𝖼𝗍𝗂𝗏𝖾 providing nothing 
+and appearing in no committed view. The first of its two alternatives aborts the iteration the 
+fiber is holding, which only an iteration boundary makes possible, so the granularity at which 
+a divert may fall is that of the iterator; the second lets that iteration land, and Section 4.3.3 is 
+where it is needed.
+A plain effect function (𝔈Γ) is the degenerate case where the first iteration already yields 
+𝖭𝗈𝗍𝗁𝗂𝗇𝗀. Such a transition still passes through 𝖱𝖾𝗅𝗈𝖺𝖽𝗂𝗇𝗀 and L-Divert still applies there, but the 
+accumulator is idΓ and no iteration has run, so nothing is restored and the transition installs 
+either all of its effects or none of them.
+36

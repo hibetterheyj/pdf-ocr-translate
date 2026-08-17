@@ -1,0 +1,58 @@
+[75]
+B. C. Pierce, “Bounded Quantification is Undecidable,” Information and Computation, vol. 
+112, no. 1, pp. 131–165, 1994, doi: 10.1006/inco.1994.1055.
+[76]
+A. Haas et al., “Bringing the web up to speed with WebAssembly,” in Proceedings of 
+the 38th ACM SIGPLAN Conference on Programming Language Design and Implementation 
+(PLDI), ACM,  2017, pp. 185–200. doi: 10.1145/3062341.3062363.
+[77]
+M. M. Swift, B. N. Bershad, and H. M. Levy, “Improving the reliability of commodity 
+operating systems,” in Proceedings of the 19th ACM Symposium on Operating Systems 
+Principles (SOSP), ACM,  2003, pp. 207–222. doi: 10.1145/945445.945466.
+[78]
+M. M. Swift, M. Annamalai, B. N. Bershad, and H. M. Levy, “Recovering device 
+drivers,” ACM Transactions on Computer Systems, vol. 24, no. 4, pp. 333–360, 2006, doi: 
+10.1145/1189256.1189257.
+[79]
+D. E. Porter, O. S. Hofmann, C. J. Rossbach, A. Benn, and E. Witchel, “Operating System 
+Transactions,” in Proceedings of the 22nd ACM Symposium on Operating Systems Principles 
+(SOSP), ACM,  2009, pp. 161–176. doi: 10.1145/1629575.1629591.
+[80]
+O. Kiselyov and C.-chieh Shan, “Delimited Continuations in Operating Systems,” in 
+Modeling and Using Context (CONTEXT 2007), in Lecture Notes in Computer Science, 
+vol. 4635. Springer,  2007, pp. 291–302. doi: 10.1007/978-3-540-74255-5_22.
+[81]
+E. Dolstra and A. Löh, “NixOS: a purely functional Linux distribution,” in Proceedings of 
+the 13th ACM SIGPLAN International Conference on Functional Programming (ICFP), ACM, 
+2008, pp. 367–378. doi: 10.1145/1411204.1411255.
+[82]
+ZIO, “ZIO: Type-safe, composable asynchronous and concurrent programming for 
+Scala.” [Online]. Available: https://zio.dev/
+[83]
+Effect, “Effect: A TypeScript library for building robust applications.” [Online]. Avail­
+able: https://effect.website/
+[84]
+G. Canti, “fp-ts: Functional programming in TypeScript.” [Online]. Available: https://
+github.com/gcanti/fp-ts
+[85]
+J. I. Brachthäuser, P. Schuster, and K. Ostermann, “Effects as capabilities: effect handlers 
+and lightweight effect polymorphism,” Proc. ACM Program. Lang., vol. 4, no. OOPSLA, 
+2020, doi: 10.1145/3428194.
+[86]
+J. I. Brachthäuser, P. Schuster, E. Lee, and A. Boruch-Gruszecki, “Effects, capabilities, 
+and boxes: from scope-based reasoning to type-based reasoning and back,” Proc. ACM 
+Program. Lang., vol. 6, no. OOPSLA1, 2022, doi: 10.1145/3527320.
+[87]
+C. Heunen, R. Kaarsgaard, and M. Karvonen, “Reversible Effects as Inverse Arrows,” in 
+Proceedings of the Thirty-Fourth Conference on the Mathematical Foundations of Programming 
+Semantics (MFPS XXXIV), in Electronic Notes in Theoretical Computer Science, vol. 341. 
+2018, pp. 179–199. doi: 10.1016/j.entcs.2018.11.009.
+[88]
+D. Orchard, V.-B. Liepelt, and H. Eades III, “Quantitative program reasoning with 
+graded modal types,” Proc. ACM Program. Lang., vol. 3, no. ICFP, 2019, doi: 
+10.1145/3341714.
+[89]
+R. Bianchini, F. Dagnino, P. Giannini, E. Zucca, and M. Servetto, “Coeffects for sharing 
+and mutation,” Proc. ACM Program. Lang., vol. 6, no. OOPSLA2, Oct. 2022, doi: 
+10.1145/3563319.
+85

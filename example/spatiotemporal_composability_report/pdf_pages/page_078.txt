@@ -1,0 +1,47 @@
+Interposed reclamation. A fourth family reclaims what a component acquired without 
+the component itself supplying the inverses, by recording its acquisitions at an interface the 
+runtime controls. Nooks [77] wraps every call crossing the boundary between the Linux kernel 
+and its loadable extensions, so that the kernel objects an extension touches pass through an 
+object tracker whose record tells the recovery manager what to release when the extension 
+fails; shadow drivers [78] tap the same calls from the other side, recording the requests and 
+configuration that determine a driver’s state so that a restarted instance can be restored to it. 
+Akeso [116] obtains the record by compiler instrumentation instead, dividing kernel execution 
+into nestable recovery domains that log their state changes and cross-thread dependencies, and 
+rolling a faulting request back together with every domain that depends on it. Reclamation thus 
+follows from a record the runtime maintains rather than from cleanup the developer remem­
+bers to write, which makes this family the closest systems-level precedent for revertible effects. 
+It differs from Cordis in vocabulary and in reach. The platform fixes what can be recorded, 
+whether as release code per kernel object type, one shadow per driver class, or an inverse per 
+instrumented allocator, so a component may hold only resources the platform already knows 
+how to release; a Cordis component instead introduces effects of its own and supplies an inverse 
+for each atomic one (Section 3.1). Reclamation is likewise bounded by a request that commits 
+or a restart of the same extension, whereas Cordis reverts over a component’s whole lifetime 
+and propagates removal to its dependents, which release their own effects in turn (Section 3.2).
+7.4. Spatial Composability
+Spatial composability concerns how a component’s dependencies on others are declared and 
+bound. Prior mechanisms divide by how binding responds to change: wiring dependencies 
+once at initialization, reacting to the availability of whole components, or propagating change 
+at the granularity of individual values.
+Initialization-time dependency wiring. Two established mechanisms wire components to­
+gether at initialization time. Dependency injection frameworks [38] (e.g., Spring [117], Guice, 
+Angular, Inversify) inject dependencies into components at initialization, and UI framework 
+context (e.g., Vue.js’s provide/inject and React’s Context API) passes them along a component 
+tree. Some support dynamic scoping (e.g., Spring’s prototype/request scopes, Angular’s hier­
+archical injectors), but neither re-resolves reactively: when a provider is replaced or removed at 
+runtime, existing dependents are neither deactivated nor re-initialized, and none offers lifecycle 
+management of the kind our component state machine provides. Cordis’s reactive coeffects 
+(Section 3.2) supply this: the notification mechanism triggers lifecycle transitions whenever the 
+satisfaction predicate changes.
+Availability-reactive component models. The closest precedent to our reactive coeffects 
+reacts to service availability. OSGi’s Declarative Services and iPOJO [118, 119] let components 
+declare provided and required services, with the runtime automatically activating and deacti­
+vating them as services appear and disappear; iPOJO’s Gravity project [119] explicitly targets 
+autonomous runtime adaptation to changing service availability, and its provide/require 
+model directly prefigures Cordis’s ctx.provide/ctx.get pattern. R-OSGi [53] extends the same 
+abstraction transparently to distributed settings via RPC, mapping network failures to service-
+withdrawal events, a pattern Section 6.2 discusses as an extension of the Cordis model. All 
+these systems recover through a deactivation callback, which is limited in two ways. First, the 
+callback is hand-written, so resource safety rests on developer discipline and a forgotten one 
+leaks silently. Second, the callback is synchronous: should teardown require an asynchronous 
+exchange with the departing dependency, the frameworks offer no protocol to await it, forcing a 
+78

@@ -1,0 +1,44 @@
+an explicit target named by the consumer. Because providers are ordinary components, they 
+can be added or removed to scale capacity up or down; each provider registers with the broker 
+through a revertible effect, so unloading it reverts the registration and drops it from the broker’s 
+routing set automatically.
+Rolling updates. Upgrading a service implementation at runtime reduces to a controlled 
+provider transition [51, 52]. To carry out the transition, the new provider is loaded as an 
+additional fiber and registers with the broker; once it becomes ACTIVE, traffic is gradually 
+shifted from the old providers to the new one (e.g., by adjusting selection weights), and the old 
+providers are unloaded once they no longer carry in-flight requests. This provider transition 
+turns what is traditionally an infrastructure-level operation (e.g., container orchestration, blue-
+green deployment) into an application-level composition pattern.
+Cross-process invocation. The service broker can also be applied across process boundaries 
+[53]. Each process hosts its own Cordis context with local providers; a coordinating compo­
+nent links them, treating each as a remote provider. Cross-process service access is mediated 
+by an RPC mechanism that preserves the interface, making the distribution transparent to 
+consumers. One caveat is that a cross-process call incurs latency and may fail mid-flight, so 
+exposing it synchronously would block the caller. An interface intended to be exposed across 
+processes must therefore be designed against an asynchronous contract.
+6.3. Access Control and Sandboxing
+Given an application assembled from independent components, securing the application calls 
+for two complementary mechanisms: (1) constraining what dependencies a component may 
+access, and (2) sandboxing untrusted code from the host environment. Cordis supports the first 
+through dependency declarations and interception; the second requires an external sandbox.
+Capability-based access control. The dependency access mechanism (Section  5.1.4) 
+already constitutes a form of access control over proxy-mediated properties: a component 
+can only access dependencies it has declared; an undeclared access raises an error. This 
+is structurally similar to capability-based security [54–56], where authority is conferred by 
+possession of a reference rather than by ambient authority. The inject declaration acts as a 
+capability request, and the context proxy acts as a capability mediator. Since these requests 
+are declared statically, the complete set of proxy-mediated capabilities a component requires 
+is known before it runs, letting the orchestrator review and approve them at load time rather 
+than discovering accesses as they happen.
+This mediation generalizes to fine-grained policy through the interception mechanism. 
+Access-control metadata can be carried by contexts or declared by components (Definition 30), 
+and the provider consults it when the dependency is invoked to decide whether a request is 
+permitted. For example, a filesystem dependency may carry metadata declaring which paths a 
+component may read or write, and the provider checks each call against the metadata. Because 
+this interception lives on the context rather than in either party’s code, an orchestrator can 
+adjust it to constrain any component’s access to a dependency without modifying the provider, 
+e.g., granting read-only database access to a community component whereas a core component 
+retains full access. Moreover, since interception affects only how a dependency is invoked, 
+not whether it is satisfied, it can be installed, reconfigured, or removed at runtime without 
+triggering any reload or perturbing the dependency graph.
+69

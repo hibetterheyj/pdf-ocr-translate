@@ -1,0 +1,61 @@
+𝑓⋄𝑔
+:
+Γ →
+𝜕Γ
+𝑓⋄𝑔= 𝛾
+↦
+𝐥𝐞𝐭(𝛿, 𝑠) = 𝑔(𝛾) 𝐢𝐧
+𝐥𝐞𝐭(𝜀, 𝑡) = 𝑓(𝛿) 𝐢𝐧
+(𝜀, 𝑠∘𝑡)
+(13)
+Theorem 10. Effect composition carries the monoid structure of 𝔗Γ over to 𝔈Γ. That is,
+1. (𝔈Γ, ⋄) is a monoid with unit 𝜂Γ ≔𝛾↦(𝛾, idΓ);
+2. the assignment (𝑓, 𝑔) ↦𝛾↦(𝑓(𝛾), 𝑔) is a monoid homomorphism from 𝔗Γ into 𝔈Γ.
+Proof.
+1. Associativity and the unit laws follow componentwise from those of ∘.
+2. Write 𝑒𝑖= 𝛾↦(𝑓𝑖(𝛾), 𝑔𝑖); then (𝑒1 ⋄𝑒2)(𝛾) = (𝑓1(𝑓2(𝛾)), 𝑔2 ∘𝑔1), which is the image of 
+(𝑓1, 𝑔1) ∘(𝑓2, 𝑔2), and (idΓ, idΓ) maps to 𝜂Γ.
+□
+Theorem 11. Witnessing survives effect composition, and a uniform inverse witnesses at every 
+state. That is,
+1. 𝔈∗
+Γ is a submonoid of 𝔈Γ;
+2. the homomorphism of Theorem 10 carries every pair with 𝑔∘𝑓= idΓ into 𝔈∗
+Γ.
+Proof.
+1. The unit lies in 𝔈∗
+Γ since idΓ(𝛾) = 𝛾. For closure, take 𝑓, 𝑔∈𝔈∗
+Γ and any 𝛾∈Γ, and 
+let (𝛿, 𝑠) = 𝑔(𝛾), (𝜀, 𝑡) = 𝑓(𝛿), so that (𝑓⋄𝑔)(𝛾) = (𝜀, 𝑠∘𝑡). Then 𝑠(𝛿) = 𝛾 and 𝑡(𝜀) = 𝛿, 
+therefore (𝑠∘𝑡)(𝜀) = 𝑠(𝛿) = 𝛾.
+2. 𝑔∘𝑓= idΓ gives 𝑔(𝑓(𝛾)) = 𝛾 at every 𝛾, so the image of such a pair is witnessed at every 
+state.
+□
+Just as track lifts a pair of transformations on Γ to 𝜕Γ, we define effect to lift 𝔈Γ to 𝔈𝜕Γ:
+Definition 12. Define the effect function transformation effectΓ as:
+effectΓ
+:
+𝔈Γ
+→
+𝜕Γ
+→
+𝜕2Γ
+effectΓ
+=
+𝑒
+↦(𝛾, 𝜑) ↦𝐥𝐞𝐭(𝛿, 𝑔) = 𝑒(𝛾) 𝐢𝐧
+((𝛿, 𝜑∘𝑔), trackΓ(𝑔, pr1 ∘𝑒))
+(14)
+Since effectΓ(𝑒) is itself 𝔈𝜕Γ, what it returns is an inverse in the sense of Definition 8 read 
+one level up. That inverse is itself a track of the pair obtained by swapping the two directions 
+of the effect. The ordinary tracking rule applies once more: undoing the effect is an effect in its 
+own right, transforming the state by 𝑔, and the way to undo that is to perform the effect again, 
+which is what pr1 ∘𝑒 does. The inverse therefore composes onto the accumulator it is handed, 
+exactly as track prescribes.
+We can now prove properties for effect analogous to those of track.
+Theorem 13. effect preserves the ⋄ operation. That is, ∀𝑓, 𝑔∈𝔈Γ:
+effectΓ(𝑓) ⋄effectΓ(𝑔) = effectΓ(𝑓⋄𝑔)
+(15)
+Proof. Take any (𝛾, 𝜑) ∈𝜕Γ, and let (𝛿, 𝑠) = 𝑔(𝛾) and (𝜀, 𝑡) = 𝑓(𝛿), so that (𝑓⋄𝑔)(𝛾) = (𝜀, 𝑠∘𝑡) 
+and pr1 ∘(𝑓⋄𝑔) = (pr1 ∘𝑓) ∘(pr1 ∘𝑔). Then
+13

@@ -1,0 +1,56 @@
+[17]
+G. Plotkin and J. Power, “Adequacy for Algebraic Effects,” in Foundations of Software 
+Science and Computation Structures, F. Honsell and M. Miculan, Eds., Berlin, Heidelberg: 
+Springer Berlin Heidelberg,  2001, pp. 1–24.
+[18]
+T. Petricek, D. Orchard, and A. Mycroft, “Coeffects: unified static analysis of context-
+dependence,” in Proceedings of the 40th International Conference on Automata, Languages, 
+and Programming - Volume Part II, in ICALP'13. Riga, Latvia: Springer-Verlag,  2013, pp. 
+385–397. doi: 10.1007/978-3-642-39212-2_35.
+[19]
+M. Gaboardi, S.-ya Katsumata, D. Orchard, F. Breuvart, and T. Uustalu, “Combining 
+effects and coeffects via grading,” in Proceedings of the 21st ACM SIGPLAN International 
+Conference on Functional Programming, in ICFP 2016. Nara, Japan: Association for Com­
+puting Machinery,  2016, pp. 476–489. doi: 10.1145/2951913.2951939.
+[20]
+A. Church, “A Formulation of the Simple Theory of Types,” The Journal of Symbolic Logic, 
+vol. 5, no. 2, pp. 56–68, 1940, doi: 10.2307/2266170.
+[21]
+B. C. Pierce, Types and Programming Languages. MIT Press, 2002.
+[22]
+J. M. Lucassen and D. K. Gifford, “Polymorphic Effect Systems,” in Proceedings of the 15th 
+ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages, in POPL '88. 
+San Diego, California, USA: Association for Computing Machinery,  1988, pp. 47–57. 
+doi: 10.1145/73560.73564.
+[23]
+P. Wadler, “Monads for functional programming,” in Program Design Calculi, M. Broy, 
+Ed., Berlin, Heidelberg: Springer Berlin Heidelberg,  1993, pp. 233–264.
+[24]
+G. Plotkin and J. Power, “Notions of Computation Determine Monads,” in Foundations of 
+Software Science and Computation Structures, Berlin, Heidelberg: Springer Berlin Heidel­
+berg,  2002, pp. 342–356. doi: 10.1007/3-540-45931-6_24.
+[25]
+G. Plotkin and M. Pretnar, “Handlers of Algebraic Effects,” in Programming Languages 
+and Systems (ESOP), Berlin, Heidelberg: Springer Berlin Heidelberg,  2009, pp. 80–94. 
+doi: 10.1007/978-3-642-00590-9_7.
+[26]
+M. Pretnar, “An Introduction to Algebraic Effects and Handlers. Invited tutorial paper,” 
+Electron. Notes Theor. Comput. Sci., vol. 319, no. C, pp. 19–35, Dec. 2015, doi: 10.1016/
+j.entcs.2015.12.003.
+[27]
+D. Leijen, “Koka: Programming with Row Polymorphic Effect Types,” Electronic Proceed­
+ings in Theoretical Computer Science, vol. 153, pp. 100–126, Jun. 2014, doi: 10.4204/
+eptcs.153.8.
+[28]
+D. Leijen, “Type directed compilation of row-typed algebraic effects,” in Proceedings of 
+the 44th ACM SIGPLAN Symposium on Principles of Programming Languages, in POPL 
+'17. Paris, France: Association for Computing Machinery,  2017, pp. 486–499. doi: 
+10.1145/3009837.3009872.
+[29]
+A. Bauer and M. Pretnar, “Programming with algebraic effects and handlers,” Journal of 
+Logical and Algebraic Methods in Programming, vol. 84, no. 1, pp. 108–123, Jan. 2015, doi: 
+10.1016/j.jlamp.2014.02.001.
+[30]
+K. Sivaramakrishnan et al., “Retrofitting parallelism onto OCaml,” Proc. ACM Program. 
+Lang., vol. 4, no. ICFP, Aug. 2020, doi: 10.1145/3408995.
+81

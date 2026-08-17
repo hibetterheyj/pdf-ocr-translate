@@ -1,0 +1,48 @@
+of an absent name having no fiber to act on; by (1) again such a step moves no field outside 𝑅, 
+so dropping it preserves the invariant. Hence the final states are ≈-equal, and equal outside 𝑅.
+No surviving step loses a premise. A step acting on 𝑚∉𝑅∪{𝑛} reads 𝑛 only through target𝑚(𝛾) 
+or relied𝑚(𝛾). The first depends on 𝑛 when 𝑚 declares a key 𝑛 provides, hence 𝑛≺𝑚, and when 
+𝑛 registered 𝑚, which puts 𝑚∈𝑅. In the first case 𝑚’s episode does not close, by hypothesis, 
+so it is open at 𝛾𝑇, where quiet gives 𝜔𝑚= target𝑇
+𝑚 and Lemma 70 puts its values among the 
+𝖠𝖼𝗍𝗂𝗏𝖾 fibers, which 𝑛 is not; since a key has at most one possible provider, 𝑛 provided no key 
+of 𝑑𝑚 at 𝑚’s L-Begin either. The second reads 𝑛 only through the values of 𝜔𝑛, and deleting the 
+episode can only make relied false, which relaxes the guard on L-Unload rather than blocking 
+it. What such a step reads of a name of 𝑅 is covered by the invariant. Pairwise independence is 
+a property of the effect functions, so deleting steps preserves it.
+□
+Theorem 73. (Confluence.) Let a sequence of steps reach a quiescent 𝛾𝑇 at which no fiber is 
+failed, let the steps be pairwise independent and every component be total on its provision 
+(Definition 69), and let 𝐴 be as in Definition 67. Then
+1. (Canonical form.) 𝛾𝑇 is reached, up to the names whose entries the reduction withdraws, 
+from 𝛾0 by a sequence that takes the same orchestration steps in their original order, 
+those at a fiber the orchestrator inserted preceding every lifecycle step and each of the rest 
+following the step that registered the fiber it acts on, and that takes, for an enumeration 
+𝑛1, …, 𝑛𝑘 of 𝐴 linearizing ⊲, one episode of each 𝑛𝑖 in that order.
+2. (Confluence.) Any two such sequences from 𝛾0 taking the same orchestration steps reach 
+states related, after a renaming as in Lemma 56, by ≃ and by ≈.
+Proof. For (1), the episodes of the sequence are of two kinds: those that close and those still 
+open at 𝛾𝑇, which by quiet𝑇 and Lemma 70 are one episode of each fiber of 𝐴.
+Closing episodes go first, by induction on their number. At each stage pick a closing episode of a 
+fiber 𝑛 that is ⊲-maximal among the fibers whose episodes still close; one exists by Lemma 68 
+and the finiteness of 𝑁. The three hypotheses of Lemma 72 are then met. No 𝑚 with 𝑛≺𝑚 has 
+a closing episode, by maximality. And no fiber 𝑛 registers during [𝑏, 𝑢] has an episode: such 
+a fiber is retired by the accumulator that ran at 𝑢 (Definition 47) and by Lemma 54(5) stays 
+retired, so its target view is ⊥ and Lemma 70 puts it outside 𝐴, whence it has no episode open at 
+𝛾𝑇; and ⊲ relates it to 𝑛 through its parent pointer, so by maximality it has no closing one either. 
+The lemma removes the episode, together with the steps of the names it registered, leaving 𝛾𝑇 
+where it was up to those names. The measure drops by one, so no closing episode remains.
+A fiber outside 𝐴 takes no lifecycle step. It has no open episode at 𝛾𝑇, by Lemma 70 and quiet𝑇, 
+and no closing one now remains, so it has no episode at all and is 𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾(⊥) throughout; L-
+Begin is the only rule that applies there, and applying it would open an episode.
+Orchestration steps go next. An orchestration step at a fiber the orchestrator inserted moves one 
+place earlier past a lifecycle step of a different fiber by Lemma 71(2), which applies because a 
+step of a fiber of 𝐴 registers no such name: registrations draw fresh names, whereas the name 
+here is one an O-Insert of the original sequence introduced. With a lifecycle step of the same 
+fiber there is nothing to exchange, an O-Insert of 𝑛 already preceding every step of 𝑛 and an O-
+Retire or O-Remove of 𝑛 applying only outside 𝐴, which takes no lifecycle step. Moving each to 
+the front in turn preserves their relative order. An orchestration step at a fiber some activation 
+registered cannot go to the front, its premises requiring that fiber to be present, so it stays where 
+the registration put it; it acts outside 𝐴 by the paragraph above and therefore commutes with 
+everything between it and the registration by the same clause of Lemma 71.
+52

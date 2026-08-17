@@ -1,0 +1,42 @@
+or services to depend on. While effects model a program’s impact on the world, coeffects model 
+the world’s constraints on the program.
+Comonadic coeffects. The idea of using comonads to structure context-dependent 
+computation was first developed by Uustalu and Vene [32], who proposed symmetric 
+(semi)monoidal comonads as the dual of Moggi’s monadic framework for effects, capturing 
+notions such as dataflow and attribute evaluation. Petricek et al. [18] built on this foundation 
+to propose coeffects as a unified static analysis of context-dependence. A comonad (𝐷, 𝜀, 𝛿) 
+captures context-dependent computation: 𝜀: 𝐷(𝐴) →𝐴 extracts the current value from a con­
+text, and 𝛿: 𝐷(𝐴) →𝐷(𝐷(𝐴)) duplicates context for nested access. The Environment comonad 
+𝐷(𝑋) = 𝐸× 𝑋 models dependence on a fixed environment 𝐸; the Stream comonad 𝐷(𝑋) =
+ℕ→𝑋 models dependence on temporal data.
+Graded coeffects. For finer-grained tracking, graded coeffect systems use a pre-ordered 
+semiring 𝒮︀= (𝑆, ≤, +, ×, 0, 1) as the coeffect algebra [33], a discipline later unified with graded 
+effects by Gaboardi et al. [19]. Elements of 𝑆 annotate each variable binding to quantify its 
+usage: 0 for unused, 1 for linear use, 𝑛 for bounded use, ∞ for unrestricted use. The semiring 
+operations compose coeffects sequentially (×) and in parallel (+), enabling precise resource 
+tracking, sensitivity analysis [34], and information-flow control [35, 36] within a unified alge­
+braic framework [37].
+2.3. Relationship to Dynamic Composability
+Effect and coeffect systems organize reasoning about computation along two complementary 
+directions: effects describe how a computation modifies its environment, whereas coeffects 
+describe how it depends on its environment. These two directions correspond to the two dimen­
+sions of dynamic composability identified in Section 1:
+• Temporal composability demands that a component’s modifications to the shared envi­
+ronment be revertible upon unloading. The relevant effects are the stateful ones, which 
+durably transform that environment; undoing such a transformation requires it to admit 
+an inverse.
+• Spatial composability demands that inter-component dependencies be declared and 
+managed reactively. Such dependencies are the very thing coeffects capture, and manag­
+ing them amounts to resolving each against what the environment supplies.
+However, classical effect and coeffect systems are static instruments: effects are tracked 
+within lexically fixed scopes and discharged by compile-time handlers; coeffect annotations 
+are verified against contexts determined before execution. Dynamic composition, by contrast, 
+requires these guarantees to hold for components that arrive and depart at runtime, against 
+contexts that evolve continuously. No fixed lexical scope can delimit a plugin loaded after 
+deployment; no compile-time context can anticipate dependencies that emerge from runtime 
+configuration.
+This motivates a shift in perspective: rather than extending static type systems with more 
+annotations, we reify the conceptual structures of effects and coeffects so that a runtime can 
+operate on them directly, establishing dynamically the guarantees these systems provide stat­
+ically.
+8

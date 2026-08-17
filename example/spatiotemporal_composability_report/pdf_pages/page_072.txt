@@ -1,0 +1,46 @@
+6.6. Dependency Typing and Versioning
+In the formal model, a dependency link is established purely by key identity: a component 
+providing key 𝑘 satisfies any component declaring 𝑘 in its dependency set. The type family 
+𝒱︀𝑘 ensures type-level agreement within a single compilation unit, but this guarantee breaks 
+down when components are developed and built independently, which is a common scenario 
+in component ecosystems. This breakage leads to two distinct problems.
+Interface drift. A provider may modify the interface associated with 𝑘 (adding fields, 
+changing method signatures, altering behavioral contracts) between versions, while a con­
+sumer compiled against an earlier interface continues to declare the same key 𝑘. The 
+dependency is satisfied at the coeffect level (𝑘∈dom(𝜎)), yet the runtime value no longer 
+conforms to the consumer’s expectations, leading to type errors, method-not-found failures, or 
+silent behavioral divergence [70].
+Key collision. Two independently developed providers may use the same key name 𝑘 to 
+denote entirely unrelated interfaces. Since key identity alone establishes the link, a consumer 
+expecting one provider’s interface will accept the other’s value without any compatibility 
+check. Unlike interface drift, where the provider and consumer at least share a common lineage, 
+key collision involves no relationship whatsoever between the expected and actual types, 
+making the resulting failures unpredictable and difficult to diagnose.
+Both problems point to the same gap: the coeffect model provides only nominal linking (by 
+key name) but no versioned or structural linking (by interface compatibility) [71]. We discuss 
+three approaches to the gap, from most infrastructure-coupled to most language-agnostic.
+Key namespacing. Extending the key space from 𝐾 to 𝐾× 𝑃, where 𝑃 identifies the 
+interface-defining package, eliminates key collision by construction: independently developed 
+interfaces with the same local name occupy distinct keys. This is the most direct solution but 
+also the most coupled: it embeds the package namespace into the formal model itself, making 
+the system dependent on an external package registry for key identity.
+Peer dependencies. A lighter coupling is to declare version constraints through the host-
+language package manager [72]. This is the approach Cordis currently adopts. Component 
+dependencies are semantically peer dependencies: a component does not bundle its dependen­
+cies internally but expects the runtime context to supply them. Package managers with peer 
+dependency support (e.g., npm) can enforce version compatibility: if the version of the package 
+providing a key falls outside a consumer’s declared peer range, the incompatibility is caught 
+at install time rather than surfacing as a runtime failure. However, this approach has two 
+limitations: (1) it depends on providers faithfully adhering to semantic versioning, which is 
+an unenforceable convention; (2) package managers typically resolve each dependency to a 
+single version, which prevents loading components from multiple versions of the same package 
+within one application.
+Structural compatibility. A fully language-agnostic approach would replace the member­
+ship check 𝑘∈dom(𝜎) with a compatibility predicate that verifies the provider’s actual 
+interface structurally subsumes the consumer’s expectation. This is analogous to structural 
+subtyping [73]: a provider satisfies a consumer if the provided interface is a subtype of the re­
+quired interface. The challenge lies in defining this predicate language-agnostically: structural 
+compatibility is straightforward for record types (width subtyping) but becomes complex for 
+behavioral contracts (e.g., pre/postconditions [74], effect specifications [22]), and undecidable 
+once parametric polymorphism introduces bounded quantification [75].
+72

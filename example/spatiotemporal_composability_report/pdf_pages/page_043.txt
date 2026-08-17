@@ -1,0 +1,57 @@
+while enlarging dom(𝐹𝛾). O-Remove has ∀𝑚. 𝜋𝑚≠𝑛, so no surviving 𝜋𝑚 names the fiber it 
+takes away.
+(2) The last premise of O-Insert is ∀𝑚. 𝑝𝑛∩𝑝𝑚= ⌀, which is the clause for the fiber it adds, 
+and by Table 1 no other rule writes a 𝑝 or enlarges dom(𝐹𝛾). Two consequences are used below: 
+dom(𝜎𝑚) ⊆𝑝𝑚 by Definition 43, so distinct tables are disjoint and 𝜎𝛾 is a function; and 𝑘∈𝑝𝑚∩
+𝑝𝑚′ forces 𝑚= 𝑚′, so 𝑘 has at most one possible provider.
+(3) By Lemma 54(2) the only rule that writes an 𝜔𝑛 is L-Begin, whose premise 𝜔= target𝑡
+𝑛≠⊥ 
+makes it total on 𝑑𝑛 and valued in dom(𝐹𝑡), target naming providers. By Table 1 the only rule 
+that shrinks dom(𝐹𝛾) is O-Remove, whose premise 𝜃𝑡
+𝑛= 𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾(−) gives ¬ installed𝑡
+𝑛, whence 
+by clause (4) at 𝛾𝑡 no 𝑚 has 𝜔𝑡
+𝑚(𝑘) = 𝑛 for a 𝑘∈𝑑𝑚 while installed𝑡
+𝑚; and 𝑛 itself carries no 𝜔.
+(4) By Lemma 54(2) and (4) the clause can fail at 𝛾𝑡+1 only where some installed has fallen, 
+some 𝜔 has been written, or a fiber some 𝜔 names has left dom(𝐹𝛾). The last is an O-Remove, 
+whose removed fiber is not installed and hence, by clause (4) at 𝛾𝑡, is named by no 𝜔𝑡
+𝑚 of an 
+installed 𝑚. The first is an L-Unload of 𝑛, whose premise ¬ relied𝑡
+𝑛 reads
+∀𝑚≠𝑛, 𝑘∈𝑑𝑚. installed𝑡
+𝑚⇒𝜔𝑡
+𝑚(𝑘) ≠𝑛
+and which writes no 𝜔𝑚 for 𝑚≠𝑛 and leaves ¬ installed𝑡+1
+𝑛
+, so the clause holds of 𝑛 as well. 
+The second is an L-Begin of 𝑛, writing target𝑡
+𝑛, whose values are the providers of the keys of 
+𝑑𝑛 and hence 𝖠𝖼𝗍𝗂𝗏𝖾 at 𝛾𝑡; the step alters no other fiber’s 𝜃, so they are installed at 𝛾𝑡+1 too.
+□
+The guard on L-Unload is what carries clauses (3) and (4). The premise ∀𝑚. 𝜋𝑚≠𝑛 of O-
+Remove speaks only of parent pointers; what keeps a committed view from naming a removed 
+fiber is the guard, imposed several steps earlier and for a different reason. Because a failure 
+is routed through 𝖴𝗇𝗅𝗈𝖺𝖽𝗂𝗇𝗀 as well, the argument does not have to be repeated for an error 
+outcome. Two things follow that the base calculus does not enjoy. A name freed by O-Remove 
+may be reissued by O-Insert, since no stale committed view can name it; and a fiber may be 
+removed as soon as it is 𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾, without a separate check that nobody depends on it.
+4.4.2. Temporal Composability
+Local temporal composability recovers one sequence of effects with one accumulator (Sec­
+tion 3.1.3). The registry holds one accumulator per fiber and the fibers interleave: between the 
+moment 𝑛 composes an inverse onto 𝑔𝑛 and the moment 𝑔𝑛 runs, other fibers have moved the 
+state. Whether 𝑔𝑛 still undoes what it was built to undo there is what the global form of the 
+guarantee asserts, and the condition it turns on is that the intervening steps commute with 𝑔𝑛.
+Definition 60. For 𝑖∈𝔈iter∗
+Γ
+ let reach(𝑖) be the least set of iterators containing 𝑖 and closed under 
+continuation, and read the transformation monoid 𝔐 of Definition 17 at an iterator by taking 
+for its generators the forward maps and the yielded inverses of every iterator in reach(𝑖):
+reach(𝑖) ≔⋂{𝑆| 𝑖∈𝑆∧∀𝑖′ ∈𝑆, 𝛾∈Γ. 𝑖′(𝛾) = (−, −, 𝖩𝗎𝗌𝗍(𝑖″)) ⇒𝑖″ ∈𝑆}
+𝔐(𝑖) ≔⟨{pr1 ∘𝑖′ | 𝑖′ ∈reach(𝑖)} ∪{pr2(𝑖′(𝛾)) | 𝑖′ ∈reach(𝑖), 𝛾∈Γ}⟩
+(54)
+reading 𝖱𝗂𝗀𝗁𝗍 around the triple where Section 4.3.4 applies, and write len(𝑖) for the supremum 
+of |𝐶| over the chains 𝐶⊆reach(𝑖) that continuation orders. Two iterators 𝑖, 𝑗 are independent 
+when they are so in the sense of Definition 19, read with these transformation monoids and 
+with the yield of an iteration being its inverse together with its continuation:
+43

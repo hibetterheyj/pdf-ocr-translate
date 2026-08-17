@@ -1,0 +1,46 @@
+5.2.1. Declarative Configuration
+Section 4 decomposes a running system into fibers, each an instantiation of one component. 
+Everything an instantiation needs can be declared, so an orchestrator can describe a whole 
+system as a declarative configuration: a persistent record that the loader realizes as fibers and 
+keeps in step with them.
+Entries. A configuration consists of entries. Each entry specifies a fiber and manages it, and 
+the binding runs in both directions: the loader responds to a change in an entry’s fields by 
+adjusting the fiber, and a component that revises its own configuration or disables itself has the 
+change written back to its entry.
+Definition 74. An entry declares a single fiber, recording:
+• id — a stable identifier, used as the reconciliation key when its group’s child list changes;
+• url — the URL of the component module to instantiate;
+• isolate — an isolation annotation applied to the entry’s context;
+• intercept — an interception annotation applied to the entry’s context;
+• config — the configuration bound into the component to form its effect function apply;
+• disabled — whether the entry is administratively turned off.
+An entry can serve as a faithful specification because what supports a fiber is exactly what 
+an entry records. The support set of Definition 67 reads 𝜏, 𝜋, 𝑑, and 𝑝 and nothing else, and 
+an entry gives all four: disabled gives 𝜏, the entry’s parent in the tree gives 𝜋, and url selects 
+the component which declares 𝑑 and 𝑝. The fields the support set leaves unread are the fiber’s 
+runtime state, which an instantiation does not need either, and Lemma 70 identifies the support 
+set with the 𝖠𝖼𝗍𝗂𝗏𝖾 fibers of a quiescent state (Definition 49) as far as each component installs 
+every key it declares (Definition 69).
+These entries form a configuration tree that is the authoritative record of what the system 
+loads. An entry may be a leaf mapping to a single fiber, or its component may in turn load 
+further components, making the entry a branch node. Cordis provides components for such 
+grouped and nested loading: @cordisjs/group takes a list of child entries as its configuration 
+and loads them as a subgroup, and @cordisjs/include loads an external configuration file 
+(YAML or JSON) and grafts its entries in as a nested subtree. Both are ordinary components 
+resting on the registration primitive of Definition 47 (Algorithm 4), so a nested tree stays within 
+the calculus and the results below hold of it.
+Reconciliation. When an entry’s record changes, the loader reconciles incrementally rather 
+than tearing the fiber down and rebuilding it wholesale. Reconciling this way is sound for 
+reasons the metatheory supplies.
+• Theorem 73 makes the quiescent state a function of the final configuration alone: what­
+ever instantiations and retirements the loader performs on the way, and in whatever 
+order, the system quiesces where a load of the final configuration from scratch would 
+have left it. Which components end up loaded is read off the declarations only as far as 
+each of them installs every key it declares (Definition 69); a component that declares a 
+key and installs it under some configurations alone is one the loader can still reconcile, 
+but the set of loaded components then answers to those configurations as well.
+• Theorem 66 proves that the system does quiesce, so a reconciliation is complete once its 
+instantiations and retirements have been issued.
+• Corollary 62 puts a departing fiber’s contribution to the state at nothing, so rebuilding 
+one entry withdraws what its fiber installed and leaves the fibers around it as they were.
+62

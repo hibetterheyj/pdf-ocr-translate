@@ -1,0 +1,48 @@
+providing nothing, which is the common case of a component that only consumes, or that 
+registers others.
+A component instantiated in a running system is activated and deactivated over time, so 
+it carries a lifecycle state, and a transition is what moves it from one lifecycle state to another: 
+an activation executes 𝑒, accumulating side effects on the context, and a deactivation applies the 
+accumulator to recover the context. In its simplest form the lifecycle is the two-state model of 
+Figure 1, which Section 4.2 gives rules for; Section 4.3 refines it as each control-flow feature is 
+admitted.
+L-Reload
+L-Unload
+𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾
+𝖠𝖼𝗍𝗂𝗏𝖾
+Figure 1 | Base component lifecycle
+Fibers. One component may be instantiated many times over, each instantiation carrying a 
+lifecycle state of its own. We name such an instantiation a fiber. A fiber records the component 
+that produced it, the fiber it was instantiated under, the coeffects it provides, and where in its 
+lifecycle it stands.
+Definition 44. Fix a set 𝔑 of fiber names. A fiber instantiating the component (𝑑, 𝑝, 𝑒) ∈ℭΓ is a 
+tuple ⟨𝑑, 𝑝, 𝑒, 𝜋, 𝜎, 𝜏, 𝜃⟩, where
+• 𝑑: 𝔇Γ, 𝑝: 𝔓Γ, and 𝑒: 𝔈∗
+Γ are the coeffect specification, provision, and effect function of 
+Definition 43;
+• 𝜋: 𝔑∪{𝗋𝗈𝗈𝗍} is the parent, the fiber this one was instantiated under, or the root marker 
+𝗋𝗈𝗈𝗍;
+• 𝜎: Σ is the fiber’s own coeffect table (Definition 22), empty until it activates and written 
+by its effects as they run;
+• 𝜏: {⊥, ⊤} is the retirement flag, ⊥ in a fresh fiber and ⊤ once the orchestrator has retired 
+the fiber;
+• 𝜃: ΘΓ is the lifecycle state, which in the two-state model of Section 4.2 is
+ΘΓ ≔𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾| 𝖠𝖼𝗍𝗂𝗏𝖾(𝑔, 𝜔)
+(38)
+where 𝑔: Γ →Γ is the accumulator and 𝜔: 𝑑→𝔑 the committed view.
+The committed view 𝜔 sends each key the fiber declares to the name of the fiber that 
+provided it when the transition committed. Section  4.3 replaces ΘΓ by the extension that 
+transitions in progress require; the rest of Definition 44 is given once for both, save that 𝑒 is 
+read at the richer effect type each layer of Section 4.3 introduces.
+Registry. A state holds its fibers under their names, and both the identity of a fiber and the 
+coeffect context of Section 3.2 are read off that arrangement.
+Definition 45. Write 𝔉Γ for the set of fibers over Γ. A state 𝛾∈Γ carries a registry
+𝐹𝛾: 𝔑⇀𝔉Γ
+(39)
+a finite partial function whose parent pointers form a tree rooted at 𝗋𝗈𝗈𝗍, together with whatever 
+else in Γ no fiber’s 𝜎 names. We write 𝛾(𝑛) for 𝐹𝛾(𝑛), and abbreviate a field of 𝛾(𝑛) by 
+subscripting it with 𝑛 where the state is clear, so that 𝑑𝑛, 𝑝𝑛, 𝑒𝑛, 𝜋𝑛, 𝜎𝑛, 𝜏𝑛, 𝜃𝑛 are the fields of 
+Definition 44 and 𝑔𝑛, 𝜔𝑛 the accumulator and committed view that 𝜃𝑛 carries; 𝛾[𝜃𝑛↦𝜃′], 𝛾[𝑛↦
+⟨⋯⟩], and 𝛾∖𝑛 are the states differing from 𝛾 in one field, one fiber, and the presence of one 
+fiber respectively.
+29

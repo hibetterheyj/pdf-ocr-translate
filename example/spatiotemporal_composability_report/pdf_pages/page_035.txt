@@ -1,0 +1,52 @@
+The guard is imposed per binding rather than per fiber: relied𝑛(𝛾) tests whether some 
+committed view names 𝑛, so a fiber that declares none of 𝑛’s keys is no obstacle, and neither 
+is one that resolved a key of 𝑛’s in another realm (Section 3.2.3). Under the single-source 
+discipline of Section 4.2 the per-binding reading coincides with the coarser test ∃𝑚≠𝑛, 𝑘∈
+𝑑𝑚. installed𝑚(𝛾) ∧𝑘∈𝑝𝑛, a key having one possible provider there.
+A guard of this kind ordinarily deadlocks. What keeps it from doing so is 𝖴𝗇𝗅𝗈𝖺𝖽𝗂𝗇𝗀 together 
+with 𝜎𝛾 being the union over 𝖠𝖼𝗍𝗂𝗏𝖾 fibers alone: once L-Leave has marked 𝑛, its table leaves 
+𝜎𝛾, so no target view can name 𝑛 any longer, and every consumer that committed to 𝑛 is itself 
+on its way out. Theorem 66 turns that into the claim that the guard always releases.
+The guard orders deactivations along coeffects and not along the fiber tree: a parent may 
+run its inverse while a child of it is still 𝖴𝗇𝗅𝗈𝖺𝖽𝗂𝗇𝗀, since relied speaks only of committed views. 
+Parent and child are accordingly ordered more weakly than Theorem 63 orders a provider and 
+its consumer, and a parent and a child whose effects meet in the ambient state are governed by 
+the independence hypothesis of Definition 60 instead.
+4.3.2. Iteration
+An activation may execute multiple effects in sequence, and the deactivation must recover 
+them. We model such an activation with an effect iterator, each of whose iterations yields the 
+modified context, an inverse, and a continuation:
+Definition 51. Define the effect iterator 𝔈iter
+Γ and witnessed effect iterator 𝔈iter∗
+Γ
+ as the following 
+recursive types:
+𝔈iter
+Γ
+≔𝜇ℑ. Γ →Γ × (Γ →Γ) × 𝖬𝖺𝗒𝖻𝖾(ℑ)
+𝔈iter∗
+Γ
+≔𝜇ℑ. (𝑒: Γ →Γ × (Γ →Γ) × 𝖬𝖺𝗒𝖻𝖾(ℑ))
+× ((𝛾: Γ) →(𝐥𝐞𝐭(𝛿, 𝑔, 𝑜) = 𝑒(𝛾) 𝐢𝐧𝑔(𝛿) ≃𝛾))
+(47)
+where 𝑒(𝛾) yields a triple (𝛿, 𝑔, 𝑜) representing:
+• 𝛿 is the new context;
+• 𝑔 is the inverse function of the current effect;
+• 𝑜 indicates the continuation:
+‣ 𝖭𝗈𝗍𝗁𝗂𝗇𝗀 signals iteration termination;
+‣ 𝖩𝗎𝗌𝗍(𝑖) provides the next iteration.
+The witness is read at the ≃ of Definition 33, as Definition 37 reads that of 𝔈∗
+Γ: an 𝑖∈𝔈iter
+Γ lies in 
+𝔈iter∗
+Γ
+ when 𝑖 respects ≃ and each 𝑔 it yields respects ≃ and satisfies the clause above. A triple 
+is compared componentwise, 𝖭𝗈𝗍𝗁𝗂𝗇𝗀 with 𝖭𝗈𝗍𝗁𝗂𝗇𝗀 alone and 𝖩𝗎𝗌𝗍(𝑖) with 𝖩𝗎𝗌𝗍(𝑖′) when 𝑖≃𝑖′, 
+and ≃ on iterators is the greatest relation meeting those clauses. Taking ≃ to be equality on Γ 
+recovers the reading on the nose.
+The effect iterator transformation effectiter
+Γ extends effectΓ to the iterator structure through 
+recursive invocation:
+Definition 52. Define the effect iterator transformation effectiter
+Γ as:
+35

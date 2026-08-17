@@ -1,0 +1,48 @@
+2. 𝑔 respects ≃.
+Taking ≃ to be equality on Γ recovers Definition 8.
+Lemma 38. With 𝔈∗
+Γ read as in Definition 37, every equality of states asserted in Section 3.1 holds 
+with = replaced by ≃, and the accumulator of every state reachable from (𝛾0, idΓ) respects ≃.
+Proof. An accumulator is a composition of inverses, each respecting ≃ by Definition 37(2), and a 
+composition of maps respecting ≃ respects ≃, the base case being idΓ. The proofs of Section 3.1 
+then go through unchanged, respect being what carries a relation through an inverse: from 
+𝑔2(𝛿2) ≃𝛿1 and 𝑔1(𝛿1) ≃𝛾 respect gives (𝑔1 ∘𝑔2)(𝛿2) ≃𝛾, which is the step each composition 
+of inverses takes, and the soundness invariant of Theorem 7 reads 𝜑(𝛾) ≃𝛾0 by that step.
+□
+The commutation Definition 19 asks for is read up to ≃ by the same lemma, and reading it 
+that way is what makes it attainable at all: two operations may leave values that ≃
+𝑘 identifies and 
+still count as commuting. Of two operations it asks one thing more than of the effect functions 
+their lifts induce, an operation yielding an outcome as well.
+Definition 39. Operations 𝑎 and 𝑎′ are independent when their lifts are independent as effect 
+functions (Definition 19) at every pair of arguments, and neither one’s transformations disturb 
+the outcome the other yields:
+∀𝑥: 𝑋𝑎, 𝑔∈𝔐(𝑎′Σ), 𝜎∈Σ.
+pr3(𝑎Σ(𝑥)(𝑔(𝜎))) = pr3(𝑎Σ(𝑥)(𝜎))
+(35)
+and the same with 𝑎 and 𝑎′ exchanged, writing 𝔐(𝑎Σ) for the transformation monoid of the 
+lifts 𝑎Σ(𝑥) over every argument as Definition 34 writes 𝔐(𝑎) for that of the operation itself. A 
+key 𝑘 is commutative when any two operations of 𝒜︀𝑘 are independent, an operation being held 
+independent of itself as well.
+Across distinct keys the condition holds outright.
+Theorem 40. Operations at distinct keys are independent.
+Proof. Let 𝑎 lie in 𝒜︀𝑘 and 𝑎′ in 𝒜︀𝑘′ with 𝑘≠𝑘′. By Definition 24 every generator of 𝔐(𝑎Σ) is of 
+the form 𝜎↦𝜎[𝑘↦𝑢(𝜎(𝑘))] for a map 𝑢 on 𝒱︀𝑘, being either the lift of a forward map or the 
+lift of a yielded inverse, and likewise for 𝑎′ at 𝑘′. Two such maps commute, each reading and 
+writing one key alone and the two keys differing, and Lemma 18(1) extends the commutation 
+from the generators to the two monoids. For the second condition, what 𝑎Σ yields at 𝜎, inverse 
+and outcome alike, is determined by 𝜎(𝑘), which every generator of 𝔐(𝑎′Σ) leaves as it stands.□
+A key whose value is a table of entries added and removed independently is commutative, 
+registration of a route or of an event listener being the representative case: two registrations in 
+either order leave a table that answers every test alike, and either registration can be withdrawn 
+while the other stands. A key whose value is an ordered chain is not, since a middleware 
+inserted before another sees a different request, and neither order can be withdrawn without 
+disturbing the other. The allocator of the opening example divides by what its interface pub­
+lishes. Where the handles it hands out are compared by no operation of the key, ≃
+𝑘 may relate 
+two heaps up to a renaming of handles, which is how CompCert relates the memory states of 
+a program and of its translation [42], and allocation is commutative; where the addresses are 
+outcomes compared by equality, no admissible ≃
+𝑘 makes the two orders of allocation agree, and 
+the key is not commutative.
+25

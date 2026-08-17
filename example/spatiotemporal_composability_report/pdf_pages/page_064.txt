@@ -1,0 +1,58 @@
+11
+(𝑠1, 𝑠2, 𝑑1, 𝑑2) ← diff[𝑘]
+12
+if 𝑑1 = 𝑑2 and store[𝑠1] and not store[𝑠2] then ▷ the binding is the entry’s own
+13
+store[𝑠2] ← store[𝑠1]
+14
+delete store[𝑠1]
+15
+function affected(fiber, 𝑘)
+16
+(𝑠1, 𝑠2, 𝑑1, 𝑑2) ← diff[𝑘]
+17
+return fiber.ctx[@@isolate][𝑘] ∈ {𝑠1, 𝑠2} and (fiber.ctx[𝛿𝑘] = 𝑑1) ≠ (𝑑2 = 𝑑1)
+18
+notify(entry.ctx, Δ, affected) ▷ in place of the realm test of Algorithm 3
+The test turns on one property of delimiters. The tag under 𝛿𝑘 is written on the entry’s 
+context and inherited by every context derived from it, and it is drawn afresh at each reassign­
+ment, so for a context 𝛾′
+𝛾′[𝛿𝑘] = 𝑑1
+⟺
+𝛾′ is derived from the entry's context
+(65)
+Write own(𝛾′) for that condition, of which 𝑑2 = 𝑑1 is the instance at the provider. The 
+reassignment moves the contexts satisfying own from 𝑠1 to 𝑠2 and leaves the others where they 
+are, and by the loop above it moves the binding to 𝑠2 exactly when the provider satisfies own. 
+A dependent sees the binding while its own realm at 𝑘 is the realm the binding sits in. Where 
+own agrees on the dependent and the provider, both move or neither does, so the dependent 
+sees the binding afterwards exactly when it saw it before. Where own separates them, one side 
+moves and the other stays, so the dependent gains or loses the binding. The inequality is that 
+separation, and the membership test drops the dependents resolving 𝑘 in neither realm, which 
+no part of the move reaches.
+5.2.2. Hot Module Replacement
+Hot module replacement (HMR) applies the revertible-effect pattern at the module level: when 
+source files change, typically during development, the system replaces the affected modules 
+in-place without restarting the process. Because a fiber already bounds all of its component’s 
+effects and coeffects, a module that is itself a component can be replaced through fiber opera­
+tions alone: disposing the old fiber recovers everything the component installed, and a new 
+fiber instantiated from the reloaded module reinstalls it. HMR therefore needs no developer-
+annotated acceptance boundaries, as opposed to Webpack [46] or Vite [47] HMR.
+The @cordisjs/hmr component provides the HMR engine, which operates in three phases.
+Phase 1: Module classification. The engine takes two inputs: the stashed set (file URLs 
+whose contents have changed since the last reload) and the externals set (modules that cannot 
+be hot-replaced and instead trigger a full restart). Writing get_imports(url) for the modules 
+that url directly imports, it classifies the changes’ dependency subgraph, marking each module 
+accepted or declined:
+Algorithm 8 Module classification
+1
+function classify(stashed, externals)
+2
+accepted ← stashed
+3
+declined ← externals
+4
+pending ← ⌀
+5
+for url in stashed do
+64

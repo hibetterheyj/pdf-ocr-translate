@@ -1,0 +1,46 @@
+contexts. The language therefore needs a way to interpose on access transparently, leaving 
+the consumer’s code unchanged, e.g., via JavaScript’s Proxy object [64] or Python’s descriptor 
+protocol (__get__) [65]. Absent such a primitive, runtime reflection [66, 67] can mediate access 
+dynamically, at the cost of type safety and developer experience.
+Across both levels, metaprogramming facilities supply the typing and the mediation 
+together. Annotations [68] and decorators attach metadata to a declaration, which a processor 
+expands into the accessor that mediates access; compile-time metaprogramming (e.g., Rust 
+procedural macros, Scala macros [69], Zig comptime) emits, for each dependency, a typed 
+declaration together with such an accessor, dispensing with a general-purpose interception 
+primitive.
+6.5. Mutual Dependencies and Component Granularity
+In the reactive coeffect model, a dependency cycle simply leaves the involved components 
+permanently inactive: given two components 𝐴 and 𝐵, if 𝐴 requires a key provided by 𝐵 and 
+𝐵 a key provided by 𝐴, neither’s satisfaction predicate can ever become true. Unlike deadlock 
+in concurrent systems, which depends on the schedule and must be detected as it happens, 
+this condition is predictable from the dependency declarations alone, so a runtime can report 
+it when components are loaded.
+In practice, most apparently mutual dependencies can be decomposed into finer-grained 
+components that eliminate the cycle. Consider two components: a server (providing a network 
+interface) and an access controller (enforcing authorization policies). The two components 
+interact bidirectionally: the access controller mediates requests arriving at the server, and the 
+server exposes an endpoint for modifying access-control policies. A monolithic design would 
+make each component depend on the other. However, the two interaction directions are logi­
+cally independent concerns. Decomposing them yields four components: server-core, access-
+control-core, request-mediation (depending on both cores to apply access control to incoming 
+requests), and policy-management (depending on both cores to expose policy modification via 
+the server). Through this approach, the cycle is eliminated because neither core depends on 
+the other; only the integration components depend on both.
+This decomposition is always possible in principle, since every bidirectional interaction 
+can be factored into independent unidirectional bindings, but it increases the number of 
+components: in the general case, given 𝑛 mutually interacting components, the number of 
+integration components can grow quadratically with 𝑛, since each pair of interacting compo­
+nents may require a distinct component for each direction of interaction. This does not affect 
+correctness or runtime performance (components are lightweight), and finer granularity can 
+be beneficial: users gain the ability to load only the specific integration bindings they need, 
+effectively increasing the system’s composability. However, it may affect developer experience: 
+more components require more configuration, more naming, and more cognitive overhead in 
+understanding the dependency graph.
+Mitigating this granularity cost is an engineering concern rather than a theoretical one. 
+Practical strategies include package bundling (i.e., grouping related fine-grained components 
+into a single installable unit), convention-based wiring (i.e., automatically connecting compo­
+nents whose names or types match a pattern), and scaffold tooling (i.e., generating boilerplate 
+integration components from declarative specifications). These strategies preserve the formal 
+guarantees of the acyclic model while reducing the authoring burden to something closer to 
+the monolithic case.
+71

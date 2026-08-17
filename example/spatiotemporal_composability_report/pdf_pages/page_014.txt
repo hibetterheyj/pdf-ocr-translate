@@ -1,0 +1,49 @@
+(effectΓ(𝑓) ⋄effectΓ(𝑔))(𝛾, 𝜑) = ((𝜀, 𝜑∘𝑠∘𝑡), trackΓ(𝑠, pr1 ∘𝑔) ∘trackΓ(𝑡, pr1 ∘𝑓))
+= ((𝜀, 𝜑∘𝑠∘𝑡), trackΓ(𝑠∘𝑡, (pr1 ∘𝑓) ∘(pr1 ∘𝑔)))
+= effectΓ(𝑓⋄𝑔)(𝛾, 𝜑)
+where the first step unfolds Definition 12 at (𝛾, 𝜑) and at (𝛿, 𝜑∘𝑠), the second is Theorem 5, 
+and the third folds Definition 12.
+□
+How the two levels relate is what the following diagram shows. Its upper triangle is the 
+witness condition of 𝑒, according to Definition  8, and its lower triangle is the question of 
+whether 𝑒′ is witnessed the way 𝑒 is.
+𝑓
+𝑓′
+𝑔
+𝑔′
+𝑒
+𝑒′
+pr1
+pr1
+pr2
+pr2
+effect
+Γ
+Γ
+𝜕Γ
+𝜕Γ
+𝜕2Γ
+Between the levels, the projection pr1 relates each lifted map to the map it lifts, as it does 
+for trackΓ in Theorem 4.
+Theorem 14. Let 𝑒∈𝔈Γ, write 𝑓≔pr1 ∘𝑒, and let 𝑒′ ≔effectΓ(𝑒) with forward map 𝑓′ ≔pr1 ∘
+𝑒′. Then
+1. pr1 ∘𝑓′ = 𝑓∘pr1;
+2. for each (𝛾, 𝜑) ∈𝜕Γ, the lifted inverse 𝑔′ ≔pr2(𝑒′(𝛾, 𝜑)) and the inverse 𝑔≔pr2(𝑒(𝛾)) 
+witnessed there satisfy pr1 ∘𝑔′ = 𝑔∘pr1.
+Proof.
+1. By Definition 12, 𝑓′(𝛾, 𝜑) = (𝑓(𝛾), 𝜑∘𝑔), whose state is 𝑓(𝛾) = (𝑓∘pr1)(𝛾, 𝜑).
+2. This is Theorem 4 applied to 𝑔′ = trackΓ(𝑔, 𝑓).
+□
+Whether the lower triangle closes is settled by computing what the lifted inverse returns:
+Theorem 15. Let 𝑒∈𝔈∗
+Γ and write 𝑓≔pr1 ∘𝑒. Fix (𝛾, 𝜑) ∈𝜕Γ, let (𝛿, 𝑔) = 𝑒(𝛾), and write (Δ, 𝑔′) 
+for the value of effectΓ(𝑒) at (𝛾, 𝜑). Then
+𝑔′(Δ) = (𝛾, 𝜑∘𝑔∘𝑓)
+(16)
+The state is recovered exactly. The accumulator is restored as well, equivalently effectΓ(𝑒) ∈
+𝔈∗
+𝜕Γ, if and only if 𝑔∘𝑓= idΓ; and in every case (𝜑∘𝑔∘𝑓)(𝛾) = 𝜑(𝛾), so the soundness invariant 
+is preserved.
+Proof. By Definition 12, Δ = (𝛿, 𝜑∘𝑔) and 𝑔′ = trackΓ(𝑔, 𝑓), so
+𝑔′(Δ) = (𝑔(𝛿), 𝜑∘𝑔∘𝑓) = (𝛾, 𝜑∘𝑔∘𝑓)
+14

@@ -88,7 +88,7 @@ OCR output flattens all headings to `\subsection{}` with number prefixes merged 
 python3 scripts/normalize_heading_levels.py main_cn.tex --write -v
 ```
 
-This applies five rules (in order):
+This applies five rules (in order). The number-prefix patterns accept both `1 引言` and `1. 引言` (trailing dot optional — MinerU commonly leaves the dot before the space).
 
 **Rule 0 — Title → centered block.** The first `\section{...}` near the top of the document (no number prefix) is converted to a centered title block:
 ```latex
@@ -100,6 +100,7 @@ This applies five rules (in order):
 {\LARGE KIMI K3：开放前沿智能\par}
 \end{center}
 ```
+**Caveat**: Rule 0 only fires within the first 30 lines of the file. With a long preamble (~100 lines) the title `\section` is out of range — convert it manually to the centered block (see the spatiotemporal example's frontmatter chunk).
 
 **Rule 1 — Abstract / References → `\section*`.** Unnumbered special sections that should not appear in the table of contents:
 - `\subsection{摘要}` / `\subsection{Abstract}` → `\section*{摘要}`
@@ -125,7 +126,7 @@ The depth is determined by the count of dots in the prefix: single digit → sec
 
 **Rule 4 — Inline bold demotion.** Specific unnumbered headings can be demoted to bold inline text (pass with `--inline-bold "标题文本"`). This is used for section summaries that shouldn't be numbered.
 
-Run the normalizer on both `main_cn.tex` and all `parts/*.tex` for consistency. Reference the DeepSeek V4 and Kimi K3 examples in `example/` for the expected output pattern.
+Run the normalizer on both `main_cn.tex` and all `parts/*.tex` for consistency. If the document has a hand-built Contents (enumerate TOC from OCR), replace it with `\tableofcontents` — the OCR copy carries the English-version page numbers and will mislead. Put `\renewcommand{\contentsname}{目录}` **in the document body** right before `\tableofcontents`: `polyglossia` re-defines `\contentsname` at language activation, so a preamble-level renewcommand is silently lost. Reference the DeepSeek V4, Kimi K3, and spatiotemporal composability examples in `example/` for the expected output pattern.
 
 ### 6. Cross-Validate Against Source PDF
 
@@ -140,6 +141,8 @@ for page in doc:
 ```
 
 Focus verification on: numerical values, model sizes, benchmark scores, citation keys. This catches OCR errors that would otherwise go unnoticed. See [references/workflow.md](references/workflow.md) for the full approach.
+
+**Missing-glyph sweep**: after the first clean compile, grep the log for `Missing character`. MinerU frequently leaves raw Unicode math in prose (`⋄`, `≃`, `∎`, `⊥`, `⌀`, `▷`, `↦`, `∘`, `•`, `‣`). Fix with a stateful text/math-mode tracker that wraps each occurrence in `$\diamond$`, `$\simeq$`, `$\bot$`, `$\emptyset$`, `$\triangleright$`, `$\mapsto$`, `$\circ$` etc. — a naive global regex replace corrupts surrounding CJK text.
 
 ### 7. Compile
 
@@ -156,7 +159,8 @@ xelatex -interaction=nonstopmode main_cn.tex  # third pass for TOC
 - `I can't find file 'SimSun'` → Update font fallback chain (add macOS fonts)
 - `Missing $ inserted` / `Missing number` → Run `fix_ocr_artifacts.py` again on the merged file; these come from OCR artifacts that survived translation
 - `Text line contains an invalid character` → Control characters in OCR output; run cleanup script
-- Non-zero errors with `-halt-on-error` are expected (OCR artifacts); use `-interaction=nonstopmode` to power through
+- `Missing character: There is no X` → Raw Unicode math left in prose; wrap in math mode (see step 6)
+- Non-zero errors with `-halt-on-error` are expected (OCR artifacts); use `-interaction=nonstopmode` to power through. Zero-error compiles are achievable — see the spatiotemporal example
 
 If the user explicitly requires a pandoc-generated artifact, wrap the already-compiled native PDF:
 ```bash
@@ -198,4 +202,6 @@ Read only when needed:
 
 ## Example
 
-See **[example/kimi_k3_report/](example/kimi_k3_report/)** for a complete working example: the Kimi K3 technical report (~4000 lines OCR LaTeX) translated to Chinese, compiled to a 65-page PDF. Includes the split chunks, merged `main_cn.tex`, and compiled PDF.
+See **[example/kimi_k3_report/](example/kimi_k3_report/)** for a complete worked example: the Kimi K3 technical report (~4000 lines OCR LaTeX) translated to Chinese, compiled to a 65-page PDF. Includes the split chunks, merged `main_cn.tex`, and compiled PDF.
+
+See **[example/spatiotemporal_composability_report/](example/spatiotemporal_composability_report/)** for a formal-methods paper (6570 lines, heavy math): 17 chunks, ~900 OCR `�` symbols reconstructed from the source PDF, zero-error compilation. Demonstrates: repeated-letter OCR drops ("efects"→"effects"), per-page PDF text as cross-validation reference, hand-built TOC replacement, and the missing-glyph sweep.

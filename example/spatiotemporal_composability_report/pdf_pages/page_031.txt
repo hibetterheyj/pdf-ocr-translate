@@ -1,0 +1,60 @@
+The target answers to two things and to nothing else: retirement, through 𝜏𝑛, and coeffect 
+resolution, through 𝛾⊧𝑑𝑛 and provider𝑘, each declared key being read off 𝜎𝛾 at the one shared 
+realm of Definition 43.
+The committed view of Definition 44 has the same type as the target view, and the lifecycle 
+is driven by comparing them: 𝜔𝑛 is the resolution 𝑛 activated against, target𝑛(𝛾) the one it 
+should be running against, and every rule below fires on their agreeing or differing. Recording 
+a provider rather than a value is what makes the comparison usable, since a different fiber 
+providing an equal value would otherwise compare equal. The value a component reads is 
+reached through the view, since the provider’s table holds that value, and the implementation 
+holds the map in fiber.committed and a hash of it in fiber.target (Section 5.1.3).
+Rules. The base calculus takes each transition to be atomic, immediate, and infallible: an 
+activation applies its effect function in one step, a deactivation applies the accumulator in one 
+step, and both succeed in doing so. Section 4.3 drops all three.
+Five rules generate two relations. An orchestration rule, prefixed O- and written 𝛾⇒𝛿, is 
+an action the orchestrator may perform; its premises say when the action is legal, not when it 
+occurs. A lifecycle rule, prefixed L- and written 𝛾⟶𝛿, is a step the system takes unprompted 
+whenever its premises hold. A sequence of steps interleaves the two, and ⟶
+∗ below means 
+lifecycle steps alone.
+𝑛∉dom(𝐹𝛾)
+𝜋∈dom(𝐹𝛾) ∪{𝗋𝗈𝗈𝗍}
+(𝑑, 𝑝, 𝑒) ∈ℭΓ
+∀𝑚∈dom(𝐹𝛾). 𝑝∩𝑝𝑚= ⌀
+𝛾⇒𝛾[𝑛↦⟨𝑑, 𝑝, 𝑒, 𝜋, ⌀, ⊥, 𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾⟩]
+O-Insert
+𝑛∈dom(𝐹𝛾)
+𝛾⇒𝛾[𝜏𝑛↦⊤]
+O-Retire
+𝜏𝑛= ⊤
+𝜃𝑛= 𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾
+∀𝑚. 𝜋𝑚≠𝑛
+𝛾⇒𝛾∖𝑛
+O-Remove
+Insertion and retirement are the only external inputs: the orchestrator asks for a fiber to 
+exist or to stop existing, and never sets its lifecycle state directly. O-Retire is unconditional 
+on the fiber’s state because retiring is a request, and the lifecycle rules are what carry it out. 
+Retirement is separated from removal for the same reason: a retired fiber that is still 𝖠𝖼𝗍𝗂𝗏𝖾 
+must first be deactivated, and removing it earlier would discard the accumulator and leak. The 
+premise ∀𝑚. 𝜋𝑚≠𝑛 keeps the tree well-formed by removing children before their parent. The 
+last premise of O-Insert is where the single-source discipline is imposed: a key has one possible 
+provider because the orchestrator may not admit a second component declaring it.
+𝜃𝑛= 𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾
+𝜔= target𝑛(𝛾) ≠⊥
+𝑒𝑛(𝛾) = (𝛿, 𝑔)
+𝛾⟶𝛿[𝜃𝑛↦𝖠𝖼𝗍𝗂𝗏𝖾(𝑔, 𝜔)]
+L-Reload
+𝜃𝑛= 𝖠𝖼𝗍𝗂𝗏𝖾(𝑔, 𝜔)
+target𝑛(𝛾) ≠𝜔
+𝑔(𝛾) = 𝛿
+𝛾⟶𝛿[𝜃𝑛↦𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾]
+L-Unload
+L-Reload installs the committed view alongside the inverse; L-Unload applies the inverse 
+and discards the committed view. Both are driven by the same comparison: L-Reload fires when 
+a fiber holds no committed view and its target view is not ⊥, L-Unload when the committed 
+view it holds is not its target view. This is the reactive discipline of Section 3.2, read off a target 
+that answers to retirement as well as to the coeffects: a transition is initiated whenever the target 
+view changes, regardless of which of the two moved it.
+Instantiation. A component may instantiate another while installing its effects, which is 
+what a plugin host does when a plugin loads plugins of its own. The rules so far leave the 
+31

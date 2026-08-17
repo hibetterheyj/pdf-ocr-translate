@@ -1,0 +1,55 @@
+∀𝑓∈𝔐(𝑖), 𝑔∈𝔐(𝑗).
+𝑓∘𝑔≃𝑔∘𝑓
+∀𝑖′ ∈reach(𝑖), 𝑔∈𝔐(𝑗), 𝛾∈Γ.
+pr2,3(𝑖′(𝑔(𝛾))) ≃pr2,3(𝑖′(𝛾))
+(55)
+and symmetrically in 𝑗, reading ≃ on maps as Definition 36 does, on a continuation as Defin­
+ition 51 does, and on a registering iteration (Definition 47) as agreement of the component it 
+names. A family (𝑖𝑙)𝑙∈𝐿 of iterators is pairwise independent when 𝑖𝑙 and 𝑖𝑙′ are independent for 
+every 𝑙≠𝑙′, and a sequence of steps is pairwise independent when (𝑒𝑛)𝑛∈𝑁 is, where 𝑁 is the 
+set of names the sequence ever holds, one for each fiber the orchestrator inserts and each fiber 
+an iteration registers.
+Independence in this sense is what trace theory takes as primitive: commuting actions gen­
+erate an equivalence on sequences under which reordering two adjacent independent actions 
+preserves the endpoint [44], and Lemma 71 is that reordering for these rules. A family rather 
+than a set is what keeps two names of one component in scope: the condition then requires 
+that component’s effect function to be independent of itself, which is to require that 𝔐(𝑖) be 
+commutative. The first condition is what Theorem 61 uses and the second what Theorem 73 
+needs in addition: reordering the steps of two fibers evaluates an iterator at a state the other 
+fiber moved, and commuting the maps does not by itself say that the iterator yields the same 
+inverse and the same continuation there. Checking the first condition calls for no more than 
+the iterations themselves, since Lemma 18(1) carries commutation from the generators to the 
+monoids they generate.
+Under these conditions the single-accumulator invariant of Theorem  7 survives the 
+interleaving, in the form that gives temporal composability its content: running an inverse 
+withdraws the fiber’s contribution and nothing else.
+Theorem 61. (Recovery exactness.) Let the sequence of steps be pairwise independent, let an 
+episode of 𝑛 open at 𝑏, let 𝑢≥𝑏 lie in it, and let 𝑡1 < ⋯< 𝑡𝑙 be the indices in [𝑏, 𝑢) at which the 
+acting fiber is not 𝑛. Then
+𝑔𝑢
+𝑛(𝛾𝑢) ≈(Ψ𝑡𝑙∘⋯∘Ψ𝑡1)(𝛾𝑏)
+(56)
+That is, applying 𝑛’s accumulator at 𝛾𝑢 yields, up to the control fields, the state those same 
+steps would have produced from 𝛾𝑏. Reading the right side as the state reached had 𝑛 never 
+begun assumes in addition that no fiber 𝑛 registers take a step in [𝑏, 𝑢), since a fiber 𝑛 registers 
+is one that would not be there to take it.
+Proof. By induction on 𝑢, over the indices 𝑢 with 𝑢+ 1 in the episode. At 𝑢= 𝑏 the step at 𝑏−1 is 
+an L-Begin, the episode opening by Definition 53, so 𝑔𝑏
+𝑛= idΓ by Table 1, the index set is empty, 
+and the claim is 𝛾𝑏≈𝛾𝑏. Two facts are used at each step. Since edit𝑡 writes control fields only,
+𝛾𝑡+1 ≈Ψ𝑡(𝛾𝑡)
+and since every map in 𝔐(𝑒𝑛) writes no control field but those a registration adds, by Defin­
+ition 48 together with Definition 47, each such map carries ≈-equal states to ≈-equal states.
+Let step 𝑢 act on 𝑛. Since the episode is open at 𝑢 and 𝑢+ 1, Lemma 54(4) excludes an L-Begin 
+and an L-Unload of 𝑛, and O-Insert and O-Remove read a 𝜃𝑛 that installed𝑢
+𝑛 denies, leaving 
+two cases. Where the rule is L-Iter, L-Finish, or a landing L-Divert, Table 1 gives Ψ𝑢= pr1 ∘𝑖𝑢
+𝑛 
+and 𝑔𝑢+1
+𝑛
+= 𝑔𝑢
+𝑛∘ℎ for the inverse ℎ that iteration yields. The witness condition of Definition 51 
+reads ℎ(Ψ𝑢(𝛾𝑢)) = 𝛾𝑢, up to ≈ where the iteration registers a fiber (Lemma 57), and 𝑔𝑢
+𝑛 carries 
+≈ by the equation above, so
+44

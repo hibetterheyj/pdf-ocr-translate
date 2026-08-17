@@ -1,0 +1,48 @@
+L-Begin
+L-Finish
+L-Leave
+L-Unload
+L-Iter
+L-Divert
+L-Raise
+𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾
+𝖠𝖼𝗍𝗂𝗏𝖾
+𝖱𝖾𝗅𝗈𝖺𝖽𝗂𝗇𝗀
+𝖴𝗇𝗅𝗈𝖺𝖽𝗂𝗇𝗀
+Figure 2 | Lifecycle with transitions in progress; the two transition states are outlined
+4.3.1. Withdrawal
+Section 3.2 requires that dependents activate after their dependencies and that dependencies 
+withdraw their provisions only after their dependents have deactivated. The first half holds in 
+the base calculus already: an activation requires 𝛾⊧𝑑𝑛, so a fiber declaring 𝑘 cannot activate 
+before some fiber is actively providing 𝑘. The second half is the substantive one, and it must 
+deliver more than an ordering of state changes. A component being torn down because its 
+provider is going away is running its own teardown code, which may need the very coeffect 
+that is being withdrawn; closing a connection pool typically means handing the connections 
+back to whatever provided them. What the second half must deliver is that a consumer can still 
+read 𝑘 throughout its own deactivation, and that the provider’s withdrawal of 𝑘 takes effect 
+only afterwards. The base calculus cannot deliver it at all: its L-Unload removes the provisions 
+and runs the inverse together, leaving no interval between them for a consumer’s teardown to 
+occupy.
+This layer splits that step in two, and guards the second half by the following condition.
+Definition 50. The fiber 𝑛 is relied upon at 𝛾 when some other installed fiber resolves a key to it:
+relied𝑛(𝛾) ≔∃𝑚∈dom(𝐹𝛾), 𝑘∈𝑑𝑚. 𝑚≠𝑛∧installed𝑚(𝛾) ∧𝜔𝑚(𝑘) = 𝑛
+(46)
+𝜃𝑛= 𝖠𝖼𝗍𝗂𝗏𝖾(𝑔, 𝜔)
+target𝑛(𝛾) ≠𝜔
+𝛾⟶𝛾[𝜃𝑛↦𝖴𝗇𝗅𝗈𝖺𝖽𝗂𝗇𝗀(𝑔, 𝜔, ⊥)]
+L-Leave
+𝜃𝑛= 𝖴𝗇𝗅𝗈𝖺𝖽𝗂𝗇𝗀(𝑔, 𝜔, 𝜁)
+¬ relied𝑛(𝛾)
+𝑔(𝛾) = 𝛿
+𝛾⟶𝛿[𝜃𝑛↦𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾(𝜁)]
+L-Unload
+L-Leave records the decision to deactivate without acting on it, which stops the fiber 
+providing its coeffects while leaving its own committed view and everyone else’s intact. L-
+Unload applies the accumulator, discards the committed view, and leaves the fiber 𝖨𝗇𝖺𝖼𝗍𝗂𝗏𝖾 on 
+the outcome it carries; the outcome is ⊥ until Section 4.3.4 supplies the other case. It is the only 
+rule in the calculus that applies an accumulator.
+The two halves of the ordering are then carried by different parts of the form: the visibility 
+half by the committed view, which L-Unload discards as its last act, and the ordering half by 
+the premise ¬ relied𝑛(𝛾), which we call the guard and which holds the withdrawal of 𝑘 back 
+until every consumer that resolves it to 𝑛 has gone. Theorem 63 establishes both.
+34
