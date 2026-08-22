@@ -39,7 +39,11 @@ HEADING_LINE = re.compile(
 NUMBER_1  = re.compile(r'^(\d+)\.?\s+(.+)')           # "1 Introduction" / "1. Introduction"
 NUMBER_2  = re.compile(r'^(\d+\.\d+)\.?\s+(.+)')       # "2.1 Hybrid" / "2.1. Hybrid"
 NUMBER_3  = re.compile(r'^(\d+\.\d+\.\d+)\.?\s+(.+)')  # "2.1.1 KDA" / "2.1.1. KDA"
-APPENDIX  = re.compile(r'^([A-F])\s+(.+)')            # "A Contributors"
+# Appendix letters: A-Z (MinerU papers often carry appendices beyond F)
+APPENDIX  = re.compile(r'^([A-Z])\s+(.+)')            # "A Contributors" / "G Infrastructure"
+# Appendix sub-headings: "B.1 Web HTML" / "J.1.1 Methodology"
+APPENDIX_SUB  = re.compile(r'^([A-Z])\.(\d+)\s+(.+)')       # letter.N
+APPENDIX_SUB2 = re.compile(r'^([A-Z])\.(\d+)\.(\d+)\s+(.+)')  # letter.N.M
 
 # Special section titles to promote to unnumbered \\section*
 SPECIAL_SECTIONS = {
@@ -79,15 +83,29 @@ class HeadingNormalizer:
         # Rule 1: special sections → \section* (unnumbered)
         title_lower = title.lower().rstrip('.')
         if title_lower in SPECIAL_SECTIONS:
-            label_part = f" {tail}" if tail else ""
+            label_part = tail if tail else ""
             return f"{indent}\\section*{{{title}}}{label_part}\n"
 
         # Rule 2: appendix letter → \section with letter stripped
+        # (A-Z: MinerU papers often carry appendices beyond F; the letter is kept in the \label)
         m_app = APPENDIX.match(title)
         if m_app and cmd in ('subsection', 'subsubsection'):
             clean = m_app.group(2)
-            label_part = f" {tail}" if tail else ""
+            label_part = tail if tail else ""
             return f"{indent}\\section{{{clean}}}{label_part}\n"
+
+        # Rule 2b: appendix sub-headings — "B.1 Web HTML" → \subsection{Web HTML}
+        # (the stock A-F rule never sees these; the letter stays in the \label)
+        m_sub2 = APPENDIX_SUB2.match(title)
+        m_sub = APPENDIX_SUB.match(title)
+        if m_sub2:
+            clean = m_sub2.group(4)
+            label_part = tail if tail else ""
+            return f"{indent}\\subsubsection{{{clean}}}{label_part}\n"
+        if m_sub:
+            clean = m_sub.group(3)
+            label_part = tail if tail else ""
+            return f"{indent}\\subsection{{{clean}}}{label_part}\n"
 
         # Rule 3: numbered headings → promote/demote by depth
         for matcher in (NUMBER_3, NUMBER_2, NUMBER_1):
@@ -96,7 +114,7 @@ class HeadingNormalizer:
                 depth = m_num.group(1).count('.')  # 0=single, 1=doubledot, 2=triple
                 target_cmd = ['section', 'subsection', 'subsubsection'][depth]
                 clean_title = m_num.group(2)
-                label_part = f" {tail}" if tail else ""
+                label_part = tail if tail else ""
                 if target_cmd != cmd:
                     return f"{indent}\\{target_cmd}{{{clean_title}}}{label_part}\n"
                 else:

@@ -163,6 +163,84 @@ def fix_unicode_math(text: str) -> tuple[str, int]:
     return ''.join(result), count
 
 
+
+BS = chr(92)
+
+MATH_COMPARISON_FIXES = [
+    # order matters: the arrow forms must be handled before the generic
+    # \textgreater / \textless replacements
+    ('=BStextgreater{} $', BS + 'Rightarrow $'),
+    ('=BStextgreater$', BS + 'Rightarrow$'),
+    ('=BStextgreater', BS + 'Rightarrow'),
+    ('<BStextless{} ', '< '),
+    (BS + 'textgreater{} ', '> '),
+    (BS + 'textgreater0', '>0'),
+    (BS + 'textgreater=', BS + 'geq'),
+    (BS + 'textgreater', '>'),
+    (BS + 'textless=', BS + 'leq'),
+    (BS + 'textless{} ', '< '),
+    (BS + 'textless', '<'),
+    # caret with empty braces: MinerU writes x\^{}2 instead of x^2
+    (BS + '^{}', '^'),
+    # tilde-as-sim: EG \textasciitilde{} = ... is really \sim
+    (BS + 'textasciitilde{}', BS + 'sim'),
+]
+
+
+def fix_math_transcription(text: str) -> tuple[str, int]:
+    r"""Fix MinerU math transcription garbage inside math environments.
+
+    MinerU renders math tokens as pandoc escapes: $x \textgreater 0$,
+    $x\^{}2$, $\mathrm{EG} \textasciitilde{} = 1.3$. These compile but
+    look wrong (or break subscripts). Apply the fixes ONLY inside $...$
+    and \[...\] spans — the same tokens are legal in text mode.
+
+    Returns (fixed_text, count_fixed).
+    """
+    count = 0
+    result = []
+    in_math = 0  # 0 = text, 1 = inline $, 2 = display \[
+    i = 0
+    n = len(text)
+    while i < n:
+        ch = text[i]
+        if ch == BS and i + 1 < n and text[i + 1] == '[':
+            in_math = 2
+            result.append(BS + '[')
+            i += 2
+            continue
+        if ch == BS and i + 1 < n and text[i + 1] == ']':
+            in_math = 0
+            result.append(BS + ']')
+            i += 2
+            continue
+        if ch == '$':
+            if in_math == 0:
+                in_math = 1
+            elif in_math == 1:
+                in_math = 0
+            result.append(ch)
+            i += 1
+            continue
+
+        if in_math:
+            matched = False
+            for old, new in MATH_COMPARISON_FIXES:
+                if text.startswith(old, i):
+                    result.append(new)
+                    count += 1
+                    i += len(old)
+                    matched = True
+                    break
+            if not matched:
+                result.append(ch)
+                i += 1
+        else:
+            result.append(ch)
+            i += 1
+
+    return ''.join(result), count
+
 def fix_ocr_text_breaks(text: str) -> str:
     """Fix OCR-produced line-break artifacts in mid-sentence.
 
@@ -197,7 +275,13 @@ def fix_artifacts(text: str, verbose: bool = False) -> str:
         print(f"  Replaced {n} Unicode math characters")
     total_fixes += n
 
-    # 4. Fix OCR text breaks
+    # 4. Fix MinerU math transcription garbage inside math mode
+    text, n = fix_math_transcription(text)
+    if verbose and n:
+        print(f"  Fixed {n} math transcription tokens")
+    total_fixes += n
+
+    # 5. Fix OCR text breaks
     text = fix_ocr_text_breaks(text)
 
     if verbose and total_fixes:
