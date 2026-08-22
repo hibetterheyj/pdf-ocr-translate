@@ -1,0 +1,29 @@
+Figure 15. Performance on AIME 2025 (left) and a hard subset of LiveCodeBench v6 (right) during our STEM
+climb. Self-distillation is indicated through ⋆markers; different pre- and mid-trained model versions are shown
+in different colors. Maximum output length throughout training is indicated at the bottom. Self-distillation is an
+effective way of resetting numerics after a collapse (visible through sudden drops in performance) and changing
+the base policy during our run. As we made infrastructure and algorithmic improvements throughout our climb,
+self-distillation because of run collapses became less frequent.
+stack – and prior to the introduction of stability improvements described in Sec. 3.6.4 – small numerical
+discrepancies between inference and training would sometimes accumulate during training and cause a
+climb to diverge. In such cases, self-distillation provides a simple and effective way to carryover progress
+from one RL climb to the next. The alternative of resuming from a checkpoint before the collapse is often
+not viable, as some instabilities are already embedded in the model parameters many steps before the actual
+collapse occurs.
+• As new pre- and mid-trained checkpoints become available, self-distillation allows us to carry forward the
+progress of previous climbs to the next generation of models.
+• During the self-distillation process, filters can be applied to reject any samples that demonstrate undesired
+forms of reward hacking.
+Fig. 15 illustrates how self-distillation was used in our STEM climb both to recover from numeric insta-
+bilities and to update the base policy.
+Key findings and best practices.
+We conducted extensive ablations to understand how to best perform
+self-distillation in practice. Our main findings are:
+• O(1M) reasoning traces are sufficient to match teacher performance while retaining the stability benefits
+of SFT. Using substantially larger datasets provides diminishing returns and risks over-constraining the
+policy, narrowing its output distribution and leaving little room for exploration once RL resumes (Zheng
+et al., 2024; Gao et al., 2025).
+• Training on traces including those that lead to incorrect final answers performs similarly to training on
+successful traces only (Gandhi et al., 2025). Since our RL runs typically produce far more than O(1M)
+successful traces, we ultimately restricted training to successful traces.
+35

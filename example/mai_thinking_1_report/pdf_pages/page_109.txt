@@ -1,0 +1,17 @@
+Job observability was assembled across Kueue, Kubernetes, Ray, training logs, and experiment metadata.
+Operators could inspect queue, priority, admission state, node placement, worker readiness, restart count,
+training configuration, step progress, and scoped logs by namespace, pod, job, and restart index. This made it
+possible to distinguish scheduling delay, runtime failure, node failure, storage degradation, and application-
+level stalls without manually reconstructing state across systems.
+Telemetry was stored and queried across systems optimized for different time horizons. Datadog pro-
+vided near-real-time metrics and log search. Azure Managed Prometheus provided in-cluster and cross-
+cluster time-series collection. Azure Data Explorer provided long-retention analytical storage for logs, met-
+rics, storage telemetry, and cluster state. Alerting used the same layered model: local Prometheus rules for
+low-latency component failures, Datadog monitors for service and log-derived signals, KQL-based checks for
+long-retention analysis, and Azure Monitor for resource and Prometheus alerts. Critical alerts were routed
+to incident management, while lower-severity signals fed dashboards and operational reviews.
+The unique design point was that observability was part of the control loop. Hardware telemetry, fabric
+health, storage behavior, scheduling state, and job progress were not passive dashboards; they determined
+whether capacity was admitted, drained, remediated, or returned to service. This allowed the fleet to be
+managed in terms of usable training capacity and goodput rather than provisioned GPUs alone.
+109

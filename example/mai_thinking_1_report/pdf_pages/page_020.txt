@@ -1,0 +1,81 @@
+Source family
+Unique tokens (T)
+Training tokens (T)
+Mix Percentage (%)
+Avg. Epochs
+Code
+7.4
+16.4
+54.6
+2.22×
+STEM
+2.2
+4.7
+15.8
+2.17×
+Math
+0.3
+1.6
+5.4
+5.28×
+Books and journals
+0.6
+0.9
+3.1
+1.65×
+PDFs
+2.7
+1.4
+4.7
+0.53×
+Web text
+8.1
+4.5
+14.9
+0.55×
+Multilingual (other)
+8.1
+0.5
+1.6
+0.06×
+Total
+29.2
+30.0
+100.0
+1.03×
+Table 5. MAI-Base-1 pre-training data composition. Unique tokens is the deduplicated token count per source
+family. Training tokens is the number of tokens consumed from that family over the full run. Avg. Epochs is the
+ratio of training tokens to unique tokens; values above 1× indicate repeated sampling.
+We continue to iterate on our data-mixing objective, the NLL-based evaluations that compose it, and the
+algorithms used to propose new candidate mixtures, as each of these components has a substantial impact
+on the final datamix. Understanding end-to-end scaling behavior – and identifying the metrics that most
+reliably predict downstream performance during pre-training – remains a fundamental open challenge, one
+for which we believe significant headroom still exists.
+2.5.4 Mid‐training Data Mixture
+After pre-training, MAI-Base-1 is mid-trained in two sequential stages as described in 2.6.1. The mid-training
+data is drawn entirely from the pre-training corpus (Sec. 2.4); no new or synthetic sources are introduced.
+We instead curate a higher-quality subset by filtering and re-weighting the existing mixture, then re-pack
+the result at longer sequence lengths for context extension.
+Overall, we further bias the mixture towards STEM, math, and code to build a strong foundation for
+reasoning RL climbs (Wang et al., 2025b). Starting from the pre-training mixture, we increase the propor-
+tion of STEM/math data to 35%, keep code at 55%, and assign the remaining 10% to background sources.
+Within each category, we locally tune weights according to single-source microanneals (Team OLMo et al.,
+2024), optimizing the same NLL-based objective used during the pre-training mixture search, augmented
+with long-context NLL tasks (Sec. C.2) for context extension. Additionally, we apply quality filtering to a
+select set of STEM and code sources as described below.
+STEM reasoning data.
+To improve performance on reasoning tasks, we filter documents primarily from
+the pre-training PDF corpus using the content quality taxonomy introduced in (Essential AI et al., 2025). We
+define a Bloom Analyze heuristic that keeps documents with high technical correctness, at least intermediate
+reasoning depth, and a Bloom cognitive processing level at or above Analyze (Anderson and Krathwohl, 2001).
+We also remove documents with extraction artifacts or missing primary content. This filter keeps documents
+with structured reasoning and analysis, rather than simple factual statements.
+Code data.
+Code data undergoes two additional steps for mid-training. First, we perform file extension
+filtering on a per-quality-bin basis, where repositories are grouped into three tiers by a repo-level quality met-
+ric. For example, common web assets (HTML, CSS, SVG) are retained in top-tier repositories where they
+typically belong to larger frontend projects, but are removed from lower-tier repositories where they are pre-
+dominantly low-quality standalone pages. Second, we introduce file-level document formatting alongside
+the existing repo-level format from pre-training, treating repository understanding and individual file un-
+derstanding as complementary tasks, which improves generalization on internal file-local NLL benchmarks.
+20

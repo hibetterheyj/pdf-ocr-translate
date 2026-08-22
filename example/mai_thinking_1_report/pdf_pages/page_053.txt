@@ -1,0 +1,107 @@
+Benchmark
+MAI-Thinking-1 Sonnet 4.6 Opus 4.6 GPT 5.4 Kimi K2.6 DeepSeek V3.2 DeepSeek V4 GLM-5.1
+AIME 2025
+97.0
+95.6
+99.8
+—
+—
+93.1
+—
+—
+AIME 2026
+94.5
+—
+—
+—
+96.4
+—
+—
+95.3
+HMMT Feb 2026
+84.9
+—
+—
+—
+92.7
+—
+95.2
+82.6
+GPQA Diamond
+84.2
+89.9
+91.3
+92.8
+90.5
+82.4
+90.1
+86.2
+LCB v6
+87.7
+—
+—
+—
+89.6
+83.3
+93.5
+—
+Terminal-Bench 2.0
+46.0
+59.1
+65.4
+75.1
+66.7
+46.4
+67.9
+69.0
+SWE-bench Verified
+73.5
+79.6
+80.8
+—
+80.2
+73.1
+80.6
+—
+SWE-Bench Pro
+52.8
+—
+53.4
+57.7
+58.6
+—
+55.4
+58.4
+Table 11. Post-trained model evaluation results on STEM and agentic coding public benchmarks. Other model
+numbers are taken from respective official model cards. Models listed with “—” scores do not report numbers for
+the respective benchmark. For agentic coding evaluations, we use a total context length of 256k. For all other
+evals above we use maximum output tokens of 256k.
+every model parameter—the plan need not enlist all D learner ranks. We restrict it to a subset of DP groups,
+each paired with a disjoint slice of inference replicas and running independently. A 36-server fleet split four
+ways performs four 9-server transfers in parallel, improving throughput while containing the failure blast
+radius.
+4 Evaluations
+4.1 Benchmark Evaluations
+We compare the performance of MAI-Thinking-1 to a variety of open- and closed-weights frontier mod-
+els on public benchmarks and with human side-by-side evaluations. These evaluations span a broad set of
+areas, highlighting the model’s versatility across different domains: STEM, agentic coding, knowledge, in-
+struction following, long context, safety, health, honesty, and tool calling. All benchmark evaluations for
+MAI-Thinking-1 are reported as the average across 4 runs using uniform inference settings with temperature
+T = 1 and top-p sampling with p = 0.97 unless otherwise stated.
+Tab. 11 reports our results for STEM and agentic coding benchmarks. We draw other model’s numbers
+from their official model cards and release announcements. Taken together, the results place MAI-Thinking-
+1 in the competitive range of other popular LLMs: it does not lead the field, but it delivers consistently strong
+performance across a broad set of benchmark categories. Of note, MAI-Thinking-1 exceeds Claude Sonnet
+4.6 on AIME 2025 and approaches Claude Opus 4.6 performance on SWE-Bench Pro.
+Additionally, all of our SWE agentic training data uses only bash and string-replace as tools, and does
+not include targeted terminal-interaction environments. The model’s current Terminal-Bench performance
+therefore reflects generalization from broader agentic training rather than direct training on Terminal-
+Bench-like environments.
+Math, science, and competitive coding.
+For Math, we evaluate MAI-Thinking-1 on the 2025 and 2026
+editions of AIME, as well as the February 2026 HMMT benchmark from MathArena (Dekoninck et al.,
+2026). For Science, we evaluate on Graduate-Level Google-Proof Q&A benchmark (GPQA) (Rein et al., 2023)
+which comprises knowledge-intensive, graduate- and research-level questions, primarily in STEM domains.
+For competitive coding, we evaluate on LiveCodeBench v6 (LCB v6) (Jain et al., 2024) which contains up-
+to-date competitive coding problems. More evaluation details can be found in Appendix H.
+53

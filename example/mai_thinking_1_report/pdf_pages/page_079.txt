@@ -1,0 +1,41 @@
+Zengzhi Wang, Fan Zhou, Xuefeng Li, and Pengfei Liu. Octothinker: Mid-training incentivizes reinforce-
+ment learning scaling. arXiv preprint arXiv:2506.20512, 2025b. URL https://arxiv.org/abs/2506.
+20512.
+Zhaoyang Wang, Canwen Xu, Boyi Liu, Yite Wang, Siwei Han, Zhewei Yao, Huaxiu Yao, and Yuxiong He.
+Agent world model: Infinity synthetic environments for agentic reinforcement learning. arXiv preprint
+arXiv:2602.10090, 2026.
+Zihao Wang, Chirag Nagpal, Jonathan Berant, Jacob Eisenstein, Alex D’Amour, Sanmi Koyejo, and Vic-
+tor Veitch. Transforming and combining rewards for aligning large language models. arXiv preprint
+arXiv:2402.00742, 2024c.
+Jason Wei, Nguyen Karina, Hyung Won Chung, Yunxin Joy Jiao, Spencer Papay, Amelia Glaese, John
+Schulman, and William Fedus. Measuring short-form factuality in large language models. arXiv preprint
+arXiv:2411.04368, 2024a.
+Jason Wei, Nguyen Karina, Hyung Won Chung, Yunxin Joy Jiao, Spencer Papay, Amelia Glaese, John
+Schulman, and William Fedus. Measuring short-form factuality in large language models, 2024b. URL
+https://arxiv.org/pdf/2411.04368.
+Jerry Wei, Chengrun Yang, Xinying Song, Yifeng Lu, Nathan Hu, Jie Huang, Dustin Tran, Daiyi Peng, Ruibo
+Liu, Da Huang, Cosmo Du, and Quoc V. Le. Long-form factuality in large language models, 2024c. URL
+https://arxiv.org/pdf/2403.18802.
+Bosi Wen, Pei Ke, Xiaotao Gu, Lindong Wu, Hao Huang, Jinfeng Zhou, Wenchuang Li, Binxin Hu, Wendy
+Gao, Jiaxin Xu, et al. Benchmarking complex instruction-following with multiple constraints composi-
+tion. Advances in Neural Information Processing Systems, 37:137610–137645, 2024.
+Mitchell Wortsman, Peter J. Liu, Lechao Xiao, Katie Everett, Alex Alemi, Ben Adlam, John D. Co-Reyes,
+Izzeddin Gur, Abhishek Kumar, Roman Novak, Jeffrey Pennington, Jascha Sohl-dickstein, Kelvin Xu,
+Jaehoon Lee, Justin Gilmer, and Simon Kornblith. Small-scale proxies for large-scale transformer train-
+ing instabilities, 2023. URL https://arxiv.org/abs/2309.14322.
+Zhiheng Xi, Xin Guo, Yang Nan, Enyu Zhou, Junrui Shen, Wenxiang Chen, Jiaqi Liu, Jixuan Huang, Zhihao
+Zhang, Honglin Guo, Xun Deng, Zhikai Lei, Miao Zheng, Guoteng Wang, Shuo Zhang, Peng Sun, Rui
+Zheng, Hang Yan, Tao Gui, Qi Zhang, and Xuanjing Huang. BAPO: Stabilizing off-policy reinforcement
+learning for llms via balanced policy optimization with adaptive clipping, 2025. URL https://arxiv.
+org/abs/2510.18927.
+Violet Xiang, Chase Blagden, Rafael Rafailov, Nathan Lile, Sang Truong, Chelsea Finn, and Nick Haber. Just
+enough thinking: Efficient reasoning with adaptive length penalties reinforcement learning, 2025. URL
+https://arxiv.org/abs/2506.05256.
+Can Xu, Qingfeng Sun, Kai Zheng, Xiubo Geng, Pu Zhao, Jiazhan Feng, Chongyang Tao, Qingwei Lin, and
+Daxin Jiang. WizardLM: Empowering large pre-trained language models to follow complex instructions,
+2025a. URL https://arxiv.org/abs/2304.12244.
+Zengzhuang Xu, Bingguang Hao, Zechuan Wang, Yuntao Wen, Xinyi Xu, Yang Liu, Long Chen, Dong Wang,
+Maolin Wang, Tong Zhao, Yicheng Chen, Cunyin Peng, Jinjie Gu, Leilei Gan, Xiangyu Zhao, Chenyi
+Zhuang, and Shi Gu. Funreason-mt technical report: Advanced data synthesis solution for real-world
+multi-turn tool-use, 2025b. URL https://arxiv.org/abs/2510.24645.
+79

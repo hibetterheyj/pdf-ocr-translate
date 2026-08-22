@@ -1,0 +1,47 @@
+most one checkpoint is in flight at a time. This approach, combined with careful host memory management,
+allows us to checkpoint frequently while minimizing impact on training MFU.
+Storage infrastructure. Our training data center has local Azure Blob Storage (Calder et al., 2011) that
+provides low-latency, high-bandwidth access. This enables us to rely directly on checkpointing for fault tol-
+erance without the need for intermediate node-local caches or cross-rank state replication. To avoid storage
+hotspots at scale during checkpoint load when many ranks require the same replicated state, we load repli-
+cated state once from storage and broadcast it via NCCL, eliminating single-blob fan-in hotspots that can
+overload a single storage server.
+Rapid job recovery. We achieve fast recovery through in-job restarts using Ray (Moritz et al., 2018)
+actors with hot standbys, eliminating the overhead of pod recreation. On GB200 systems, we explicitly clear
+OS caches during actor restarts to prevent crash loops caused by out-of-memory errors when GPUs hold on
+to residual memory from previous runs. Finally, we validate determinism after restarts by comparing to
+historical loss metrics for recomputed steps.
+2.8.4 Co‐optimizing Performance with Model Architecture
+The final architecture of MAI-Base-1 was the result of a continuous co-design process spanning five major
+generations of the model (v1–v5). Each generation pursued two complementary objectives. First, we sought
+to improve the efficiency gain and modeling capability of the architecture through changes to the model de-
+sign, routing strategy, and training recipe. Second, we continuously improved training efficiency by identi-
+fying performance bottlenecks and incorporating new infrastructure, kernel, communication, and memory-
+management optimizations. As architectural changes altered the computational characteristics of the model,
+they frequently introduced new system bottlenecks, requiring corresponding improvements throughout the
+training stack.
+We describe the architecture and infrastructure evolution of our models to highlight our approach to-
+wards building large scale models. The two metrics that were tracked across each evolution are:
+• Model FLOP Utilization (MFU) (Chowdhery et al., 2023), defined as FLOP/(tstep·FLOPspec) which quanti-
+fies training efficiency in practice. Here FLOP denotes the total number of floating point operations from
+all leading-order compute kernels, including GEMMs and attention, but excluding memory-bound oper-
+ations such as RMSNorm and activation functions. tstep is the end-to-end training step time, including
+data loading, forward and backward passes, communication, and optimizer updates. Although training
+uses a mixture of FP8, BF16, and FP32 operations, we normalize MFU using the FP16/BF16 tensor core
+throughput reported by NVIDIA (FLOPsspec = 2.5 × 1015 FLOPS per GB200 GPU for dense operations).
+Operations introduced by activation checkpointing are not included in the FLOP count.
+• Efficiency Gain: Defined in Sec. 2.2.2, which captures the theoretical improvement in model efficiency
+for achieving a given quality.
+Tab. 7 summarizes the key architectural changes across model generations. Fig. 11 reports both the initial
+MFU obtained when running the new architecture with the optimization stack from the previous generation
+and the final MFU achieved after applying version-specific performance improvements. Across the develop-
+ment of MAI-Base-1, more than twenty infrastructure and kernel optimizations were introduced, enabling
+each generation to sustain an MFU above 20% despite substantial increases in model scale and architectural
+complexity. Generations v0 and v1 were early prototypes trained on H100 systems and are therefore ex-
+cluded from Fig. 11.
+Beginning with Version 2, all major training runs were conducted on GB200 NVL72 clusters. Version 2
+of MAI-Base-1 (23B active parameters) was the first model version trained on a GB200 NVL72 cluster, using
+4,096 GPUs in total. To improve system robustness, we used 64 GPUs per rack (NVL64), reserving spare
+capacity to tolerate node failures and unhealthy devices. Version 2 adopts a deeper and narrower design
+than earlier versions while maintaining a 23B active parameter budget, leading to relatively smaller hidden
+28

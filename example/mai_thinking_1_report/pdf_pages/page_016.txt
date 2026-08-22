@@ -1,0 +1,46 @@
+2.25
+2.50
+2.75
+3.00
+3.25
+3.50
+3.75
+4.00
+4.25
+Web HTML Validation Loss
+1.00
+1.25
+1.50
+1.75
+2.00
+2.25
+2.50
+2.75
+Code Validation Loss
+131M
+933M
+3B
+Figure 5. An illustrative example of the frontier of data mixing. 183 models are trained from scratch with equal
+TPP at 3 different model scales on 61 diverse mixtures of Web HTML, Code, and other data. The solid line
+indicates the frontier of validation loss performance for Web HTML and Code. Models on this Pareto frontier
+are the mixtures where these two components dominated, and those off the frontier had a larger fraction of the
+‘other’ subset.
+quantify the marginal utility of a specific dataset, and attribute its contribution to NLL-based evaluations.
+We upweight the target data to 50% in the mixture and train from scratch. For scaling-ladder ablations, we
+use the scaling ladder described in Sec. 2.2.1 and ablate the data within the full mixture to forecast how a
+data-curation decision will perform at the final target scale and token horizon, in the context of all other
+datasets. Data-source downsampling is performed in the ladder ablation to mimic the multi-epoch nature of
+the target model.
+2.5 Selecting a Data Mixture for Training
+The data sources sampled during training and their relative proportions significantly affect the resulting
+model. Given a fixed compute budget and a corpus of hundreds of heterogeneous sources, we must determine
+how to weigh them.
+To achieve this, we first define an objective function. As illustrated in Fig. 5, a given set of target capabil-
+ities (e.g., coding or general knowledge) can yield multiple Pareto-efficient mixtures, where it is impossible
+to improve one capability without degrading another. We must therefore assign relative importance to these
+different capabilities. Specifically, we choose to minimize Equation 3, an aggregate over a suite of held-out
+NLL evaluations.
+Optimizing the data mixture requires balancing trade-offs between domains of interest, data quality, the
+volume of unique tokens available, and the maximum number of times a dataset can be repeated before
+encountering diminishing returns or overfitting.
+16

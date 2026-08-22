@@ -1,0 +1,60 @@
+Foundational Techniques
+Compositional Techniques
+Adaptive Techniques
+0%
+5%
+10%
+15%
+20%
+25%
+30%
+35%
+Attack Success Rate (lower is better)
+4.4%
+17.6%
+26.8%
+7.0%
+13.9%
+32.3%
+3.0%
+17.4%
+25.1%
+5.7%
+15.0%
+26.4%
+MAI-Thinking-1
+GPT-5.4
+Claude Opus 4.6
+Claude Sonnet 4.6
+Figure 21. Attack success rate on jailbreak evaluations grouped by transformation type. Foundational Techniques
+are single-step transformations that preserve harmful intent through simple modifications such as jailbreak wrap-
+pers or prompt templates. Compositional Techniques combine multiple transformations or structured rewrites,
+including template-based attacks such as PyRIT (Munoz et al., 2024), PAP-style transformations (Zeng et al.,
+2024a), and non-English or mixed-language variants. Adaptive Techniques introduce interaction, search, or
+multi-turn structure, including TAP (Mehrotra et al., 2024) and multi-turn attacks (Russinovich et al., 2024).
+Lower attack success rate indicates stronger safety. Error bars denote 95% confidence intervals. Third-party
+model results include provider-side safety filtering.
+SFT and RL safety mixes.
+Across the top priority remediation categories identified during red teaming, aggregate attack success fell
+by roughly 22% from pre-mitigation to the final candidate. We reduced jailbreak success by ∼44%, hate &
+fairness by ∼43%, child safety issues by ∼30% and mental health attacks by ∼20%.
+5.2 Independent Red Teaming
+Additional red-teaming was conducted independently by Microsoft’s AI Red Team (AIRT) and third-party
+vendors. Engagements are scoped to risk areas where static evaluations are weakest — automated adversar-
+ial attack methods, code and cyber-misuse safety, psychosocial and mental-health harms, and multilingual
+coverage. Structured dangerous-capability / uplift evaluations (Phuong et al., 2024; Li et al., 2024b) are out
+of scope for this release.
+Adaptive Tree of Attacks with Pruning (TAP) attacks (Mehrotra et al., 2024) were surfaced as a ro-
+bustness gap. In response, we built a targeted adversarial data pipeline that begins with broad generation
+of realistic harmful scenarios, expands them through a diverse set of attack-transformation templates, and
+then uses TAP-style adaptive refinement to optimize the resulting prompts against the current model until
+they produce reliable model-specific failures. This closed-loop process turned an external red-team finding
+into targeted remediation data, producing a large reduction in TAP jailbreak susceptibility and bringing the
+model comparable to state-of-the-art models on the same attack vectors.
+Low-resource language framing (Deng et al., 2024) was flagged as another vulnerability. Content re-
+liably refused in English was elicited in Yoruba, Telugu, Amharic, Burmese, Khmer, and Malay. We re-
+sponded by expanding the safety training data mixes with multilingual adversarial seeds, translating and
+re-targeting high-yield English attack patterns into the affected languages. This closed a significant portion
+of the English/non-English gap on the targeted languages, though multilingual robustness in the long tail of
+lower-resource languages remains an area of continued investment.
+58

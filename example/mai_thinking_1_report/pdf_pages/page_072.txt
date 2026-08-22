@@ -1,0 +1,51 @@
+MediaWiki. Wikitext 1.0.0 Specification. https://www.mediawiki.org/wiki/Specs/wikitext/1.
+0.0, 2026. Accessed: 2026-05-31.
+Anay Mehrotra, Manolis Zampetakis, Paul Kassianik, Blaine Nelson, Hyrum Anderson, Yaron Singer, and
+Amin Karbasi. Tree of attacks: Jailbreaking black-box llms automatically, 2024. URL https://arxiv.
+org/abs/2312.02119.
+Mike A. Merrill, Alexander G. Shaw, Nicholas Carlini, Boxuan Li, Harsh Raj, Ivan Bercovich, Lin Shi,
+Jeong Yeon Shin, Thomas Walshe, E. Kelly Buchanan, Junhong Shen, Guanghao Ye, Haowei Lin, Jason
+Poulos, Maoyu Wang, Marianna Nezhurina, Jenia Jitsev, Di Lu, Orfeas Menis Mastromichalakis, Zhiwei
+Xu, Zizhao Chen, Yue Liu, Robert Zhang, Leon Liangyu Chen, Anurag Kashyap, Jan-Lucas Uslu, Jeffrey Li,
+Jianbo Wu, Minghao Yan, Song Bian, Vedang Sharma, Ke Sun, Steven Dillmann, Akshay Anand, Andrew
+Lanpouthakoun, Bardia Koopah, Changran Hu, Etash Guha, Gabriel H. S. Dreiman, Jiacheng Zhu, Karl
+Krauth, Li Zhong, Niklas Muennighoff, Robert Amanfu, Shangyin Tan, Shreyas Pimpalgaonkar, Tushar
+Aggarwal, Xiangning Lin, Xin Lan, Xuandong Zhao, Yiqing Liang, Yuanli Wang, Zilong Wang, Changzhi
+Zhou, David Heineman, Hange Liu, Harsh Trivedi, John Yang, Junhong Lin, Manish Shetty, Michael
+Yang, Nabil Omi, Negin Raoof, Shanda Li, Terry Yue Zhuo, Wuwei Lin, Yiwei Dai, Yuxin Wang, Wen-
+hao Chai, Shang Zhou, Dariush Wahdany, Ziyu She, Jiaming Hu, Zhikang Dong, Yuxuan Zhu, Sasha Cui,
+Ahson Saiyed, Arinbjörn Kolbeinsson, Jesse Hu, Christopher Michael Rytting, Ryan Marten, Yixin Wang,
+Alex Dimakis, Andy Konwinski, and Ludwig Schmidt. Terminal-bench: Benchmarking agents on hard,
+realistic tasks in command line interfaces, 2026. URL https://arxiv.org/abs/2601.11868.
+Meta. PurpleLlama CyberSecEval 4. https://github.com/meta-llama/PurpleLlama, 2024.
+Aaron Meurer, Christopher P. Smith, Mateusz Paprocki, Ondřej Čertík, Sergey B. Kirpichev, Matthew Rock-
+lin, Amit Kumar, Sergiu Ivanov, Jason K. Moore, Sartaj Singh, Thilina Rathnayake, Sean Vig, Brian E.
+Granger, Richard P. Muller, Francesco Bonazzi, Harsh Gupta, Shivam Vats, Fredrik Johansson, Fabian
+Pedregosa, Matthew J. Curry, Andy R. Terrel, Štěpán Roučka, Ashutosh Saboo, Isuru Fernando, Sum-
+ith Kulal, Robert Cimrman, and Anthony Scopatz.
+Sympy: symbolic computing in python.
+PeerJ
+Computer Science, 3:e103, January 2017.
+ISSN 2376-5992.
+doi: 10.7717/peerj-cs.103.
+URL https:
+//doi.org/10.7717/peerj-cs.103.
+Paulius Micikevicius, Sharan Narang, Jonah Alben, Gregory Diamos, Erich Elsen, David Garcia, Boris Gins-
+burg, Michael Houston, Oleksii Kuchaiev, Ganesh Venkatesh, et al.
+Mixed precision training.
+arXiv
+preprint arXiv:1710.03740, 2017.
+Paulius Micikevicius, Dusan Stosic, Neil Burgess, Marius Cornea, Pradeep Dubey, Richard Grisenthwaite,
+Sangwon Ha, Alexander Heinecke, Patrick Judd, John Kamalu, Naveen Mellempudi, Stuart Oberman,
+Mohammad Shoeybi, Michael Siu, and Hao Wu. Fp8 formats for deep learning, 2022. URL https:
+//arxiv.org/abs/2209.05433.
+Microsoft. Microsoft responsible AI standard, v2. Technical report, Microsoft Corporation, 2022. URL
+https://go.microsoft.com/fwlink/?linkid=2311742. Accessed: 2026-06-01.
+Microsoft. Maia 200: The AI accelerator built for inference. https://blogs.microsoft.com/blog/
+2026/01/26/maia-200-the-ai-accelerator-built-for-inference/, 2026.
+Mika. General agent: A self-evolving, synthetic agent environment. https://www.primeintellect.
+ai/blog/general-agent, May 2026. Prime Intellect Blog.
+Sewon Min, Kalpesh Krishna, Xinxi Lyu, Mike Lewis, Wen tau Yih, Pang Wei Koh, Mohit Iyyer, Luke Zettle-
+moyer, and Hannaneh Hajishirzi. Factscore: Fine-grained atomic evaluation of factual precision in long
+form text generation, 2023. URL https://arxiv.org/pdf/2305.14251.
+72

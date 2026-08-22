@@ -1,0 +1,63 @@
+0.5
+0.6
+0.7
+0.8
+0.9
+1.0
+Helpfulness on non-sensitive content  (1  over-refusal rate, higher is better)
+0.75
+0.80
+0.85
+0.90
+0.95
+1.00
+Safety pass rate on high-sensitivity content  (higher is better)
+CBRN
+CBRN
+Elections &
+Politics
+Elections &
+Politics
+Hate
+Hate
+Self Harm
+Self Harm
+Cyber Harm
+Cyber Harm
+Illegal
+Content
+Illegal
+Content
+Sexual
+Sexual
+Regulated Goods
+Regulated Goods
+MAI-Thinking-1
+Sonnet 4.6
+Figure 20. Safety–helpfulness tradeoff by harm category. Metrics are averaged over two generations per prompt.
+For a given harm category, the model with better helpfulness-safety tradeoff lies to the top-right of the other
+model. Both models are connected with a dotted line.
+Across fifteen engagements spanning the early, mid, and late stages during MAI-Thinking-1’s development,
+red teamers executed over 2,170 goal-based adversarial scenarios across 25 policy categories. Each scenario
+ran over 5–10 conversational turns to allow escalation beyond first-turn refusals. We increased the scope and
+difficulty of evaluations as successive model versions became more capable.
+Annotators were screened for their adversarial-prompting ability and given access to internal model de-
+ployments. They received a pre-populated tracker of goal-based scenarios, each with supporting context and
+a target policy category, and were instructed to elicit policy violations over multiple conversational turns.
+Violations were annotated with the outcome, the severity, the turn of the first violation, the text from the
+worst violation, and other metadata. The program had several scope constraints: testing was primarily in En-
+glish, with non-English inputs used in limited cases as a jailbreak vector rather than systematically evaluated;
+and agentic tool-use and multimodal inputs were out of scope.
+Findings and mitigations.
+A central output of the program is a taxonomy of attack patterns that recurred
+independently across red teamers and model checkpoints, which we take as evidence that the patterns (not
+the individual prompts) are the durable adversarial surface. Six patterns dominated: multi-turn escalation
+under a benign pretext; fictional or novelistic framing; credentialed-persona pretexts; gradual recursion or
+formatting drift (repeated requests to expand, reformat, or operationalize a previously hedged answer); in-
+context age-indicator bypass; and authoritative-document fabrication. Across categories, the same patterns
+drove the majority of red-team successes, and the taxonomy now functions as a coverage checklist for prompt
+collection and judge-rubric development in subsequent cycles.
+Findings fed back into training on a rolling cadence. A prominent recurring pattern was fiction-framing
+bypasses that surface self-harm content, including multilingual variants. This pattern seeded a curated set
+that was scaled into the safety evalulation and into seed-expansion for adversarial prompt collection in the
+57

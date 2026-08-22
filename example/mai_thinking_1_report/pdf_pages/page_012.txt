@@ -1,0 +1,19 @@
+Figure 4. Pipeline for processing HTML pre-training data. We start with both a proprietary crawl and Com-
+mon Crawl which goes through HTML extraction before filtering based on various heuristics. We then perform
+exact and fuzzy deduplication, cross source deduplication, and embedding generation. This data is then further
+processed by different pipelines; see Appendix B for the specifics of these pipelines.
+By contrast, the barrier to entry for a NLL-based evaluation is considerably lower. Any topic-relevant
+content can serve as an initial corpus, and subsequent improvements–such as imposing additional structure,
+pruning to more representative samples, or incorporating more advanced material–translate directly into
+incremental gains in evaluation quality.
+2.4 Pre‐training Data
+MAI-Base-1 is trained on a mixture of publicly available and licensed human-generated data. We compile
+a high-quality, diverse set of pre-training data covering web, public GitHub code, books, academic papers,
+news, multilingual text, and domain-specific materials. We choose not to use language-model-generated
+synthetic data for pre-training, and we make an effort to avoid and remove AI-generated content within
+collected data sources (Appendix B).
+All of our pre-training data is processed in-house from one of our base sources: HTML and PDFs from
+the web, books and journals, and public GitHub code. We do not use any open source training datasets,
+and we exclude common machine learning repositories from our web data, such as huggingface.co and
+similar sites. We repeatedly found careful iteration on data quality, not just quantity, to be paramount not
+12

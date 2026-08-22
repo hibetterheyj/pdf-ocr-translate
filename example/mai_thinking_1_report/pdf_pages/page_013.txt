@@ -1,0 +1,47 @@
+Source family
+Knowledge cut off date
+Web HTML pages
+September 2025
+Web PDFs
+December 2025
+Public GitHub Code
+June 2025
+Books and journals
+March 2026
+Table 4. Knowledge cut off dates for our training data sources.
+only for pre-training results, but also for downstream performance on reasoning benchmarks. The subsec-
+tions below describe the common techniques we apply when processing each of our major data sources. For
+specifics on the data pipelines for each individual source, with full technical details, see Appendix B. An
+overview of our data processing pipeline for web data is shown in Fig. 4.
+2.4.1 Data Sources, Licensing, and Governance
+The publicly available portion of our data is collected in accordance with applicable terms of use and industry
+standards for web controls. For web data, we use a proprietary crawler that respects the Robots Exclusion
+Protocol (robots.txt) and related meta-tag and HTML controls, enabling site owners to manage how
+content on their sites is accessed and used. We also exclude sources that violate Microsoft Responsible AI
+policies or appear on the Office of the United States Trade Representative (USTR) Notorious Markets list.
+Our training corpus also includes datasets acquired from third-party providers through commercial
+agreements. Third-party datasets are subject to diligence processes to assess data fidelity, ownership, and
+applicable usage rights, and are governed by confidentiality terms and conditions. Knowledge cut off dates
+for the various sources are shown in Tab. 4.
+We did not use private customer data or data from Microsoft products and services for pre-training,
+except where users have explicitly opted in or where use is covered under applicable agreements, with respect
+for user opt-outs. Prior to training, our entire corpus is processed using PII-risk and safety filtering; details
+on these steps can be found in Appendix B. For privacy, legal, safety, and competitive reasons, we do not
+disclose the full list of datasets or data providers.
+2.4.2 HTML Extraction
+A large portion of our data comes from the web, where trainable content needs to be extracted from the raw
+HTML. There are many ways to do this, and resulting quality differences can often be quite subtle. Some of
+the content we are most interested in – mathematics, code, etc. – is not represented in a consistent way across
+the web, and many off-the-shelf methods end up dropping large amounts of this key data, while retaining
+the surrounding text. Tables and other structured content are also often quite important, but preserving this
+data requires some care.
+We do not use a single extraction method for all sources; instead, we apply different approaches depend-
+ing on the structure and reliability of each domain:
+• Source-specific structured parsers are used for standardized formats such as HTML or XML, where
+schema-aware parsing enables accurate conversion into textual representations.
+• Hand-crafted extractors, implemented with tools such as BeautifulSoup (Richardson, 2026), are applied
+to domains that exhibit consistent structure but are not well handled by our general heuristics, or where
+the value and volume of content justify additional engineering effort.
+• LLM- and agent-based processing is employed for domains requiring targeted extraction, normalization,
+or semantic filtering beyond what deterministic rules can provide (Mahabadi et al., 2025). In all cases
+13

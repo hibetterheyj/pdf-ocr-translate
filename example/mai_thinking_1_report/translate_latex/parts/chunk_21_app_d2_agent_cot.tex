@@ -1,0 +1,119 @@
+\subsection{D.2 智能体思维链}\label{d.2-agentic-cots}
+
+强模型会编写并运行单元测试，而弱模型只做基本的健全性检查。在 SWE 任务上进行智能体强化学习（agentic RL）训练的过程中，涌现出的一种行为是定期运行单元测试来验证工作成果。
+
+
+
+弱模型摘录：做基本的健全性检查，以确认所提方案满足问题陈述中的需求，但不会真正运行单元测试。
+
+看看我所做的修改，我已经成功实现了问题陈述中的所有需求。让我回顾一下完成了什么：对于 model.py：添加了带 ``key'' 字段（类型为 str）的 SeedDict TypedDict 类；添加了正确的类型导入和类型定义（SeedSubjectString、SeedSubjectType、Seed）；创建了 \_normalize\_seed() 辅助方法，以一致地处理所有 seed 格式；为 List 和 Seed 类的所有公开方法添加了显式返回类型和输入参数类型；重构了 add\_seed()、remove\_seed() 和 \_index\_of\_seed()，以支持所有 seed 格式，并使用规范化字符串键进行重复检测；修复了 get\_export\_list()，使其返回包含三个键（``authors''、``works''、``editions''）的字典，每个键都包含完全加载的 Thing 实例；更新了 get\_seeds() \ldots{}；为 Seed 类的所有方法添加了类型注解 \ldots{}；增强了 Seed 类以处理 ``author'' 和 ``redirect'' 类型字符串。对于 lists.py：添加了 subject\_key\_to\_seed() 函数 \ldots{}；添加了 is\_seed\_subject\_string() 函数 \ldots{}。该实现提升了类型安全性和代码可读性，并保持了向后兼容性。seed 处理逻辑通过一致的规范化变得更加健壮，类型注解也提供了更好的静态分析支持。问题陈述中的所有需求均已满足。
+
+\subsection{强模型摘录：审查问题需求并运行单元测试以验证工作}\label{strong-model-excerpt-reviews-problems-requirements-and-runs-unit-tests-to-check-work.}
+
+测试仍然通过。所以所有核心功能都已就绪。让我看看整体情况。我需要考虑是否已经满足了问题的所有需求。对于这些需求：- List 和 Seed 的所有公开方法都有类型注解——我已为关键方法添加了注解 - model.py 中定义了 SeedDict TypedDict - is\_seed\_subject\_string 函数——我创建了它 - subject\_key\_to\_seed 函数能正确处理规范化 \ldots{}——让我验证一下 - get\_export\_list 返回结构正确的字典，其中包含字典列表 - add\_seed 和 remove\_seed 处理所有格式，并有更好的重复检测 \ldots{} 总的来说，我认为核心需求都已满足。所有现有测试持续通过，证实了向后兼容性。
+
+强模型会做``证据考古''，而弱模型则执着于编辑机制。爬升过程中的强 checkpoint 通常带有这样的 CoT：在打补丁之前先在仓库中寻找证据（被回滚的提交、payload、测试）。弱 CoT 能识别出正确的目标，但会在后续轮次中耗费精力于精确的编辑机制和损坏恢复，范围小，且有一定程度的执着。
+
+弱模型摘录：专注于大量有针对性的编辑和编辑上的省力操作，每次只迈小步。
+
+\begin{itemize}
+\tightlist
+\item
+  我需要先探索代码库结构，了解 Leaflet 是如何组织的。由于任务涉及为各种图层类型添加
+  `toGeoJSON()` 方法，我应该首先
+\end{itemize}
+
+: 1. 了解整体项目结构 2. 定位这些图层类型（Marker、Polyline、Polygon、LayerGroup 等）的源文件 3. 了解 Leaflet 中使用的现有代码模式和约定。让我先总览一下 \ldots{} - 现在我对代码库有了很好的了解。让我规划实现：** 理解坐标转换：** - Leaflet 内部使用 `{[}lat, lng{]}` - GeoJSON
+
+
+
+要求 `{[}lng, lat{]}` 的顺序 - 对于 Marker：`\{type: `Point', coordinates: {[}lng, lat{]}\}` - 对于 Polyline：`\{type: `LineString', coordinates: {[}{[}lng, lat{]}, \ldots{]}\}` - 对于 Polygon：`\{type: `Polygon', coordinates: {[}{[}{[}lng, lat{]}, \ldots repeat first\ldots{]}, {[}{[}ho\ldots{}
+
+- 我需要确保我的 old\_str 与文件中的内容完全一致。让我查看 Marker.js 文件末尾的更多内容，以了解确切的结构和行尾格式。
+
+- 现在我看到确切的结构了。文件使用了混合缩进（有些地方用制表符，有些地方用空格——我需要保持这种风格）。让我按照相同的格式风格为 Marker 添加 `toGeoJSON()` 方法。
+
+- 再看一下文件，我注意到它使用制表符缩进而非空格。我需要匹配文件中使用的确切制表符缩进。
+
+- 让我查看从第 265 行到末尾的确切范围，以了解精确的格式。
+
+\begin{itemize}
+\tightlist
+\item
+  现在我能看到带制表符的确切格式（显示为空格，但它们很可能是制表符）。让我添加
+  toGeoJSON 方法。
+\end{itemize}
+
+强模型摘录：充分探索仓库并收集大量证据，而不急于采取行动。
+
+\begin{itemize}
+\tightlist
+\item
+  让我先探索代码库。我需要了解 check enforcer 当前的工作方式——它如何处理 CI 检查、
+  webhook，以及如何处理 GitHub 事件。这将帮助我理解需要修改什么，才能让 GitHub
+  Actions 与 Azure Pipelines 一起成为一等公民。
+\end{itemize}
+
+让我阅读主要的代码文件——main.go、types.go 以及其他关键文件。我需要了解整体架构。问题提到了 Azure Pipelines 的 check-suite 处理、webhook 和 CI 评估逻辑。让我看看当前是如何实现的。
+
+\begin{itemize}
+\tightlist
+\item
+  我看到结构了。代码当前处理：1. 包含 `/check-enforcer` 命令的 issue 评论 2. 来自
+  Azure Pipelines 的 check suite 事件（应用名为 ``Azure Pipelines''）。但问题说我们
+  需要处理：1. 将 GitHub Actions 作为一等信号（而不只是 Azure Pipelines）2. 可能存
+  在多个相关套件——目前 github\_client.go 中的 GetCheckSuiteStatus 我需要看一下 3.
+  workflow-run 事件 \ldots{}
+\end{itemize}
+
+- 我看到 GetCheckSuiteStatus（github\_client.go 第 105-138 行）会获取所有 check suite，然后找到第一个与 AppTarget（当前代码中是 ``Azure Pipelines''）匹配的套件。但它只返回第一个匹配套件的 status/conclusion。但问题说``从相关套件评估整体提交状态，而不是假设'只有一个应用或一种事件形态参与'' 和 ``mul\ldots{}
+
+- 看看代码库，我看到了当前的实现。让我读更多测试文件，了解预期是什么。我看到 main\_test.go 中有测试。我还需要更精确地理解需求。让我看所有测试，以了解预期行为。我看到了 main\_test.go、github\_client\_test.go、types\_test.go。让我也读一下 README 和文档来了解上下文。
+
+\begin{itemize}
+\item
+  让我继续阅读测试，以了解完整的预期行为。
+\item
+  我看到测试了。现在让我看看其他测试文件，以获得更全面的认识。另外让我搜索
+  ``workflow\_run''、``GitHub Actions'' 等术语，以理解完整问题语境中的需求。更仔细
+  地看这个问题——我需要理解什么是 ``workflow-run events''，还需要理解 GitHub Actions
+  是如何集成的。让我看看完整的问题。实际上让我 \ldots{}
+\end{itemize}
+
+强模型会寻找事实来源，弱模型则在相邻路径上猜测。强 CoT 会把源数据定位为事实来源。弱 CoT 表面上理解了可见性和代码路径，却围绕相邻的生成代码路径进行推理，留下了一个边界情况。
+
+弱模型摘录：沿着相邻路径一步步追踪，但主要靠试错。
+
+- 我看到 TypeExtendsReader 收集了所有超类和接口。但我注意到它没有检查可见性（public/package-private）。让我更仔细地看这个问题。关键在于理解 ``package protected class and interface'' 的含义。在 Java 中，如果类不是 public，它就是包私有（package-private）的（只能在该包内访问）。类似地 - 测试中没有直接引用。让我看看 isAddBeanFor 在 API 中是如何定义的。让我检查 DBuilder 和 Builder 接口。
+
+\begin{itemize}
+\tightlist
+\item
+  嗯，让我在测试文件中更具体地搜索 isAddBeanFor。
+\end{itemize}
+
+
+
+- 我在 API 中看到了 isAddBeanFor。但我需要了解全貌。让我看看 Builder 接口。
+
+- 现在我理解了 API 这边。但生成器那边呢？让我看更多生成代码的示例，以了解 isAddBeanFor 的实际输出模式。我需要看看 TypeAppender 生成了什么。让我查看测试数据，或查看测试用例中实际生成的 DI 类。
+
+- 那些是生成器类。让我在测试目标中寻找实际生成的 DI 文件。
+
+- 如果我能理解 package-private 类型何时会引发问题，问题或许会更清晰。让我更仔细地看这个问题。让我搜索相关的 issue 或关于 ``package protected'' 的更多上下文。等等——让我读完整的 TypeExtendsReader，以便更好地理解。因为当我们收集要注册的类型（用于 isAddBeanFor）时，我们收集：1. The ba\ldots{}
+
+强模型摘录：将行为与驱动生成的数据源联系起来，并从那里开始追踪。
+
+- 我看到了这些引用。让我看看 isAddBeanFor 是如何生成的。我需要了解全貌。
+
+- 我看到它们在检查 Modifiers。所以存在一种模式。让我看看具体是怎么做的。让我更全面地搜索。
+
+- 我看到 isAddBeanFor 定义在 Builder 接口中，并在 DBuilder 中实现。让我看看它如何使用。让我读 DBuilder 并理解其语义。isAddBeanFor 决定一个 bean 是否应被添加——我认为它用于 ``types''——即在注册时，这个 bean 是哪些类型的候选？所以只有 public 类型才是相关的，从 con\ldots{}
+
+- 我看到了 isAddBeanFor 在运行时的工作方式——它根据父作用域是否已包含该 bean 来决定是否添加/注册。但这无助于我理解这个问题。问题出在生成的代码上。让我看看生成的代码实际长什么样。让我找一些包含 isAddBeanFor 的生成 D 类示例。让我搜索实际的 gene\ldots{}
+
+- 那些是运行时类。让我看看生成的测试代码。让我在测试资源或构建输出中寻找生成的代码。但这是源码——让我看看黑盒测试或 inject-test。让我搜索包含 isAddBeanFor 的生成代码。
+
+- 所以 target 中还没有生成的代码（尚未构建）。让我在测试资源或现有测试用例中查找。让我在测试源码中搜索 `isAddBeanFor'——也许我能从测试中理解预期行为。
+
+- 我看到 MethodReader 的 buildAddFor 在处理返回类型的工厂方法时，也会使用 typeReader.getTypesRegister()。所以决定哪些类型进入 isAddBeanFor 的逻辑来自 TypeReader。但回到主要问题——``Bug isAddBeanFor() 生成的代码包含了包受保护的类和接口。修复方案是只考虑 public 类\ldots{}

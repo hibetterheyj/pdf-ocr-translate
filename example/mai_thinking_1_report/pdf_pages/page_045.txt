@@ -1,0 +1,47 @@
+where the training objective is the sequence s1 . . . sk, trained via SFT.
+Inference. The inclusion of multiple candidate responses into a single reward model context allows for better
+calibration of pointwise quality scores across responses. However, due to the autoregressive nature of the
+reward model, this also increases noise for scores yi,i>1. To counter this, we apply the reward model cyclically:
+For a given context c and k responses y1, . . . , yk, we prompt the reward model k times on the response
+permutations (y1, . . . , yk), (y2, . . . , yk, y1), . . . , (yk, y1, . . . , yk−1). For each of these k inference calls, we only
+decode the first token and look at the full probability distribution for this token, which for the i-th call
+corresponds to the reward score si of the i-th candidate response. The reward signal RRM(c, yi) is then set
+to the probability of yi being scored as the highest quality (si = 5). We found this to provide a more stable
+climbing signal than alternative formulations we considered.
+Evaluation. We evaluate our reward models using a combination of actual training rollouts rated by our
+annotators and a validation split of our reward model training data.
+AI judge.
+In addition to the human preference signal provided by the fine-tuned reward model, we employ
+AI judges (Gu et al., 2024; Tan et al., 2025) for feedback that can be adapted quickly and customized to any
+given context. In particular, AI feedback provides a fast lever to shape the behavior of the model in targeted
+ways without incurring delays for reward model data collection and retraining.
+Verifiable rewards.
+We employ verifiable rewards to improve capabilities in areas such as instruction fol-
+lowing where adherence to a constraint can be checked directly. For example, verifiable rewards are included
+for contexts that say “respond in a single paragraph” or “use fewer than 10 words”. Compared to non-verifiable
+rewards, we find verifiable rewards to be less prone to reward hacking (Zhao et al., 2025b; Wen et al., 2024),
+less sensitive to multi-epoching, and generally useful for stabilizing training.
+Verifiable rewards are also used to mitigate biases in non-verifiable rewards. For example, AI feedback
+rubrics tend to induce an upwards pressure on length and style elements, which we mitigate using both
+the reward model and verifiable rewards. For length specifically, we identify acceptable response-length
+distributions per context offline and penalize responses that fall outside a predefined quantile range. This
+keeps response length stable through training without overly constraining the response or introducing a
+reward that can be hacked by collapsing the response into one that is overly terse.
+Combining rewards.
+When optimizing these rewards for helpfulness and safety climbing, two challenges
+arise. (Wang et al., 2024c) First, the different types of rewards occupy different scales and are not directly
+comparable. Second, the reward distribution is itself context-dependent, narrow for some prompts and
+wide for others. Naïvely summing such rewards would result in the largest-magnitude signal dominating
+irrespective of its importance. In addition, while we want to optimize our rewards jointly, certain criteria
+are non-negotiable: for example, a well-written response that is unsafe remains unacceptable, regardless of
+its quality. We address these challenges with two complementary strategies, applied selectively based on the
+context.
+Lexicographic reward shaping. For one set of contexts, lower-importance rewards become active only when
+all rollouts in a group score equally on higher-importance rewards. This induces a strict priority order-
+ing, where a secondary reward influences the gradient only if the primary reward is tied within the rollout
+group (Skalse et al., 2022). Because it operates on within-group relative comparisons, this formulation is
+also invariant to the absolute scale of each reward.
+Gated reward application. For other contexts, higher-importance rewards must satisfy a minimum level of
+performance before lower-importance rewards are applied at all (Achiam et al., 2017). Safety is the canonical
+case: an unsafe response receives the minimum reward and is never graded on response quality.
+45

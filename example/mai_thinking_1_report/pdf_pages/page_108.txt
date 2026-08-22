@@ -1,0 +1,62 @@
+Init
+(new node or
+remediated)
+Certifying
+Available
+Auto Remediating
+Impaired
+Vendor
+Maintenance
+Repaired
+Request received
+Decommissioned
+Certification
+controller
+starts testing
+Cert-pass
+Cert-fail
+NPD condition,
+Manual drain
+False alarm
+e.g. Auto reboot
+Reset to Init state
+GHR
+Vendor
+picks up
+Maintenance
+success
+Maintenance
+fail
+Add to fleet by vendor
+Figure 26. Node lifecycle from initialization through certification, production use, remediation, maintenance,
+and decommissioning.
+reinforcement learning runs, inference and evaluation jobs, and CPU-heavy data pipelines. The stack is
+therefore layered: Kubernetes maintains cluster state, Kueue makes admission and quota decisions, MAI
+controllers maintain reservations and topology readiness, Ray executes distributed jobs, and a fleet-wide
+control plane unifies visibility across clusters and scheduler backends.
+Cluster‐local control plane.
+The cluster-local MAI control plane manages reservations, rack topology,
+quota coherence, and scheduling-readiness gates. It does not replace the scheduler; instead, it maintains the
+state that the scheduler needs. Kueue handles priority, quota, admission, preemption, and topology-aware
+placement. When a workload is admitted, Kueue attempts to preserve locality over high-bandwidth domains
+so that large jobs land in compact topology regions rather than scattered capacity. Rack fragmentation is a
+recurring scheduling risk. Small jobs from many queues can fill racks in a way that prevents later large jobs
+from acquiring contiguous capacity. The cluster-local control plane addresses this with soft rack reservations.
+Queues are assigned preferred racks, and workloads landed on those racks first. Borrowing remains possible
+when capacity was idle, but reclaimWithinCohort allows a queue to reclaim its reserved racks when
+needed. This improves bin packing under load while preserving utilization during low demand.
+Ray runtime.
+Ray provides the distributed runtime inside admitted jobs. MAI drivers translate the admit-
+ted topology into actor placement, communication groups, and NCCL clique configuration. Pre-training
+jobs require strict learner availability, while RL jobs manage multiple actor types, including learners, in-
+ference servers, rollout workers, and routers, each with distinct placement and fault-tolerance needs. The
+drivers monitor actor liveness, coordinated training loops, and maintain checkpoint consistency across asyn-
+chronous components.
+L.4 Observability, Telemetry, and Fleet Monitoring
+We combined low-level hardware telemetry, scheduler state, job metadata, and fleet-efficiency signals into
+a single operating view. GPU health was tracked through XIDs, ECC, thermals, power, clock throttling,
+NVLink state, NVLink bit-error rate, chip-to-chip links, InfiniBand device state, local NVMe health, PCIe
+errors, and driver state. These signals were converted into Kubernetes node conditions and then into schedul-
+ing and remediation actions through custom triage and drain controllers. This made health observable not
+only to operators, but also to the scheduler.
+108

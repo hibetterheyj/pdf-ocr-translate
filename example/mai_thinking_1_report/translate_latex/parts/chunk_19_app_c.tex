@@ -1,0 +1,71 @@
+\subsection{C 长上下文扩展}\label{c-long-context-extension}
+
+我们的预训练目标是 256K token 的上下文窗口。我们没有在整个预训练或中期训练阶段都采用完整的 256K 上下文长度——由于长序列下 MFU 较低，这种做法并不实际——而是采用了分阶段的方法：模型在 16K 上下文下完成预训练，在 64K 上下文下完成中期训练（阶段 1），随后在一个短暂的专用阶段（阶段 2）扩展到 256K。本节介绍支撑这一配方的消融实验与评测。除非另有说明，所有消融实验均在小规模模型上进行。
+
+
+
+\subsection{C.1 数据}\label{c.1-data}
+
+我们针对上下文扩展阶段尝试了多种数据混合变体，包括提升长上下文文档的权重以及调整各领域间的混合比例。最终，这些修改都没有带来有意义的改进。最简单的做法——沿用前一中期训练阶段的数据混合，并按目标 256K 序列长度重新打包——效果很好，这也是我们在最终模型中所采用的方案。
+
+\subsection{C.2 评测设置}\label{c.2-evaluation-setup}
+
+我们在多个长上下文评测基准上评估质量，其中部分介绍如下。
+
+Code NLL。我们将一个内部代码仓库序列化为线性 token 流，并提取 256K-token 的块。对每个块，末尾的 16K token 作为我们计算 NLL 的 suffix，同时我们从紧邻的前序 token 开始逐步扩展 prefix，使总上下文（prefix + suffix）为 16K、32K、64K、128K 或 256K。理想的长上下文模型应能利用额外的 prefix——其中包含来自同一仓库的相关代码——来进一步降低 suffix 的损失。如图 22(b) 所示，上下文扩展后的 checkpoint 恰好表现出这一行为：其 NLL 从 16K 到 256K 单调下降，证明模型有效利用了完整的上下文窗口。相比之下，在较短上下文长度下中期训练且未做扩展的模型，一旦上下文长度超过训练分布范围的 \textgreater{} 2x，其 NLL 就会上升。
+
+Retrieval NLL。为了检验模型无论相关信息位于上下文中的哪个位置都能检索并利用，我们设计了一个受控实验：选取一份 32K-token 的文档（来自后训练的每日 standup 笔记），将其切分为两个 16K-token 的块，即 A（suffix）和 B（prefix），其中 prefix B 为预测 suffix A 提供了有用的上下文（即 NLL(A \textbar{} B) ≪ NLL(A)）。然后我们在 A 和 B 之间逐步插入无关块（与预训练相关的设计文档），将总上下文长度增加到 256K token。如果没有专门的长上下文训练，随着相关 prefix 被推得越来越远，模型的 NLL 会大幅恶化，表明模型越来越容易被中间插入的无关内容干扰（图 22(a)）。相比之下，长上下文 checkpoint 无论相关块之间距离多远，都能保持近乎平坦的 NLL，证明了在完整 256K 上下文窗口内的稳健信息检索能力。
+
+Generative QA。我们在内部仓库文档上构建了一个简单的问答基准，将问题放置在上下文中的不同位置，并测量答案准确率随总上下文长度和证据位置的变化。在该基准上，模型表现出高达 4× 的长度外推能力：在 32K 上下文中训练的模型可以在最长 128K token 的上下文中正确回答问题（图 22(d)）。我们观察到，随着总上下文长度超出训练分布，模型在从近期（上下文末尾）位置而非较远位置检索信息时会遇到不成比例的困难（图 22(e)）。这可以用分布偏移来解释——当用 64K 输入评测一个在 32K 下训练的模型时，前 32K token 落在训练分布之内，而末尾的 token 则占据了模型从未训练过的位置。长上下文训练解决了这种不对称性。
+
+\subsection{C.3 渐进式上下文长度扩展}\label{c.3-progressive-context-length-scaling}
+
+一个自然的问题是：不在我们期望的最大上下文长度上进行中期训练，会牺牲多少质量？图 22(b) 通过在 code NLL 上比较五种配置回答了这个问题：四次中期训练分别采用 16K、32K、64K 和 128K 上下文长度，各训练 1T token（均基于 16K 预训练），外加一种渐进式方案——先在 32K 下中期训练 1T token，再用约 100B 额外 token 扩展到 256K。
+
+
+
+在 128K 上下文下，渐进式 checkpoint 的 NLL 与完整 1T-token 128K 中期训练的结果持平，尽管它在长上下文长度上使用的 token 数要少得多。此外，所有五种配置在短上下文长度（16K 和 32K）下都收敛到大致相同的 NLL，这证实了在中期训练阶段使用更长的上下文长度训练并不会显著影响短上下文质量。这意味着，如果末尾一个简短的扩展阶段就能达到同样的效果，就无需为昂贵的长上下文中期训练买单。该图支持一条通用的配方：在较短、对 MFU 友好的上下文长度上进行中期训练，并在最后进行扩展。
+
+\subsection{C.4 适应速度}\label{c.4-speed-of-adaptation}
+
+图 22(c) 展示了某次消融实验在上下文扩展阶段 256K code NLL 的变化轨迹。适应的速度非常快：绝大部分 NLL 的改善发生在训练迭代的前 1--10\% 内，此后曲线趋于平稳。这种快速收敛表明，模型在上下文扩展期间并非在获取全新的能力，而是在为早期训练中未出现过的序列长度校准其位置编码与注意力机制。利用长上下文所需的表示在预训练和中期训练中已经具备；扩展阶段只是针对分布外的位置对它们进行调整。
+
+\subsection{C.5 最终配方}\label{c.5-final-recipe}
+
+对于最终模型，我们选择了 64K 中期训练，随后用 140B token 进行 256K 扩展。虽然消融分析（主要基于 NLL 指标）表明，更短的中期训练上下文长度和更短的扩展 token 预算就足够了，但上下文长度与后训练之间的相互作用尚未被充分刻画，因此我们选择了更保守的方案。总体而言，上下文扩展阶段相对于训练的其他部分仍然快速且廉价。展望未来，同样的分阶段方法可以自然地扩展到更长的上下文窗口——这个简短的最终扩展阶段可以用适度的计算成本，将目标从 256K 提升到 1M token 甚至更长。
+
+
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\setcounter{enumi}{1}
+\tightlist
+\item
+\end{enumerate}
+
+\pandocbounded{\includegraphics[keepaspectratio,alt={image}]{images/ec35d705475d9dacca9558f209f627533f73b58b916ad149e28a578330f94df1.jpg}}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\setcounter{enumi}{2}
+\tightlist
+\item
+\item
+\end{enumerate}
+
+\pandocbounded{\includegraphics[keepaspectratio,alt={image}]{images/a91c523e96eff61412d95fb962748a44ff61d6d3df0f93e10eec78002ffe0ec9.jpg}}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\setcounter{enumi}{3}
+\tightlist
+\item
+\end{enumerate}
+
+\pandocbounded{\includegraphics[keepaspectratio,alt={image}]{images/9a2acaea289dee9894737cfbb57d7664d0125a9f291fb922d941ae849f905d4f.jpg}}
+
+\pandocbounded{\includegraphics[keepaspectratio,alt={image}]{images/6ff1fde3ddf241d35acba4d7e49347739d256ed30d06064a4f6145f5331566ea.jpg}}
+
+图 22. 长上下文扩展评估。(a) Retrieval NLL：随着相关的 16K prefix 被无关上下文推得越来越远，suffix 的 NLL 变化情况。长上下文 checkpoint 无论距离多远都保持 NLL 平坦；没有长上下文训练时，NLL 会大幅恶化。(b) 五种配置下 Code NLL 随上下文长度的变化：分别在 16K、32K、64K 和 128K 下进行中期训练（各 1T token），外加一种渐进式方案（32K 中期训练 + 简短的 256K 扩展）。渐进式 checkpoint 的表现与 128K 中期训练持平甚至更优。(c) 上下文扩展阶段 256K code NLL 的变化。大部分改进发生在训练迭代的前 1--10\% 内。(d) 在 generative QA 基准上，答案准确率随上下文长度的变化。预训练 base 模型和中期训练（32K）模型一旦超出其训练上下文长度，准确率就会急剧下降，而长上下文 checkpoint 在最长 256K 的范围内都能保持接近完美的准确率。(e) 按证据位置统计的答案准确率（跨上下文长度取平均）。没有长上下文训练时，随着证据向上下文末尾——即分布外区域——移动，准确率会下降。长上下文训练解决了这种不对称性。
+
+\pandocbounded{\includegraphics[keepaspectratio,alt={image}]{images/fdc8c46dd09caa0df12175d779bc2539b58cab0d10b6b34aac0f59aee1179ecf.jpg}}

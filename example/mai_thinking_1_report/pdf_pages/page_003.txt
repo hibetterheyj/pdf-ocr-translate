@@ -1,0 +1,117 @@
+Contents
+1
+Introduction
+1
+2
+Pre-training
+5
+2.1
+Model Architecture . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+6
+2.2
+Model Ablation Methodology . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+7
+2.3
+Evaluation Methodology . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+9
+2.4
+Pre-training Data . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+12
+2.5
+Selecting a Data Mixture for Training . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+16
+2.6
+Training Recipe . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+21
+2.7
+Evaluation and Comparison with Contemporaneous Models . . . . . . . . . . . . . . . . . . . . . . . .
+23
+2.8
+YOLO: Distributed Training at Scale . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+24
+3
+The Reinforcement Learning Climb
+30
+3.1
+Reinforcement Learning Recipe . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+31
+3.2
+STEM Climb . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+37
+3.3
+Agentic Climb . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+39
+3.4
+Helpfulness and Safety Climb . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 44
+3.5
+Consolidating Capabilities into a Single Model . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+49
+3.6
+Reinforcement Learning Infrastructure . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+49
+4
+Evaluations
+53
+4.1
+Benchmark Evaluations . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+53
+4.2
+Human Side-by-Side Evaluations . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+54
+4.3
+Internal Safety Evaluation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+55
+5
+Safety Red Teaming
+56
+5.1
+Internal Red Teaming . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+56
+5.2
+Independent Red Teaming . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+58
+6
+Cluster Environment
+59
+6.1
+Training Cluster . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+59
+6.2
+Training Stability, Determinism and Goodput Metrics . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+59
+6.3
+Inference Efficiency and Model Deployment . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+60
+6.4
+Sustainability and Community-First AI Infrastructure Initiatives . . . . . . . . . . . . . . . . . . . . .
+60
+7
+Conclusion and Future Directions
+61
+A Citation reference
+82
+B
+Pre-training Data Pipeline Details
+82
+B.1
+Web HTML . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+82
+B.2
+Web PDFs . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+84
+B.3
+Books and Journals . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+84
+B.4
+Public GitHub . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+84
+C
+Long Context Extension
+85
+C.1
+Data . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+86
+C.2
+Evaluation Setup . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+86
+3

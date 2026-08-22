@@ -1,0 +1,80 @@
+Mid-trained
+Model
+SWE/Agentic
+Teacher
+STEM
+Teacher
+Helpfulness & Safety
+Teacher
+Consolidated
+Model
+MAI-Thinking-1
+SWE/Agentic Climb
+Helpfulness & Safety
+Climb
+STEM Climb
+Trace Distillation SFT
+Final Climb
+Figure 12. Overview of our RL climbs. We begin with MAI-Base-1 and train three specialist models using
+reinforcement learning. These specialists are then distilled into a single consolidated model with simple SFT,
+which undergoes a final RL stage to produce MAI-Thinking-1.
+consolidated into a single model using supervised finetuning (SFT). A final lightweight RL climb turns this
+consolidated model into MAI-Thinking-1, a model that performs strongly across all domains (Sec. 3.5).
+3.1 Reinforcement Learning Recipe
+3.1.1 RL Objective
+Our reinforcement learning climb starts from a policy πθ (e.g., our mid-trained model). For a prompt q, the
+rollout policy samples a group of G responses y1:G, and each response yi receives a scalar reward:
+Ri = R(q, yi).
+(4)
+The reward function R is domain-dependent; typically, it is either based on executing code or feedback from
+a prompted AI judge or a trained reward model. We derive our training objective from GRPO (Shao et al.,
+2024) with token-level policy gradient (Yu et al., 2025):
+J (θ) = Eq∼P (Q), y1:G∼πold
+
+
+1
+∑G
+i=1 |yi|
+G
+∑
+i=1
+|yi|
+∑
+t=1
+min
+(
+ri,t(θ) Ai, clip
+(
+ri,t(θ), 1−ϵ, 1+ϵ
+)
+Ai
+)
+
+,
+(5)
+where P(Q) is the distribution over all prompts and πold denotes the policy used to generate the rollouts. In
+practice, the normalization is computed over all tokens in the global training batch (across all data-parallel
+ranks), so that every token contributes equally regardless of response length. For response yi and token
+position t, the importance-sampling ratio is
+ri,t(θ) = πθ(yi,t | q, yi,<t)
+πold(yi,t | q, yi,<t) .
+(6)
+The response-level advantage Ai =
+(
+Ri −mean(R1:G)
+)/
+std(R1:G) is shared across all tokens in response yi.
+We apply two modifications to this objective: adaptive entropy control, which dynamically adjusts the up-
+per clip bound to maintain a target policy entropy, and an outer ratio clip, which caps the unclipped branches
+of our objective to prevent gradient-norm explosions.
+Adaptive entropy control.
+Similar to Yu et al. (2025) and Mistral-AI et al. (2025), we use separate lower
+and upper clip bounds. We parametrize these using a single base hyperparameter ϵ, which controls the base
+trust-region width, together with an entropy-dependent relaxation k of the clipping upper bound:
+rtr
+i,t(θ) = clip
+(
+ri,t(θ), 1 −ϵ, (1 −ϵ)−1 + k
+)
+.
+31

@@ -1,0 +1,47 @@
+Synthetic environment.
+To increase the scale and diversity of our training data, we synthetically gener-
+ate self-contained closed-world environments with seeded databases, tool definitions, and verifiable tasks.
+Our pipeline requires only plain-English descriptions of the desired environments to generate complete
+tool-use environments end-to-end. This approach follows prior work on automatically generating tool-use
+environments (Sullivan et al., 2025; Zhang et al., 2026; Wang et al., 2026; Mika, 2026), particularly the
+FunReason-MT pipeline (Xu et al., 2025b; Hao et al., 2025). Overall, we aim to replicate common enterprise
+and consumer tool-use scenarios, such as travel booking and inventory management.
+Our pipeline consists of three main phases: (i) environment bootstrapping, which generates tool descrip-
+tions, implements functions, and seeds databases with relevant entities; (ii) task creation, which samples
+likely tool-call trajectories, creates entities relevant to the interaction chain, and formulates user requests;
+and (iii) verification and refinement, which executes the actions generated in the previous phase, and removes
+tasks that are overly similar. Each phase involves multiple LLM calls for tasks such as entity generation and
+function implementation. We additionally employ iterative critique-and-refinement loops to improve the
+outputs at each phase (Dhuliawala et al., 2023; Madaan et al., 2023).
+We generate environment-specific personas (Ge et al., 2024) to further diversify tasks. To mitigate over-
+eager tool-calling behavior, we additionally augment our data with tasks that include tool descriptions but
+do not require tool usage. Overall, our pipeline synthesizes more than 150 environments and 130, 000 tasks.
+Reward design.
+During training, we use a mixture of environment-specific and cross-environment
+graders. Environment-specific graders assign rewards based on the final environment state, tool usage pat-
+terns, and final answers. For synthetic environments, we use an LLM judge to decompose tasks into multiple
+sub-tasks and grade each independently. We additionally employ cross-environment graders that encourage
+efficient tool usage, including parallel tool calls when possible, avoidance of duplicate calls, and correct tool
+invocation with valid parameter types and arguments.
+3.4 Helpfulness and Safety Climb
+The helpfulness and safety RL climb optimizes MAI-Thinking-1’s general helpfulness as judged by human
+preference, instruction following, steerability, safety, honesty, and style. (Ouyang et al., 2022; Radford et al.,
+2019; Li et al., 2024a) This climb differs from the other climbs in that it focuses on tasks where performance
+is not as objectively defined and machine-verifiable.
+We organize this section by first describing all the reward signals (Sec. 3.4.1) used during RL climbing,
+followed by each domain’s specific data recipe and reward designs.
+3.4.1 Rewards
+Compared to the other climbs, the helpfulness and safety climb combines a more diverse set of reward types
+to guide subjective aspects of model behavior. We use a combination of a reward model trained on human
+preference data (Lambert et al., 2025), AI judge feedback (typically rubric-guided) (Gu et al., 2024), and addi-
+tional verifiable rewards (Peng et al., 2025; Pyatkin et al., 2026) to form an aggregate reward signal. (Lambert
+et al., 2024; Wang et al., 2024c)
+Reward model.
+Our reward model is based on a post-trained version of MAI-Base-1, which we fine-tune
+to predict human preferences expressed as text tokens. It is trained exclusively on human preference data
+collected with human annotators from several vendors. We employ a robust reward hacking mitigation
+pipeline as described in Liu et al. (2025c) to counter relevant biases in our training data.
+Training. For a context c and k-way side-by-side with responses y1, …, yk, and corresponding scores
+s1, . . . , sk ∈[1; 5], the input to the reward model is
+c <|im_sep|> y1 <|im_sep|> y2 <|im_sep|> …<|im_sep|> yk <|im_sep|>
+44

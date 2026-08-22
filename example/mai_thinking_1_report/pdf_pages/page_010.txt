@@ -1,0 +1,57 @@
+comparisons (Sec. 2.2.2) or for ranking models, we use the following formula:
+Target = 0.5×Coding+0.175×STEM+0.175×Math+0.1×General knowledge+0.05×Multilingual (3)
+These explicit weights allow us to codify the decisions about the relative priority and importance of each
+set of benchmarks. Our focus on downstream performance on code and reasoning tasks is reflected in the
+larger weights we assign to those categories in pre-training.
+To compute the individual category scores in Eq. 3, we first normalize the raw NLL results using a fixed in-
+house reference model as a baseline, then take the uniform average across all the benchmarks in that category.
+All evaluated models use identical tokenizers, so NLL values are directly comparable. Note that we choose
+to elevate mathematics to its own category, while STEM focuses on science, technology, and engineering.
+Category
+Evaluation Data
+Source
+Coding
+Microsoft code and pull requests
+Internal private projects
+Human-AI coding sessions
+Internal testing of previous models
+STEM
+Worked solutions to graduate-level STEM
+problems
+Commissioned from vendor
+Math
+Worked solutions to advanced math
+problems
+Commissioned from vendor
+General knowledge
+Online Community Discussions
+Public web forums
+Human-AI interactions
+Internal testing of previous models
+Pyramidal trivia
+Publicly available databases deduplicated
+against training data
+Hard trivia questions
+Commissioned from vendor
+Multilingual
+Multilingual Human-AI interactions
+Internal testing of previous models
+Table 3. Example types of data within our NLL evaluation suite. All examples are carefully deduplicated from
+any training data.
+2.3.1 Public Evaluation Decontamination
+Publicly available evaluation benchmarks have been helpful for guiding the development of many of our
+models. As the importance of AI models has grown in recent years, there has been an increase in the leakage
+of evaluation datasets into sources of training data. This is particularly common on GitHub, where many
+researchers and developers of AI share their work. Many common evaluations are published on GitHub in
+their original form (Austin et al., 2021), and nearly every benchmark is replicated there many times, typi-
+cally with solutions, generations from models, etc. Many public evaluations are derived from some of the
+online sources we use for training, but with additional curation processes (for example (Wei et al., 2024a;
+Hendrycks et al., 2020)). As our training sets have grown in scale and coverage, the influence of that overlap
+becomes significant. Similar to prior works (Godey et al., 2025), we’ve observed in experiments that this
+contamination can lead to counterintuitive results, such as data that is nominally meant to improve coding
+performance also leading to an improvement in long-tail general knowledge evaluations.
+We have used several methods for detecting and removing leaked evaluation examples in our training
+data. All data from huggingface.co and mirror domains are removed, and a universal 20-gram fuzzy
+deduplication is applied with a similarity threshold of 80% to all our training sources. We find that these
+methods accurately remove a significant number of leaked examples, but they are imperfect.
+10

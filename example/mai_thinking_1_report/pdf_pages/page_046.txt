@@ -1,0 +1,46 @@
+Both strategies sidestep cross-scale calibration by replacing additive combination with conditional or rank-
+based logic, ensuring that high-priority objectives are never traded away for gains on lower-priority ones.
+3.4.2 Instruction Following and Steerability
+Instruction following (IF) is a core capability for LLMs: models should adhere to constraints specified di-
+rectly by users during the conversation, by API users through developer instructions, and by platform owners
+through privileged system instructions. The model should be steerable across such formatting and behavioral
+constraints according to predefined priorities (Wallace et al., 2024). To build robust instruction following
+capabilities, we construct a dataset spanning a range of constraints, scenarios, and levels of complexity, draw-
+ing from synthetic data and expert human annotations.
+Data.
+We use two distinct sources of data: expert-written contexts and synthetic data. We find that the
+complex constraints in expert-written prompts help bootstrap capabilities, while synthetic data enables max-
+imum coverage.
+Synthetic data generation. Inspired by prior work (Xu et al., 2025a; Dong et al., 2025), we build a flexible
+multi-stage pipeline that generates realistic instructions and scenarios with evaluation rubrics. It starts with
+prompted instruction and model spec generation using an LLM guided by a manually curated constraint tax-
+onomy (see Sec. F for more details) and a set of diverse seeds. This is followed by generating scenarios that
+are multilingual, cover short and extended dialogues, include cases with system, developer, and user mes-
+sages, and span over 40 domains including coding, writing, analysis, and travel planning. In addition, we
+include adversarial cases with conflicting system, developer, and user instructions to train the model to re-
+spect instruction hierarchy. A final critique and rewrite step evaluates and updates each scenario based on
+naturalness, rubric alignment, and groundedness.
+Data filtering. We maintain high quality data through multiple rounds of filtering, combining various qual-
+ity heuristics, complexity filters, and rejection sampling.
+In particular, rubrics are validated for self-
+containment, unambiguity, and alignment with their stated constraints, while prompts are screened against
+our safety policies. Following An et al. (2025), we additionally control for difficulty level via pass-rate anal-
+ysis. We keep only examples that are challenging but solvable by our model.
+Reward design.
+To prevent degenerate responses and reward hacking during RL, we use hybrid reward
+signals. For constraints with deterministic verifiers, we use rule-based checks. This provides fast, determin-
+istic, and well-calibrated reward signals.
+In addition, an LLM judge (Sec. 3.4.1) independently evaluates atomic rubrics, producing a binary judg-
+ment per rubric. Multiple judgment passes are averaged for robustness. Finally, our trained reward model
+evaluates general response quality complementing the constraint-specific IF judges. Rewards are then com-
+bined with the lexicographic grading aggregation scheme from Sec. 3.4.1, with IF-specific rewards serving
+as the primary signal.
+3.4.3 Safety
+In line with our commitment to supporting human autonomy, we define safety as the model’s ability to pro-
+vide helpful responses that remain compliant with our policies (Microsoft, 2022).
+Data.
+To keep training aligned with this target, we develop a taxonomy for our data curation. Safety data
+targets two complementary failure modes: unsafe compliance, where the model fulfills a request it should
+refuse, and over-refusal, where it unnecessarily declines a legitimate request. Each candidate example is
+annotated against the policy taxonomy and assigned to one of two prompt categories:
+46

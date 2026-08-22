@@ -1,0 +1,130 @@
+\subsection{H STEM 评测设置}\label{h-stem-evaluations-setup}
+
+对于所有 STEM 基准，我们均在最大输出 token 预算为 256k tokens 的条件下报告
+pass@1 性能。除了上文已给出的 256k 结果外，我们还在表 17 中展示了模型在 128k
+最大输出 tokens 下的表现。
+
+\subsection{H.1 数学}\label{h.1-math}
+
+美国数学邀请赛（American Invitational Mathematics Examination, AIME）和哈佛---麻省
+理工数学锦标赛（Harvard--MIT Mathematics Tournament, HMMT）都是著名的高中数学
+竞赛。这些竞赛数学评测可作为衡量模型推理能力的有用代理指标。我们在 2025 和 2026
+年版 AIME 以及 MathArena 的 2026 年 2 月 HMMT 基准（Dekoninck 等，
+
+
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}|l|l|@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\hline
+能力 & 描述 \\
+\hline
+上下文切换 & 模型跟踪用户何时切换话题或返回先前话题的能力。 \\
+\hline
+指令保持 & 在长对话中跟踪、更新和检索指令与事实的能力。 \\
+\hline
+指令分层 & 在先前多轮中引入的指令基础上，维护并保留一组有效约束的能力。 \\
+\hline
+记忆 \& 回忆 & 正确检索并使用先前轮次中的事实和陈述。 \\
+\hline
+自身一致性 & 避免与先前陈述产生无意的矛盾。 \\
+\hline
+版本编辑 & 能够回退到更早的版本、有选择地撤销编辑，或重现先前轮次的精确文本。 \\
+\hline
+\end{longtable}
+}
+
+表 16. 针对多轮的 IF 能力示例。
+
+表 17. STEM 基准上的训练后模型评测结果，对比 MAI-Thinking-1 在 128k 与 256k
+最大输出 tokens 下的评测表现。其他模型的数字取自各自官方模型卡。以 ``---''
+列出分数的模型表示未报告相应基准的数字。
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}llllllllll@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\multirow{2}{*}{基准} & \multicolumn{2}{l}{%
+MAI-Thinking-1} & \multirow{2}{*}{} & \multicolumn{6}{l@{}}{%
+Sonnet 4.6 Opus 4.6 GPT 5.4 Kimi K2.6 DeepSeek V3.2 DeepSeek V4
+GLM-5.1} \\
+& 128k & 256k & & & & & & & \\
+AIME 2025 & 95.0 & 97.0 & 95.6 & 99.8 & --- & --- & 93.1 & --- & --- \\
+AIME 2026 & 93.6 & 94.5 & --- & --- & --- & 96.4 & --- & --- & 95.3 \\
+HMMT Feb 2026 & 84.3 & 84.9 & --- & --- & --- & 92.7 & --- & 95.2 & 82.6 \\
+GPQA Diamond & 84.2 & 84.2 & 89.9 & 91.3 & 92.8 & 90.5 & 82.4 & 90.1 &
+86.2 \\
+LCB v6 & 87.3 & 87.7 & --- & --- & --- & 89.6 & 83.3 & 93.5 & --- \\
+\end{longtable}
+}
+
+2026）上评测了 MAI-Thinking-1。这些竞赛的预期答案是简单的数字或表达式。我们
+要求模型以 boxed 格式输出最终答案，从而可以通过基于正则表达式的提取配合 SymPy
+验证，并以 AI 评判器作为兜底。
+
+\subsection{H.2 科学}\label{h.2-science}
+
+研究生级 Google-Proof 问答（Q\&A）基准（GPQA）（Rein 等，2023）包含知识密集型、
+研究生级和研究级问题，主要集中在 STEM 领域。对于 GPQA，我们评测其 Diamond
+子集，该子集包含 198 道选择题。我们采用 OpenAI 的 simple-evals 包（OpenAI，
+2025）中的指令提示词来规定所需的答案格式，并使用自定义的基于正则表达式的提取
+流程，将模型输出与参考答案进行比较。我们报告 16 次 rollout 的平均 pass@1 性能。
+我们使用 GPT-5-mini 作为 AI 评分的默认评判器，用图 25 中描述的提示词对 STEM
+基准上的模型回答进行评分。GPT-5mini 用作默认评判器。
+
+\subsection{H.3 竞赛编程}\label{h.3-competitive-coding}
+
+LiveCodeBench（LCB）（Jain 等，2024）包含最新的竞赛编程题目。我们在 v6 划分
+上进行评测，该划分包含 2023 年 5 月至 2025 年 4 月间发布的 1,055 道题目。与下文
+的多轮智能体编码评测不同，LCB 是单轮（one-shot）测试设置。答案在
+
+
+
+\pandocbounded{\includegraphics[keepaspectratio,alt={image}]{images/495552d57183bf6626b6594ff38271682cc2507aaf90206d636c4954afbb5b29.jpg}}
+
+图 25. 面向 STEM 问题的 AI 评判器提示词。我们在对话历史中额外加入少量示例
+（few-shot examples），作为先前的用户和助手轮次，以提高评分可靠性，并降低受
+评判器攻击（judge hacking）影响的敏感度。
+
+
+
+代码围栏（code fences）中生成以便解析，并在测试框架（test harness）上执行
+评分。评分设有预定义的内存和运行时间限制，与真实编程竞赛的约束条件类似。
+
+\subsection{I 智能体编码评测}\label{i-agentic-coding-evaluations}
+
+SWE-bench Verified（Chowdhury 等，2024）、SWE-Bench Pro（Deng 等，2025）和
+Terminal-Bench 2.0（Merrill 等，2026）的智能体编码基准结果见表 11 的第二部分。
+与上一节的 STEM 评测不同，智能体编码评测是多轮交互式评测，要求模型与环境进行
+交互。对于这三个基准，我们都使用一种非常简单的、ReAct 风格（Yao 等，2023）的
+"始终追加"（always append）智能体循环来评测我们的模型，该循环描述见图 18。
+在每一轮中，模型可以生成工具调用，我们会在环境中执行这些调用，并在模型发起下
+一次工具调用之前将输出追加到轨迹中。评测时我们使用 256k token 的总上下文长度；
+SWE-bench Verified 和 SWE-Bench Pro 的最大输出长度为 8k token，Terminal-Bench
+2.0 为 32k token，最大步数为 1,000 步。当模型不再输出工具调用、达到上下文长度
+上限或达到步数上限时，智能体循环即告终止。循环终止后，相应的评分器会在智能体
+所使用的 SEE 环境中运行。对于 SWE-bench Verified 和 SWE-Bench Pro，我们使用与
+爬山过程中相同的两种工具（bash 和 string replace editor）进行评测，如第 3.3.1
+节所述。对于 Terminal-Bench 2.0，我们仅使用 bash 工具进行评测。
+
+SWE-bench Verified。SWE-bench Verified 是 SWE-Bench（Jimenez 等，2024）中人工
+精选的 500 个任务子集，旨在提高评测的可靠性。每个任务都来自热门 Python 仓库中
+的真实公开 GitHub issue，模型必须生成一个能解决该 issue 并通过仓库隐藏测试套件
+的补丁。所有任务均经过审核，以确保问题陈述可解且测试能公正地评估正确性。
+
+SWE-Bench Pro。SWE-Bench Pro 是 SWE-bench Verified 更具挑战性的继任者，包含
+731 个任务，采用相同的基于单元测试的评分机制，旨在评估 LLM 在来自真实世界开源
+仓库的专业级软件工程任务上的表现。它强调更困难的多文件修改、更长时域的推理，
+以及更贴近工程师实际工作的复杂 bug 修复或功能实现。更重要的是，与 SWE-bench
+Verified 不同，SWE-Bench Pro 包含 Python 之外其他语言的仓库。
+
+Terminal-Bench 2.0。Terminal-Bench 2.0 是 Terminal-Bench（Merrill 等，2026）
+经人工验证、难度大幅提升的继任者，包含覆盖软件工程、调试、数据科学、机器学习、
+安全和系统管理等领域的 89 个真实任务。每个任务都在沙箱化终端环境中运行，并根据
+输出或环境最终状态进行程序化评分。任务设计旨在考查长期规划、错误恢复和真正的
+命令行熟练度，而非模式匹配。

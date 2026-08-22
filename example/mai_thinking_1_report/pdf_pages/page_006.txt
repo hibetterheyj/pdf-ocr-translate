@@ -1,0 +1,47 @@
+2.1 Model Architecture
+The model architecture of MAI-Base-1 was designed to leverage the benefits of scale on our infrastructure
+and hardware. We use a decoder-only Transformer (Vaswani et al., 2017) with periodic local and global at-
+tention layers and alternating dense and MoE feed-forward blocks. A high-level overview of the architecture
+is shown in Fig. 2. In each layer, we employ RMSNorm (Zhang and Sennrich, 2019) at both the input and
+output immediately before the residual addition (Gemma Team et al., 2025). We do not use any biases in the
+model, and the input and output embedding weights are tied. While we have observed some improvement
+in model performance from tokenizers trained in-house, we chose the o200k_base tokenizer with a vocab-
+ulary size of 200,019 (OpenAI, 2022; Hurst et al., 2024) to simplify integration with existing in-house tools
+and workflows. A key consideration in our architecture design was the co-optimization with the underlying
+GPU infrastructure to ensure efficient scaling for both pre-training and reinforcement learning (RL).
+Attention.
+We follow the periodic attention design of Gemma 3 (Gemma Team et al., 2025), pairing 5
+local attention layers (Beltagy et al., 2020) with 1 global attention layer, which significantly reduces the
+computational cost of attention for training and the KV cache size during inference. The local attention
+layers use rotary position encoding (RoPE) (Su et al., 2023) with sliding window size of 512 and a base fre-
+quency of 10,000. The global attention layers do not use any position encoding (Kazemnejad et al., 2023),
+which performs comparably to RoPE while being more efficient. We use group-query attention with 8 KV
+heads (Ainslie et al., 2023) and a per-head dimension of 128. We apply RMSNorms to the queries and the
+keys (Roy et al., 2020; Henry et al., 2020; Dehghani et al., 2023; Wortsman et al., 2023). The use of these
+standard components allows us to leverage FlashAttention-4 (Zadouri et al., 2026) and Ulysses-style context
+parallelism (Jacobs et al., 2023) for efficient training on long contexts.
+Feed‐forward and MoE.
+For the feed-forward layer in each block, we alternate between MoE layers
+and dense feed-forward networks (FFN). We find that this paradigm of pairing a high-sparsity layer with a
+zero-sparsity (dense) layer scales comparably to a balanced sparsity allocation—i.e., medium-sparsity MoEs
+throughout—while being more efficient in wall-clock time under both iso-active and iso-total model param-
+eter settings (Sec. 2.2.3). We also find that the every-layer-MoE layout relies much more heavily on shared
+experts, whereas adding shared experts to the interleaved layout has little or no benefit. Our first feedfor-
+ward layer is dense (DeepSeek-AI et al., 2025a; Kimi Team et al., 2026; Dai et al., 2024), and we use SwiGLU
+(Shazeer, 2020) for both dense and MoE feed-forward layers.
+We adopt the LatentMoE design (NVIDIA et al., 2025), where a shared down-projection is applied before
+the all-to-all dispatch. The latent representations are then projected back to their original dimension after
+the all-to-all combine. Importantly, routing decisions are based on the original representation, and each
+compressed representation is routed to 8 out of the 512 experts with softmax gating.
+We use global-batch load balancing loss (Qiu et al., 2025; Yang et al., 2025) where the empirical expert fre-
+quencies are obtained by aggregating across both the data parallelism workers and micro-batches within the
+same global batch. We found the aggregation strategy to matter much more than the load balancing loss type.
+The GShard-style loss (Lepikhin et al., 2020) that we use performs similarly to the loss-free variant (Wang
+et al., 2024a) as long as global aggregation is ensured.
+Notably, we observed that the experimental results regarding the optimal load-balancing methodology
+can depend on the expert capacity. Under finite capacity, even when the token-dropping strategy is carefully
+designed to avoid subtle causal leakages and the dropping rate is kept low with a generous capacity budget,
+the resulting conclusions can still differ from those obtained in settings without dropping. We therefore
+converged to a fully dropless MoE implementation (details in Sec. 2.8.1) which supports variable message
+size for all-to-all communications and ensures bounded memory usage under high imbalance.
+6

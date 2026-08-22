@@ -1,0 +1,45 @@
+Lidong Shi, Shengyuan Shi, Feifan Song, Jianlin Su, Zhengyuan Su, Lin Sui, Xinjie Sun, Flood Sung, Yun-
+peng Tai, Heyi Tang, Jiawen Tao, Qifeng Teng, Chaoran Tian, Chensi Wang, Dinglu Wang, Feng Wang,
+Hailong Wang, Haiming Wang, Jianzhou Wang, Jiaxing Wang, Jinhong Wang, Shengjie Wang, Shuyi
+Wang, Si Wang, Xinyuan Wang, Yao Wang, Yejie Wang, Yiqin Wang, Yuxin Wang, Yuzhi Wang, Zhaoji
+Wang, Zhengtao Wang, Zhengtao Wang, Zhexu Wang, Chu Wei, Qianqian Wei, Haoning Wu, Wenhao Wu,
+Xingzhe Wu, Yuxin Wu, Chenjun Xiao, Jin Xie, Xiaotong Xie, Weimin Xiong, Boyu Xu, Jinjing Xu, L. H.
+Xu, Lin Xu, Suting Xu, Weixin Xu, Xinran Xu, Yangchuan Xu, Ziyao Xu, Jing Xu, Jing Xu, Junjie Yan, Yuzi
+Yan, Hao Yang, Xiaofei Yang, Yi Yang, Ying Yang, Zhen Yang, Zhilin Yang, Zonghan Yang, Haotian Yao,
+Xingcheng Yao, Wenjie Ye, Zhuorui Ye, Bohong Yin, Longhui Yu, Enming Yuan, Hongbang Yuan, Mengjie
+Yuan, Siyu Yuan, Haobing Zhan, Dehao Zhang, Hao Zhang, Wanlu Zhang, Xiaobin Zhang, Yadong Zhang,
+Yangkun Zhang, Yichi Zhang, Yizhi Zhang, Yongting Zhang, Yu Zhang, Yutao Zhang, Yutong Zhang,
+Zheng Zhang, Haotian Zhao, Yikai Zhao, Zijia Zhao, Huabin Zheng, Shaojie Zheng, Longguang Zhong,
+Jianren Zhou, Xinyu Zhou, Zaida Zhou, Jinguo Zhu, Zhen Zhu, Weiyu Zhuang, and Xinxing Zu. Kimi
+K2: Open agentic intelligence, 2026. URL https://arxiv.org/abs/2507.20534.
+Vijay Anand Korthikanti, Jared Casper, Sangkug Lym, Lawrence McAfee, Michael Andersch, Mohammad
+Shoeybi, and Bryan Catanzaro. Reducing activation recomputation in large transformer models. Proceed-
+ings of Machine Learning and Systems, 5:341–353, 2023.
+Nathan Lambert, Jacob Morrison, Valentina Pyatkin, Shengyi Huang, Hamish Ivison, Faeze Brahman,
+Lester James V Miranda, Alisa Liu, Nouha Dziri, Shane Lyu, et al. Tulu 3: Pushing frontiers in open
+language model post-training. arXiv preprint arXiv:2411.15124, 2024.
+Nathan Lambert, Valentina Pyatkin, Jacob Morrison, LJ Miranda, Bill Yuchen Lin, Khyathi Chandu, Nouha
+Dziri, Sachin Kumar, Tom Zick, Yejin Choi, et al. Rewardbench: Evaluating reward models for language
+modeling. In Findings of the Association for Computational Linguistics: NAACL 2025, pages 1755–1797,
+2025.
+Katherine Lee, Daphne Ippolito, Andrew Nystrom, Chiyuan Zhang, Douglas Eck, Chris Callison-Burch, and
+Nicholas Carlini. Deduplicating training data makes language models better. In Proceedings of the 60th
+Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), pages 8424–8445,
+2022.
+Dmitry Lepikhin, HyoukJoong Lee, Yuanzhong Xu, Dehao Chen, Orhan Firat, Yanping Huang, Maxim
+Krikun, Noam Shazeer, and Zhifeng Chen. GShard: Scaling giant models with conditional computation
+and automatic sharding, 2020. URL https://arxiv.org/abs/2006.16668.
+Junyi Li, Charith Peris, Ninareh Mehrabi, Palash Goyal, Kai-Wei Chang, Aram Galstyan, Richard Zemel, and
+Rahul Gupta. The steerability of large language models toward data-driven personas. In Proceedings of the
+2024 Conference of the North American Chapter of the Association for Computational Linguistics: Human
+Language Technologies (Volume 1: Long Papers), pages 7290–7305, 2024a.
+Nathaniel Li, Alexander Pan, Anjali Gopal, Summer Yue, Daniel Berrios, Alice Gatti, Justin D. Li, Ann-
+Kathrin Dombrowski, Shashwat Goel, et al. The WMDP benchmark: Measuring and reducing malicious
+use with unlearning. In Proceedingsof the 41st InternationalConference on Machine Learning(ICML), 2024b.
+URL https://arxiv.org/abs/2403.03218.
+Wanchao Liang, Tianyu Liu, Less Wright, Will Constable, Andrew Gu, Chien-Chin Huang, Iris Zhang, Wei
+Feng, Howard Huang, Junjie Wang, et al. Torchtitan: One-stop pytorch native solution for production
+ready llm pre-training. arXiv preprint arXiv:2410.06511, 2024.
+Stephanie Lin, Jacob Hilton, and Owain Evans. Truthfulqa: Measuring how models mimic human false-
+hoods, 2022. URL https://arxiv.org/pdf/2109.07958.
+70

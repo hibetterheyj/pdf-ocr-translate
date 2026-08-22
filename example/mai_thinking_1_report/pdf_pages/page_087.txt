@@ -1,0 +1,26 @@
+approach that mid-trains at 32K for 1T tokens then extends to 256K with approximately 100B additional
+tokens.
+At 128K context, the progressive checkpoint matches the NLL of the full 1T-token 128K mid-training
+run, despite using far fewer tokens at long context lengths. Furthermore, all five configurations converge
+to roughly the same NLL at short context lengths (16K and 32K), confirming that training at longer context
+lengths during mid-training does not meaningfully impact short-context quality. This means there is no
+reason to pay for expensive long-context mid-training if a short extension phase at the end can achieve the
+same result. The figure supports a general recipe: mid-train at a short, MFU-friendly context length and
+extend at the end.
+C.4 Speed of Adaptation
+Fig. 22(c) shows the 256K code NLL trajectory during the context extension phase of an ablation. The adap-
+tation is remarkably fast: the vast majority of the NLL improvement occurs within the first 1–10% of train-
+ing iterations, after which the curve plateaus. This rapid convergence suggests the model is not acquiring
+fundamentally new capabilities during context extension, but rather calibrating its positional and attention
+mechanisms for sequence lengths not seen during earlier training. The representations needed to leverage
+long context are already present from pre-training and mid-training; the extension phase simply adjusts
+them for out-of-distribution positions.
+C.5 Final Recipe
+For the final model, we opted for 64K mid-training followed by 140B tokens of 256K extension. While the
+ablation analysis (conducted primarily on NLL metrics) suggested that shorter mid-training context lengths
+and shorter token horizon for length extension would suffice, the interaction between context length and
+post-training was less well characterized, and we chose the more conservative option. The overall context
+extension phase remains fast and cheap relative to the rest of training. Looking ahead, the same staged
+approach naturally extends to even longer context windows—the short final extension phase could target
+1M tokens or beyond in place of 256K, at modest compute cost.
+87

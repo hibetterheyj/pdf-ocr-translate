@@ -1,0 +1,83 @@
+Model version
+v2
+v3
+v4
+v5 (MAI-Base-1)
+Active/Total params
+23B/600B
+23B/600B
+23B/611B
+35B/1T
+Layers
+54
+54
+66
+78
+Hidden
+4352
+4352
+5632
+6656
+FFN
+34816
+34816
+11264
+13312
+Down-proj Dim
+–
+–
+2560
+3072
+Expert FFN
+17408
+17408
+9216
+10240
+Expert capacity factor
+2
+∞
+∞
+∞
+Top-k/Experts
+4/192
+4/192
+8/512
+8/512
+Table 7. Architecture evolution during the development of MAI-Base-1. Here we report the target architectures
+for large-scale infrastructure testing instead of the ladder models.
+dimension. To maximize GEMM efficiency we selected an expert parallelism (EP) degree of 64 and tensor
+parallelism (TP) degree of 1, ensuring that all expert all-to-all (A2A) communication remained within the
+NVL64 domain. This configuration achieved an initial MFU of 18%. We used cross-rack InfiniBand (IB)
+for data parallel (DP) communications (e.g., all-gather of parameters and reduce-scatter of gradients). We
+maintained the same setup across subsequent versions.
+Profiling revealed three primary bottlenecks: DP communication, deterministic attention kernels, and
+expert routing overhead. Enabling GPU Direct RDMA support improved overlap between communica-
+tion and compute and reduced end-to-end training time by approximately 1.1×. Due to the inefficiency
+of FlashAttention-2’s (FA2) deterministic mode on GB200 and lack of availability of FA4, we developed a
+custom block-sparse attention backend that improved step time by an additional 1.06×. Given the single-
+micro-batch training configuration, we adopted ZeRO-2 optimizer sharding, which reduced gradient mem-
+ory consumption without introducing additional communication relative to ZeRO-1. This allowed us to dis-
+able additional activation recomputation and further improve performance by 1.03×. Finally, we replaced a
+memory-bound PyTorch expert encode kernel, which utilized only 10% of available HBM bandwidth, with a
+custom Triton implementation that achieved approximately 80% HBM utilization and improved end-to-end
+performance by an additional 1.03×. Collectively, these optimizations increased MFU from 18% to 22%.
+Version 3 retained the same overall model architecture but switched from capacity-constrained routing
+to dropless MoE routing. From the efficiency gain point of view, this allowed us to use a better MoE load bal-
+ancing policy. This also had a positive impact on MFU by eliminating expert-capacity padding, thus reduc-
+ing both communication volume and expert GEMM computation. However, dropless routing introduced
+new synchronization overheads because expert token counts and tensor shapes must be communicated dy-
+namically during execution. To mitigate these costs, we overlapped token-count communication with other
+runtime operations and moved synchronization points to dedicated streams. These changes allowed us to
+realize the efficiency benefits of dropless routing while maintaining an MFU comparable to Version 2.
+Version4 introduced three significant architectural changes: the number of experts increased from 192 to
+512, routing expanded from top-4 to top-8 expert selection and use of LatentMoEs. Increasing the number
+of experts helped increase the learning capacity of the model, while latentMoE helped manage the A2A
+communication cost with the increased number of experts. At the same time, the training job was scaled from
+4,096 to 8,192 GPUs. LatentMoEs reduced expert GEMM sizes, making CPU launch overhead and kernel
+efficiency substantially more important. As a result, the initial MFU dropped from 22% to approximately
+16%. Use of FA4 deterministic kernels, (1.14× over block-sparse attention backend) combined with several
+improvements aimed at reducing CPU overhead and increasing runtime batching efficiency, boosted the
+MFU from 16% to 20%.
+Version 5 increased the active parameter count from 23B to 35B and total parameters from 600B to
+1T. The larger model significantly increased both parameter and activation memory requirements. Initial
+29

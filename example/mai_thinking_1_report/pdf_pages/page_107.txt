@@ -1,0 +1,46 @@
+Logical cluster provisioning and management.
+Each site is partitioned into Kubernetes clusters, typi-
+cally one per datacenter building. Logical clusters include GPU nodes for training and CPU nodes for sup-
+port services. Custom controllers reconcile desired logical-cluster state with the underlying Azure resources,
+maintain node topology labels, and integrate external health databases into scheduling state.
+Topology labels are assigned when a node starts, using the physical host identity. These labels represent
+rack, host, and locality information and are consumed by scheduling, reservation, and rack-level services.
+This makes physical placement visible to the control plane, allowing jobs to be placed on capacity that is not
+only available, but also topologically appropriate.
+Large jobs are designed to span beyond the boundary of a single Kubernetes cluster when required. Nodes
+are universally routable across the compute environment, and workload pods use host networking to avoid
+unnecessary overlay overhead.
+L.2 Cluster Readiness and Certification
+At thousands of GPUs, failures are expected. Certification therefore serves as the first reliability bound-
+ary. Its purpose is to prevent bad nodes, degraded links, marginal storage, and silent-corruption risks from
+entering the production training pool. The certification framework is automated, Kubernetes-native, and
+hierarchical. Hardware must pass progressively broader tests before becoming schedulable: single-node di-
+agnostics, rack-level multi-node collectives, and selected cross-rack InfiniBand validation. New nodes and
+remediated nodes follow the same path. Nodes returning from repair must pass certification again before
+re-entering production, preventing repeat offenders from cycling back into large training jobs.
+Certification.
+Our diagnostics suite validates each node in isolation. Unlike generic health checks, these
+tests stress individual components for extended periods: GPUs, CPU cores, HCAs, NVLink links, and main
+memory which isolate high ECC rates, irregular throttle behavior, GPU clock violations, link flaps, and other
+marginal conditions before the node is admitted to production.
+The suite also uses NCCL collectives to stress both intra-node and inter-node communication paths per
+rack and identify faulty NVLink behavior. These automated tests were instrumental in stabilizing the GB200
+and GB300 racks where we identified multiple racks with fewer than 16 healthy nodes; those racks were
+excluded from large training runs.
+The final stage of certification included cross-rack InfiniBand tests exercising fabric paths that single-
+node and rack-level tests cannot cover. These tests group nodes across racks, rails and leaf groups to validate
+spine-layer behavior, path diversity, and cross-rack RDMA performance. Because they consume a larger blast
+radius, they are run on demand during bring-up, incident investigation, and fabric validation.
+Node lifecycle.
+Certification is one stage in a closed-loop node lifecycle as illustrated in Fig. 26. A new or
+remediated node enters Init, where it is tainted, initialized, labeled, and configured. The certification con-
+troller then runs the tiered test suite. Passing nodes become Available, while failing nodes become Impaired.
+Runtime monitoring can also move an Available node to Impaired when NPD conditions, XID errors, ECC
+thresholds, NVLink degradation, InfiniBand link flaps, or storage faults are detected. Transient issues enter
+Auto Remediation, such as reboot or soft drain. Persistent or hardware-attributed issues are routed through
+Guest Health Reporting to vendor or datacenter maintenance. Repaired nodes return to Init and repeated
+certification. Unrecoverable nodes are decommissioned.
+L.3 Scheduling, Orchestration, and Control Plane
+The scheduling problem is the placement of heterogeneous workloads across heterogeneous capacity without
+sacrificing locality, quota isolation, or recovery. Workloads include long pre-training jobs, post-training and
+107

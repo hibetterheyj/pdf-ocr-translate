@@ -1,0 +1,49 @@
+Model
+LongBenchV2 CorpusQA
+MAI-Thinking-1
+61
+82
+Sonnet 4.6
+66
+79
+Table 19. Additional Long Context Benchmarks. Sonnet 4.6 results were generated via our own independent
+evaluation. All models were evaluated using maximum 128k output tokens with maximum reasoning effort
+(when applicable). Results were averaged from 4 independent evaluations.
+MRCR.
+OpenAI’s MRCR (Vodrahalli et al., 2024) is an artificially constructed benchmark which tests a
+model’s capability to perform counting and copying over long contexts. While an ideal model should score
+well, the nature of the tasks differs substantially from natural user queries. We found that, without targeted
+training, MAI-Thinking-1 performs poorly on this task compared to existing models, achieving 60% on
+avg_similarity@256K, compared with a state-of-the-art result of 95%. In contrast, a small set of 1,000
+synthetically generated in-distribution training examples boosts MRCR performance to 90%+ on a much
+smaller model in the MAI-Base-1 family, suggesting the benchmark’s susceptibility to overfitting. As we
+do not have evidence that training with such targeted data leads to more general model improvements, we
+decided to drop MRCR from the set of long-context benchmarks we prioritized.
+K.4 Safety
+AIR‐Bench.
+AIR-Bench (Zeng et al., 2024b) gives an aggregate read on policy-grounded refusal across
+regulatory and policy-derived harm taxonomies. Evaluation uses category-specific LLM judge prompts cus-
+tomized to each risk category and the scoring is designed to reward safe engagement rather than only penal-
+izing unsafe responses. MAI-Thinking-1 achieves the same performance as Sonnet 4.6 on the benchmark.
+CyberSecEval.
+CyberSecEval 4 (Wan et al., 2024; Meta, 2024) is an evaluation suite covering a variety
+of cybersecurity-related capabilities. Here, we focus on insecure code generation. The Instruct benchmark
+presents coding requests designed to elicit known insecure patterns, while the Autocomplete benchmark
+prompts the model with code context leading up to a known insecure pattern for the model to complete.
+Both measure whether the model produces vulnerable code in response using static analysis rules. MAI-
+Thinking-1 outperforms Sonnet 4.6 on the Autocomplete benchmark, and achieves similar performance on
+Instruct.
+K.5 Honesty
+To measure the honesty of MAI-Thinking-1, we selected benchmarks covering two distinct failure modes:
+repeating plausible-sounding falsehoods in short-form questions, and introducing unsupported claims over
+extended generations. MAI-Thinking-1 performs on par with Sonnet 4.6 in both benchmarks.
+TruthfulQA.
+TruthfulQA (Lin et al., 2022) evaluates resistance to popular misconceptions, where each
+question is designed to elicit plausible yet false answers. For reproducible results, we report model accuracy
+over the dataset in the recommended multiple-choice setting.
+LongFact.
+LongFact (Wei et al., 2024c) evaluates factual precision over longer generations containing mul-
+tiple claims; we adopt the simplified claim extraction and LLM judge protocol from OpenAI (Singh et al.,
+2025a) in place of the original SAFE pipeline, retaining the LongFact prompt set and reporting claim-level
+precision.
+105

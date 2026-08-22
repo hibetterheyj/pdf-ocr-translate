@@ -1,0 +1,50 @@
+Also, for $3 \nmid y$, ’lets see $y^3 \pmod{3^m}$.
+[...]
+Note that for $e\ge2$, $(\mathbb{Z}/3^e\mathbb{Z})^* = \langle -1 \rangle \times \langle 4 \
+rangle \cong C_2 \times C_{3^{e-1}}$. The element 4 has order $3^{e-1}$ mod $3^e$ (a
+generator of the 1-units).
+[...]
+Then $y \equiv (-1)^s 4^t \pmod{3^e}$, $s\in\{0,1\}, t\in\{0,\ldots,3^{e-1}-1\}$, and $y^3 \
+equiv (-1)^{3s} 4^{3t} \equiv (-1)^s (4^3)^t \pmod{3^e}$.
+[...]
+Also, the image $\{y^3 \pmod{3^e} : 3\nmid y\}$ is a subgroup of index 3 in $(\mathbb{Z}/3^e\
+mathbb{Z})^*$: it consists of elements $z$ with $z \equiv \pm 1 \pmod{9}$.
+Strong models are skeptics.
+Another problem from AIME25. Here the strong model pauses to re-
+examine its own solution when in doubt (“Wait, let’s re-examine”), catching the corner case that lets it answer
+correctly.
+Weak model excerpt: labels the empty grid “maximal” and never rechecks
+Can a placement with zero chips be maximal?
+[...] So for an empty grid, can you add a chip? Yes, you can add a white chip in any cell. But
+in our case, if all rows are W and all columns are B, can you add a white chip? Let's see:
+to add a white chip in cell (i,j), the cell becomes white. So row i must be white, which is
+ok (row i is W). Column j must be white, but column j is B, so you can't add a white chip.
+Can you add a black chip? row i must be black, but row i is W, so no. So actually, if all
+rows are W and all columns are B, the empty grid is maximal (you can't add any chip). So
+placing zero chips is allowed.
+[...] So total placements would be Case 1 + Case 2 + Case 3 = 960 + 32 + 32 = 1024.
+Strong model excerpt: distrusts its own converse and tests it on a small case
+Take the example: $s_i=W$ for all i, $t_j=B$ for all j => $S=\emptyset$, $c$ is empty function.
+Now take this $(S,c)=(\emptyset, \emptyset)$ (the empty placement). Can we place an
+additional chip in cell (1,1)? [...] choose $x=W$. Then row 1 has a white chip: ok. Column
+1 has a white chip: ok. Conditions 1,2 satisfied. Therefore, the placement $(\emptyset,\
+emptyset)$ does NOT satisfy condition 3.
+But according to our general argument above we wrote: "Conversely, if we take any $s_i,t_j \in
+\{W,B\}$, define $S=\{s_i==t_j\}, c(i,j)=s_i$, then $(S,c)$ satisfies 3."
+That's wrong in logic? Wait, let's re-examine that argument for the example.
+[...]
+### Small test case
+Let's try a smaller case to check the logic, say $1\times 1$ grid, 1 white chip, 1 black chip.
+Find the number.
+[...]
+Now using our formula logic: grid $1\times 1 =>$ 1 row, 1 column.
+Find $|Y| = $ number of $(s_1, t_1) \in \{W,B\}^2$ with $\{s_1\} = \{t_1\}$.
+[...]
+So pairs (W,W) and (B,B): 2 pairs.
+Yes, that matches exactly
+D.2 Agentic CoTs
+Strong models write and run unit tests while weak models only do basic sanity checks.
+One be-
+havior that emerges over the course of agentic RL training on SWE tasks is regularly running unit tests to
+verify work.
+91

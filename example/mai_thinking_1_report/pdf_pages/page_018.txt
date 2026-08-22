@@ -1,0 +1,65 @@
+1023
+1024
+Training FLOPs
+1.08
+1.10
+1.12
+1.14
+1.16
+1.18
+1.20
+1.22
+1.24
+Held-Out STEM (final)
+stem-heavy-mix (5B)
+stem-heavy-mix (23B)
+code-heavy-mix (5B)
+code-heavy-mix (23B)
+0%
+25%
+50%
+75%
+100%
+Training progress (100% = 20T tokens)
+1.050
+1.075
+1.100
+1.125
+1.150
+1.175
+1.200
+1.225
+1.250
+Held-Out STEM
+code-heavy-mix
+stem-heavy-mix
+Figure 6. Rank non-invariance in data mixture scaling. (left): stem-heavy-mix performs better on a held-
+out STEM NLL evaluation at small scale, but code-heavy-mix performs better at larger (23B) scale. (right):
+NLL of the STEM evaluation throughout training for the two 23B active parameter models for different data
+mixtures.
+by 23B active parameter models on each mixture for approximately 20T tokens (roughly equivalent to L66
+as per Tab. 1). No changes were made other than the weighting of the training sources.
+Results are shown in Fig. 6. As expected from the low-scale results, stem-heavy-mix outperformed
+code-heavy-mix on NLL STEM evaluations early in training. However, the STEM evaluation curves
+crossed midway through training, with code-heavy-mix eventually surpassing stem-heavy-mix. This
+contradicts the hypothesis that the relative ranking of datamixes is preserved as training compute is scaled
+up.
+From inspection of training and validation loss trends of individual sources, we identified two data
+sources that had high quality STEM content, but more fuzzy duplication than our other datasets and
+less diversity of content.
+These two sources had 11.8% weight in stem-heavy-mix, but just 0.3% in
+code-heavy-mix. Our hypothesis is that these sources were very helpful for the smaller model, but their
+lack of diversity was inherently less useful at larger scale.
+Following this result, we have put more emphasis on the scaling performance of candidate data mixtures
+in addition to their performance at a fixed experimental scale. Furthermore, in future data mixing studies,
+we paid extremely careful attention to the scaling properties of data mixes via our ladder approach.
+2.5.3 Final Mix Selection
+Because of the high number of datasets and our desire to validate them across multiple scales, we adopted
+a hierarchical approach to improve on our previous best data mix. We divided the data into about 10 cat-
+egories such as coding, STEM, PDFs, and general web. Then we performed alternating local and global
+optimizations:
+• Local Search. We keep all high-level categories fixed, and locally vary the weights within a single subset –
+for example, varying the weights between code files, PRs, and commits while keeping general web, STEM,
+etc. weights frozen.
+• Global Search. We keep the relative make-up of each high-level bin fixed, and vary the relative weight
+18

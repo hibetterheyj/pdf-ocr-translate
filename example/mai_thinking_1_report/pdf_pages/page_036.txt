@@ -1,0 +1,48 @@
+• Using traces from later stages of the climb is important. Including traces from very early checkpoints leads
+to noticeable performance degradation and requires many subsequent RL steps to recover. Generating
+traces from only the final RL checkpoint results in weaker performance after resuming RL. A possible
+explanation is that traces collected across a range of strong checkpoints provide greater diversity than
+traces generated from a single final policy, leading to better exploration during RL. Reusing traces already
+generated during RL also avoids the additional compute and time required for resampling.
+• For a fixed token budget, increasing prompt diversity is more valuable than increasing the number of traces
+per prompt. We also found simple random sampling to outperform several biased selection strategies,
+including shortest-trace sampling and heuristic filtering approaches similar to those explored by Yang
+et al. (2025).
+• During self-distillation, the model can forget long-context behavior learned from mid-training, especially
+when reasoning traces are collected from earlier RL runs trained with shorter maximum lengths. To miti-
+gate this, we mix mid-training data with reasoning traces during self-distillation before length extensions.
+3.1.5 Hyperparameters
+Below, we report the hyperparameters typically used for both our main RL climbs across the three domain-
+specific models and our self-distillation runs.
+RL climb.
+We train using AdamW with β1 = β2 = 0.95, ϵ = 10−15, and no weight decay. We use a constant
+learning rate of η = 10−6 with no warmup or decay. The global batch size is 7040 after packing, with the
+maximum number of total unpacked sequences capped at 12000. Because our RL stack is fully asynchronous,
+as we increase the generation length the latency of the rollouts increases while the training step times do not
+increase proportionally due to many short generations. This means the longer rollouts, which are typically
+the hardest problems, increase in off-policiness. To counter this, we opted to lowering the learning rate at
+higher lengths to 9 × 10−7 to reduce off-policiness and increase stability. The maximum generation length
+is 128k though we trained first at 8k, 16k, 32k and 64k.
+For GRPO with adaptive entropy control, we set ϵ = 0.6, kmax = 2.5, step size δ = 0.25, and target
+entropy H⋆= 0.3. For outer clipping, we set rmax = 50 and leave rmin = 0 unconstrained.
+For our language consistency reward, we set wlang = 0.5 and the per-word penalty to α = 0.005. For
+the length penalty, we fix wlen = 0.25 up to the 64k length extension stage. Since the penalty is normalized
+by ℓmax, the effective penalty naturally weakens as the maximum length increases, allowing the model to
+explore longer reasoning traces at larger token budgets. We remove the length penalty (wlen = 0) at the 128k
+extension stage.
+For problem sampling, we set G = 128 total rollouts with Gearly = 16 and [ρearly
+min , ρearly
+max ] = [0.05, 0.8].
+Pass-rate filtering uses [ρmin, ρmax] = [0.1, 0.8]. For top-p sampling, we use p = 0.97. Larger nucleus values
+improve exploration but increase the infrastructure overhead of transferring sampling masks, and we found
+p = 0.97 to provide a good balance between exploration and training efficiency.
+We perform 5 gradient steps between inference model updates and discard any rollout whose generating
+policy is more than 8 inference updates stale (i.e., 40 gradient steps behind). This slightly relaxes on-policy
+freshness in exchange for substantially higher throughput. We use dropless MoE training and set the global
+MoE load balancing coefficient to 1 · 10−5.
+Self‐distillation.
+For self-distillation SFT, we use packed sequences with a global batch size of 2, 048 and
+a sequence length of 128k tokens. Optimization uses AdamW with weight decay 0.001 and a cosine learning
+rate schedule. The maximum learning rate is set to 1.7 · 10−5, the minimum learning rate to 5.2 · 10−6, and
+the learning rate warmup ratio to 2%.
+36

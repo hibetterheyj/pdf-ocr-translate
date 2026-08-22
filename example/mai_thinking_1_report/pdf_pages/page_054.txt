@@ -1,0 +1,77 @@
+Knowledge
+Instruction Following
+Long Context
+Tool Calling
+Model
+MMLU Pro SimpleQA Verified IF Bench Adv. IF Multi-Challenge GraphWalks (≤128k)
+BFCL v3
+MAI-Thinking-1
+85
+31
+69
+85
+53
+90
+72
+Sonnet 4.6
+87
+29
+50
+86
+57
+96
+76
+Safety
+Honesty
+Health
+Model
+AIR-Bench CyberSec Instruct CyberSec Auto Long Fact Truthful QA HealthBench Prof. MedXpert QA
+MAI-Thinking-1
+88
+63
+63
+98
+88
+35
+43
+Sonnet 4.6
+88
+62
+56
+98
+88
+38
+49
+Table 12. Post-trained model evaluation results on various public benchmarks. All results for Sonnet 4.6 were
+generated via our own evaluation suite. For AdvancedIF, we report rubric-level scores.
+Agentic coding and tool calling.
+For agentic coding, we evaluate MAI-Thinking-1 on SWE-bench Ver-
+ified (Chowdhury et al., 2024), SWE-Bench Pro (Deng et al., 2025), and Terminal-Bench 2.0 (Merrill et al.,
+2026). For tool calling we evaluate MAI-Thinking-1 on BFCL v3 (Patil et al., 2025). Unlike the STEM eval-
+uations, these evaluations are multi-turn and require models to interact with environments. For all three
+benchmarks, we evaluate our model with a very simple ReAct-style (Yao et al., 2023) loop, where we always
+append to the agent loop depicted in Figure 18. For SWE-bench Verified and SWE-Bench Pro, we enable
+both bash and string replacement tools. For Terminal-Bench 2.0, we only enable bash tool to mimic the bare
+minimal terminal interface. To eliminate the inference speed and infrastructure confounding factor (Segato,
+2026), we ignore predefined timeouts for Terminal-Bench 2.0. More details about the evaluation setup are
+in Appendix I.
+General capabilities.
+In Tab. 12, we report our results on benchmarks covering knowledge, instruction
+following, long context, safety, honesty, health, and tool calling. For benchmarks in these areas, we found
+that not all labs report official results in model cards or model announcements. In order to provide a baseline
+against which to compare MAI-Thinking-1, we evaluated Sonnet 4.6 using max reasoning effort and max
+sequence length on these benchmarks and also report those results in Tab. 12. Across most benchmarks we
+found that our model is comparable with Sonnet 4.6.
+Specifically, we report on SimpleQA Verified (Haas et al., 2026) and MMLU-Pro (Wang et al., 2024b)
+for knowledge and reasoning capabilities, IFBench (Pyatkin et al., 2026), AdvancedIF (He et al., 2025)
+and MultiChallenge (Deshpande et al., 2025) for Instruction following, GraphWalks for long context ca-
+pabilities, AIR-Bench (Zeng et al., 2024b) and CyberSecEval 4 (Wan et al., 2024; Meta, 2024) for safety,
+TruthfulQA (Lin et al., 2022) and LongFact (Wei et al., 2024c) for honesty, HealthBench (Arora et al., 2025)
+and MedXpertQA (Zuo et al., 2025) for health knowledge tasks. For a description of each evaluation setup,
+see Appendix K.
+4.2 Human Side‐by‐Side Evaluations
+To supplement the capability-focused public benchmarks described above, which focus on narrow and
+objectively-defined quality criteria, we conducted human evaluations across a breadth of real-world tasks.
+These evaluations compare two models side by side holistically with a focus on overall helpfulness. Side-by-
+side evaluations help surface quality differences that aren’t apparent when reviewing responses in isolation.
+54

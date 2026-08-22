@@ -1,0 +1,130 @@
+ 1.213
+ 1.414
+5 10 20
+2
+5 10 21
+2
+5
+0.9
+1
+1.1
+1.2
+1.3
+1.4
+1.5
+ 1.181
+ 1.326
+5 10 20
+2
+5 10 21
+2
+5
+0.9
+1
+1.1
+1.2
+1.3
+1.4
+1.5
+ 1.202
+ 1.332
+5 10 20
+2
+5 10 21
+2
+5
+0.9
+1
+1.1
+1.2
+1.3
+1.4
+1.5
+ 1.199
+ 1.392
+5 10 20
+2
+5 10 21
+2
+5
+0.9
+1
+1.1
+1.2
+1.3
+1.4
+1.5
+ 1.091
+ 1.129
+5 10 20
+2
+5 10 21
+2
+5
+0.9
+1
+1.1
+1.2
+1.3
+1.4
+1.5
+ 1.189
+ 1.354
+5 10 20
+2
+5 10 21
+2
+5
+0.9
+1
+1.1
+1.2
+1.3
+1.4
+1.5
+Top 8 / 256 experts
+Top 8 / 512 experts
+Top 8 / 1024 experts
+FLOPs
+FLOPs
+FLOPs
+FLOPs
+FLOPs
+FLOPs
+EG FLOPs
+EG FLOPs
+EG FLOPs
+EG FLOPs
+EG FLOPs
+EG FLOPs
+General
+STEM
+Math
+Code
+Multilingual
+Weighted Average
+Figure 3. Pre-training efficiency gains (Sec. 2.2.2) across eval task categories with increasing sparsity of model
+families. Results are obtained by training a model ladder (Sec. 2.2.1) for each sparsity level. Since every data
+point is compared against the scaling law (Eq. 1), EG for the baseline raw data points may not be exactly one.
+parameter ratios; this is achieved by fixing top-k (8, or 7+1 with a shared expert (Dai et al., 2024; Qwen
+et al., 2025)) while adjusting the expert expansion rate and number of experts for the MoE-every-layer fam-
+ilies. We report two versions of EG defined along two cost dimensions: FLOPs and training time, measured
+on ladder models L12–30 described in Sec. 2.2.1. While MoE-every-layer combined with shared experts
+achieves an EG of 1.03 in FLOPs, the interleaved paradigm offers the better tradeoff once training MFU is
+taken into account, as reflected by EGTime < 1.
+Example 2: Sparsity scaling.
+A scalable architecture design should yield healthy improvements with
+increased sparsity. Fig. 3 demonstrates that our architecture family carries this property, showing consistent
+efficiency gains as we increase the number of experts from 256 to 1024 with top-k = 8 (MoE sparsity level
+from 32× to 128×). For MAI-Base-1 we select the top-8/512 configuration to balance model quality with
+training and inference efficiency, and leave further exploration of sparsity scaling for future work.
+2.3 Evaluation Methodology
+We use a suite of internal benchmarks focused on NLL tasks for our experimentation and progress tracking.
+These come from different sources: vendors who have created data fully held out from training, internal
+sources not present on the web, and web sources that we are careful to remove from our training data. Ex-
+amples of our benchmarks are listed in Tab. 3, and we discuss our motivation for using NLL evaluation
+benchmarks in Sec. 2.3.2. We report our evaluation results after pre-training in Sec. 2.7.
+In total, we have nearly 40 such benchmarks grouped into 5 different categories: Code, STEM, Math2,
+General Knowledge, and Multilingual. When we need to aggregate these into a single number for direct EG
+2We choose to explicitly up-weight math and treat it differently from the more broad STEM category.
+9

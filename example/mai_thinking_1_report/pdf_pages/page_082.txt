@@ -1,0 +1,44 @@
+A Citation reference
+Please use this reference BIBTEX entry when citing this work:
+@techreport{mai_thinking_1,
+title={MAI-Thinking-1: Building a Hill-Climbing Machine},
+author={The Microsoft AI Team},
+institution={Microsoft AI},
+year={2026},
+urldate={2026-06-02},
+url={https://microsoft.ai/pdf/mai-thinking-1.pdf}
+}
+B Pre‐training Data Pipeline Details
+This appendix provides further details for the processing of our major pre-training data sources described
+in Sec. 2.4.
+B.1 Web HTML
+The majority of our web HTML corpus comes from a proprietary crawl. After initial page discovery and
+selection, approximately 1.2 trillion pages are crawled and parsed. HTML is converted to text using Trafi-
+latura (Barbaresi, 2021), producing extracted text together with language ID and a corresponding confidence
+score. During extraction, we infer document encodings rather than assuming UTF-8 prior to processing.
+This approach improves robustness when handling multilingual web data with legacy, missing, or incor-
+rectly declared encodings.
+After parsing, all pages go through filters for policy compliance, adult content, overlap with the web
+PDF corpus, and blocklisted domains. In addition to Microsoft standard policy Sec. 2.4, we apply UT1
+block list (Prigent, 2026) to remove adult content and piracy-related domains. In all, this filtering reduces
+the corpus from 1.2 trillion pages to 794 billion pages. Given the prevalence of AI-generated content on
+the web, we also score pages with a proprietary AI-content detection model and use manual inspection to
+identify domains with extensive AI-generated content; those domains are filtered out of the training corpus.
+The filtered web corpus then undergoes exact and fuzzy deduplication. We normalize documents by
+lowercasing and trimming whitespace, then remove exact duplicates using MD5 hashes. This reduces the
+corpus from 794 billion to 423 billion documents. Our fuzzy duplication follows the LSH method and
+parameters described in Sec. 2.4.3. After fuzzy deduplication, the proprietary crawl contains 73.4 billion
+English documents and 116.5 billion non-English documents.
+We process Common Crawl with the same pipeline. Starting from roughly 300 billion pages, we keep
+the latest retrieved content for each URL, reducing the corpus to about 100 billion pages. After filtering,
+deduplication, merging with the proprietary web corpus, and a final round of exact-URL and content-level
+fuzzy deduplication, the Common Crawl portion contains 24.2 billion pages.
+For downstream processing, we compute text embeddings for all web pages using Qwen3-Embedding-
+0.6B (Yang et al., 2025). The resulting corpus is then processed through pipelines tailored to general web
+pages, STEM pages, code pages, and key domains.
+General web pages.
+For general web pages, we use a combination of filtering and quality binning to en-
+able finer-grained data mixing of this large corpus. First, we apply attribute models to the text embedding of
+each document. These attribute models score pre-training-relevant properties such as educational value, fac-
+tual accuracy and reliability, writing quality, information density, reasoning content, and general-knowledge
+82

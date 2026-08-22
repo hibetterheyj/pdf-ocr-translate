@@ -1,0 +1,51 @@
+Focus Area
+Example Guidance
+Emojis
+Minimal usage - only in clearly appropriate, casual contexts. Do not use emojis
+for list headers or as a sign-off.
+Tables & Markdown
+Bullet-lists and tables are used for making multiple points, giving examples, or
+presenting data. Headings break up answers that strictly need multiple distinct
+parts to answer.
+Tone & Formality
+Default to professional tone, adopting a playful or engaging tone only when
+directly asked by the user.
+Layout
+Minimal preamble or wrap-up phrases, no sycophantic introductions. Clear
+information hierarchy. Answer is easy to quickly scan through and important
+information is presented up front.
+Density
+No wall-of-text sections. Bold text is used strategically. Spacing between para-
+graphs. Sentences stay short enough to be readable.
+Table 9. Examples of target behavior descriptions from our style guide.
+Data.
+We compile a diverse set of manually curated data from vendors, PII-filtered consumer Copilot
+logs10, and synthetically generated data. Inspired by prior work (Zhang et al., 2024; Wei et al., 2024b,c),
+our data spans a spectrum of difficulty: (a) established factual queries, both short-form and long-form, where
+responses can be precisely verified against reference answers; (b) challenging factual queries, targeting long-
+tail or obscure topics where model coverage is expected to be inconsistent and reference labels are generated
+via search-augmented verification, and (c) false-premise queries, where the question contains an incorrect pre-
+supposition and no correct affirmative answer exists. Covering these boundary cases pushes the model to
+maintain factual integrity and hedge only when it lacks knowledge.
+Reward design.
+For factuality grading, reference labels are generated offline for every RL example via
+retrieval-augmented generation and verification. Each model response is then scored by an LLM judge along
+two dimensions—factuality and confidence—producing one of five categories: CONFIDENT_CORRECT, UN-
+CONFIDENT_CORRECT, NOT_ATTEMPTED, UNCONFIDENT_INCORRECT, and CONFIDENT_INCORRECT. These
+are combined into a scalar reward via a weighted sum: confident-correct responses receive the highest
+reward, confident hallucinations the steepest penalty, abstentions a neutral reward, and unconfident-but-
+correct responses a reduced reward to discourage over-hedging.
+3.4.5 Style
+We define a style guide specifying what good outputs look like: warmth without sycophancy, scannable struc-
+ture, and tone calibrated to context rather than simply mirroring the user. The style guide also covers when
+and how to use emojis, formality level, notation for math and code, and general text density. Tab. 9 gives
+high-level examples of the guidance we train our model to follow.
+Data.
+Style is graded on a broad set of PII-filtered Microsoft consumer Copilot logs, vendor-written con-
+texts (both static and interactive), and Arena conversations. This data covers low-to-medium difficulty
+prompts, excluding complex instruction following, coding, math, and STEM. Prompts are classified by user
+intent (e.g., creative writing, practical guidance, information-seeking, and chit-chat), with active collection
+targeting areas where the model is weak.
+10Consumer Copilot log data is only collected for users who have not opted out of having their data used for model training and
+excludes certain users as set out in Privacy FAQ for Microsoft Copilot | Microsoft Support.
+48

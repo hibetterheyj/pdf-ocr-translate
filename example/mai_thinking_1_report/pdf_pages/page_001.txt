@@ -1,0 +1,27 @@
+MAI-Thinking-1: Building a Hill-Climbing Machine
+The Microsoft AI Team 1
+Abstract
+Progress in AI is driven not by a single model, but by the ability to continually improve upon the current state of models.
+Achieving this requires treating model development as a system-level optimization problem, for which the solution is
+building a hill-climbing machine for rapid improvement. Our process includes a scaling-focused framework for pre-
+training modeling decisions, as well as a robust reinforcement learning recipe and infrastructure that sustains long,
+log-linear performance improvement. The first model developed using our process is MAI-Thinking-1, a 35B active /
+1T total parameter MoE that stands among the strongest models of similar size on STEM reasoning and coding tasks
+(e.g., 52.8% on SWE-Bench Pro, 97.0% on AIME 2025, and 87.7% on LiveCodeBench v6). MAI-Thinking-1 is trained
+from-scratch, exclusively on clean, enterprise-grade data, without distillation from third-party models. In this technical
+report, we offer a deep dive into the development of MAI-Thinking-1. By sharing our technical details and learnings we
+hope to cultivate a transparent and science-driven approach to further development in AI.
+1 Introduction
+We introduce MAI-Thinking-1, a powerful reasoning model developed from scratch by Microsoft AI (MAI)
+that is competitive with models of similar size on STEM reasoning and coding tasks. Our pre-training is fo-
+cused on a simple scaling approach which emphasizes empirically-driven iterative improvements to our ar-
+chitecture and data, while our reinforcement learning (RL) framework is optimized for sustained log-linear
+climbs over many thousands of steps (Figure 1).
+We develop our model following three main design principles: First, capabilities should be learned, not
+inherited. Although faster to acquire, intelligence imitated through distillation lacks the steerability and
+Figure 1. Performance during reinforcement learning of MAI-Thinking-1. STEM Climb (left and center): Eval-
+uation performance during our STEM-focused climb with evals on AIME 25 and a hard subset of LiveCodeBench
+v6 (after Jan. 25). For both curves, we show pass@1 average over 3 adjacent checkpoints. Agentic Climb (right):
+Pass@1 performance on SWE-bench Verified during our code-heavy agentic climb.
+1Correspondence should be sent to mai-technical-report@microsoft.com. Please cite as shown in Appendix A.
+1

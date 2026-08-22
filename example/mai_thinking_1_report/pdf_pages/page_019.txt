@@ -1,0 +1,93 @@
+Less
+More
+0.93
+0.94
+0.95
+0.96
+0.97
+0.98
+0.99
+NLL
+Web PDFs
+Less
+More
+0.93
+0.94
+0.95
+0.96
+0.97
+0.98
+0.99
+Web: General
+Less
+More
+0.93
+0.94
+0.95
+0.96
+0.97
+0.98
+0.99
+Web: STEM
+Less
+More
+Amount of Data Source
+0.93
+0.94
+0.95
+0.96
+0.97
+0.98
+0.99
+NLL
+Web: Math
+Less
+More
+Amount of Data Source
+0.93
+0.94
+0.95
+0.96
+0.97
+0.98
+0.99
+code
+Less
+More
+Amount of Data Source
+0.93
+0.94
+0.95
+0.96
+0.97
+0.98
+0.99
+Multilingual: stem
+Graduate Level Physics NLL
+Figure7. For a vendor-created graduate level physics evaluation set, we show the relative contribution of different
+datasets (lower NLL is better). We sample different datamixes, train on each of them, and evaluate the resulting
+models; then, we look at correlations between the final NLLs and the mixes’ data composition. We see clear
+positive trends with our PDF datasets, math and STEM data extracted from the web. Our general web corpus is
+mostly neutral, while adding more code to the mix (instead of others) does not seem to help with Physics.
+between different subsets (e.g., up-weighting STEM and PDFs and reducing the weight of all other com-
+ponents). Fig. 7 illustrates how this process works.
+Throughout these searches, we cap the maximum number of repetitions of any given dataset at 8, to safe-
+guard against overfitting and the diminishing returns from looping over the same data multiple times (Chen
+et al., 2026a).
+After performing multiple iterative rounds of global and local data optimization, we selected a few
+promising candidate mixtures that minimized our NLL objective function. We trained these models for
+approximately 2.8× more compute than that used for global mixing and selected the best candidate. After
+these adjustments to the data mix procedure, we saw good scaling in this scale-up validation step, where the
+optimal candidate no longer changed with scale.
+Tab. 5 summarizes the resulting composition. Each source family contains several datasets, and the num-
+ber of epochs per dataset varies. Some datasets could potentially belong to several categories (e.g., a STEM
+dataset in French), and for the table, we assign each dataset to the first matching row from top to bottom. In
+our final mixture, we end up with around 300 billion high-quality math tokens. These are sampled 5.28×
+on average, the most of any source family. The bulk of our training mixture is coding data however, coming
+in at 16.4T training tokens, with just over 2 epochs on average. Our web text and PDF data are each seen less
+than once on average (0.55× and 0.53×), meaning the full available corpus of those sources is not exhausted
+even over a 30T-token run. Note that for both PDFs and Web text, math and stem components are counted
+in subject-specific categories. Our multilingual corpus is the most aggressively downsampled: 8.1T unique
+tokens are available, but the final mix consumes only 0.5T (0.06×) – again noting that domain-specific mul-
+tilingual data is included within different categories.
+19

@@ -1,0 +1,57 @@
+Model Performance
+vs Sonnet 4.6
+vs Opus 4.6
+Overall side-by-side preference
+0.07 ±0.06
+−0.07 ±0.06
+Instruction following ∆
+−0.01 ±0.02
+−0.04 ±0.02
+Factuality ∆
+−0.02 ±0.02
+−0.03 ±0.02
+Conciseness and relevance ∆
+0.11 ±0.02
+0.07 ±0.02
+Completeness ∆
+−0.01 ±0.02
+−0.02 ±0.02
+Style and tone ∆
+0.08 ±0.02
+0.05 ±0.02
+Table 14. Human evaluation results for MAI-Thinking-1 versus Sonnet 4.6 and Opus 4.6. Positive values indicate
+a preference for MAI-Thinking-1, while negative values indicate a preference for Sonnet or Opus.
+fraction of prompts where the response fails to comply, and helpfulness is reported as one minus this rate.
+Paired with the safety pass rate (judge safety score > 3 on a 1–5 Likert scale) on high-sensitivity items, this
+surfaces the ideal model behavior that is safer on higher-risk, harmful requests and more helpful on lower-
+risk, benign ones. See Appendix J for a detailed explanation of the evaluation methodology and dataset
+construction.
+Fig. 20 plots this safety-helpfulness balance for MAI-Thinking-1 against Sonnet 4.6. Across five of the
+eight categories, MAI-Thinking-1 sits above and/or to the right of Sonnet 4.6 indicating positive perfor-
+mance, with the largest gains on Chemical, Biological, Radiological, and Nuclear (CBRN), Self Harm, and
+Elections & Politics.
+Jailbreaks.
+We source 2.5K unique seed scenarios from vendors, internal red-teaming, and open-source
+benchmarks including HarmBench (Mazeika et al., 2024) and StrongREJECT (Souly et al., 2024) to con-
+struct an internal jailbreak evaluation suite. We augment the sourced prompts to produce a final evaluation
+set of approximately 9.5K jailbreak prompts. We group these into three buckets by degree of transformation
+and attacker adaptivity: Foundational, Compositional, and Adaptive Techniques (defined in Fig. 21). Founda-
+tional Techniques are single-step transformations that preserve harmful intent through simple modifications
+such as jailbreak wrappers or prompt templates. Compositional Techniques combine multiple transforma-
+tions or structured rewrites, including template-based attacks such as PyRIT (Munoz et al., 2024), PAP-style
+transformations (Zeng et al., 2024a), and non-English or mixed-language variants. Adaptive Techniques in-
+troduce interaction, search, or multi-turn structure, including TAP (Mehrotra et al., 2024) and multi-turn
+attacks (Russinovich et al., 2024).
+Fig. 21 reports attack success rate (ASR) across the three buckets; lower values indicate stronger safety.
+Across these prompt transformation types, MAI-Thinking-1 achieves a low ASR comparable with Sonnet
+4.6 and Opus 4.6.
+5 Safety Red Teaming
+To evaluate safety properties beyond automated benchmarks, we conducted red-teaming in parallel with the
+model development cycle. The goal was to surface adversarial vulnerabilities, novel attack vectors, and harm
+category gaps that automated evaluations do not reliably detect, and to feed findings back into training data
+collection and policy refinements on a rolling basis.
+5.1 Internal Red Teaming
+Methodology.
+Internal red-teaming was conducted by MAI red teamers (safety researchers and recruited
+external annotators), and was performed on different model versions throughout the development cycle.
+56

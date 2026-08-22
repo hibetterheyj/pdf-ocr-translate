@@ -1,0 +1,48 @@
+multi-turn workloads, prompts can grow very long while generations are often short, making these work-
+loads largely prefill-heavy. Here we lean heavily on prefix caching: our prefix cache hit rate reaches 97–98%
+on production RL runs.
+Inference system stability.
+At the scale of RL used to train MAI-Thinking-1 with thousands of inference
+chips, individual replicas crash, hang, slow down, or fail due to node failure on a regular basis; the infer-
+ence layer must degrade and restart gracefully rather than fail the entire job when this happens. We rely on
+defense-in-depth at three layers. At the replica level, each SGLang server runs a self-watchdog that probes
+its own generation endpoint and monitors scheduler memory; an unhealthy replica triggers its own graceful
+restart so the orchestrator can bring up a clean replacement. At the router level, the SGLang router acts as
+a circuit breaker: when backend replicas become unhealthy, it stops admitting new requests, runs a multi-
+stage probe before reopening, and periodically rediscovers replicas that silently dropped out of its active set.
+Per-replica flow control prevents a slow replica from accumulating a backlog that would degrade the whole
+pool. At the job level, a liveness monitor tracks the number of live actors in each class (inference replicas,
+routers, rollout workers, learner ranks) and fails the job for a clean restart if any class falls below its allowed
+threshold. An orthogonal step-progress watchdog catches the harder case where everything appears alive
+but training has stopped advancing. Finally, when a rollout worker’s request to an inference server fails mid-
+flight, it is retried against another replica, so individual replica failures degrade pool throughput but do not
+lose rollouts.
+Numerics gap between inference and learner.
+A critical aspect of RL is the numerics gap between the
+inference engine and the learner. YOLO (the learner) and SGLang (the inference engine) use different kernels,
+scheduling, and parallelism strategies. Even small per-token logprob discrepancies compound across long
+rollouts and can destabilize the importance-sampling correction in off-policy RL. To mitigate these issues,
+we use bf16 for both the learner and the inference engine in our RL runs; this yields substantially smaller
+numerics gaps and more stable training than the lower-precision alternatives we evaluated. On top of bf16,
+we apply MoE routing replay (Ma et al., 2025) and top-p mask replay (Sec. 3.1.3).
+3.6.5 Weight Transfer
+Moving from synchronous to asynchronous RL turns weight transfer into a recurring distributed synchro-
+nization problem: fresh learner weights must reach the inference fleet every k steps, and transfer time cre-
+ates inference idleness and additional staleness. The core difficulty is that learner and inference allocations
+shard the same tensors differently: Each side may use different combinations or degrees of FSDP, pipeline
+parallelism, data-parallel attention, and tensor layouts, while parameters may also differ in precision, quan-
+tization state, or matrix layout. Every transfer must therefore both reshard bytes and perform per-tensor
+transformations.
+Transfer plan.
+We compile resharding, data movement, and per-tensor transformation into a single trans-
+fer plan computed once at job start and reused thereafter. For each parameter, the planner intersects the
+learner’s and inference server’s sharding layouts and emits one entry per non-empty sub-shard overlap,
+recording source rank, destination rank, byte extent, and required operations such as dtype casts or lay-
+out permutations. Resharding is implicit in this intersection; each learner rank sends only the slices that
+its paired inference rank needs, eliminating separate materialization of full tensors. Transforms run on
+whichever side minimizes their cost, and the runtime pipelines packing, transfer, and unpacking so succes-
+sive sub-shards overlap in time. To decouple planning from fleet size, the plan targets an idealized topology
+of one learner and one inference server; at runtime each source–destination pair expands into a transfer
+group covering all live replicas of the destination rank, so the plan remains valid as replicas join, leave, or
+are replaced. Because data parallelism replicates rather than shards parameters, one DP group already holds
+52

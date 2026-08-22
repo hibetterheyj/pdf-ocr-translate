@@ -1,0 +1,28 @@
+{
+"type": "function",
+"function": {
+"name": "bash",
+"description": "Execute bash commands in the context of the repository.\nDirectory or environment variable
+changes are not persistent. Every action is executed in a new subshell.\nHowever, you can prefix any
+action with `MY_ENV_VAR=MY_VALUE cd /path/to/working/dir
+&& ...` or write/load environment variables from files.\nYou have a full Linux shell environment.\nAlways use
+non-interactive flags (-y, -f) for commands.\nAvoid interactive tools like vi, nano, or any that require
+user input.\nYou can use bash commands or invoke any
+tool that is available in the environment.\nYou can also create new tools or scripts to help you with the task
+.\nIf a tool isn't available, you can also install it.\n",
+"parameters": {
+"type": "object",
+"additionalProperties": false,
+"required": ["command"],
+"properties": {
+"command": {
+"type": "string",
+"description": "The bash command to execute. Can include pipes, redirects, and other shell features.
+Commands are executed in the repository working directory."
+}
+}
+}
+}
+}
+Figure 23. Bash Tool Schema.
+95

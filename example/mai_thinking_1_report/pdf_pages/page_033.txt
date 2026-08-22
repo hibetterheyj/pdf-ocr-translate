@@ -1,0 +1,50 @@
+In practice, however, we found that these unclipped branches sometimes led to catastrophic gradient-
+norm spikes. We address this by adding a hard outer clip that is applied to all branches:
+rout
+i,t (θ) = clip
+(
+ri,t(θ), rmin, rmax
+)
+,
+(9)
+where rmax is set to a large value and rmin can be left unconstrained; this is similar in spirit to the dual-clip
+PPO objective proposed by Ye et al. (2020).
+This two-level strategy discards cases where there is an extreme discrepancy between old and new prob-
+abilities while preserving the standard trust-region behavior for ratios in the normal range. Empirically, we
+found this to lead to fewer gradient-norm spikes and more stable climbing.
+3.1.2 Reward Design
+While our task-specific component differs across our domain-specific RL climbs, we use the same reward
+decomposition throughout:
+R(q, yi) = Rtask(q, yi) + wlang · Rlang(yi) −wlen · Rlen(yi).
+(10)
+Here, Rtask denotes the task-specific reward, Rlang is a language-consistency reward, and Rlen is a length
+penalty. The coefficients wlang and wlen are scalar hyperparameters.
+Language consistency reward.
+As context lengths increase during RL, we observe that models begin
+producing foreign-language tokens within their CoTs. These mixed-language CoTs correlate with spikes
+in log-probability divergence between the training and inference policies, ultimately destabilizing training.
+To address this, we use a language consistency reward Rlang(yi) similar to Guo et al. (2025). Since English
+dominates our training distribution, we define language consistency with respect to English:
+Rlang(yi) = max
+(
+1 −α · nnon-english(yi), 0
+)
+,
+(11)
+where nnon-english(yi) is the number of non-English words in the CoT of response yi and α is a per-word
+penalty. In practice, we found that top-p sampling is similarly effective in preventing single, low-probability,
+foreign language tokens.
+Length penalty.
+Following Xiang et al. (2025), we define our length penalty as:
+Rlen(yi) = ρq · |yi|
+ℓmax
+(12)
+where ρq is the pass rate of problem q and ℓmax is the maximum rollout length. The penalty depends on both
+response length and problem difficulty. Hard problems with low pass rates receive weaker penalties, allowing
+the model to explore longer reasoning traces. Easy problems receive stronger penalties, encouraging concise
+and cost-efficient reasoning by removing redundant loops and hedging behavior.
+3.1.3 Sampling Strategy
+We employ several sampling strategies to improve both the efficiency and stability of our RL climb. These
+operate at two levels: selecting which problems to train on and controlling how rollouts are generated for
+those problems.
+33

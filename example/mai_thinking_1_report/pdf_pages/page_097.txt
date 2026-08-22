@@ -1,0 +1,45 @@
+F Constraint Taxonomy for Instruction Following Data
+We build a constraint taxonomy to organize the instructions a model may be asked to follow. It serves two
+purposes: guiding data collection toward broad coverage, including rare constraint combinations, and al-
+lowing to analyze model performance at a fine-grained level. We split constraints by how they are checked,
+matching the reward types from Sec. 3.4.1.
+Objective (hard) constraints.
+These are rule-based constraints that trigger Python functions from a cata-
+log of custom and open-source checkers (Pyatkin et al., 2026; Zhou et al., 2023). Examples include numerical
+constraints (e.g., “respond in exactly 3 sentences”), format constraints (e.g., “output as a JSON object with
+keys name and age”), and linguistic constraints (e.g., “respond in French”).
+Subjective (soft) constraints.
+These need judgment to evaluate and are scored by the reward model or
+AI judges. Examples include tone (e.g., “be encouraging but not patronizing”), persona (e.g., “respond as
+a history scholar”), and interaction behavior (e.g., “if unclear, ask clarifying questions before answering”).
+Tab. 15 shows example subcategories.
+Multi‐turn scenario taxonomy.
+Inspired by Deshpande et al. (2025), we break down dialogue use cases
+to various scenarios that test model’s IF ability in complex conversations involving multiple turns as shown
+in Tab. 16.
+G Infrastructure for Building SWE Environments
+The infrastructure is designed primarily to address the scale, stability, and safety challenges. The build in-
+frastructure is organized as a two-pool Ray cluster running on approximately 30,000 CPU cores. The main
+pool handles work dispatching, Lance I/O, and pipeline state tracking. The builder pool runs the actual
+container builds; all builder nodes are tagged with a Ray custom resource flag, and the build step uses Ray’s
+logical resource scheduling to ensure its actors land exclusively on builder-capable nodes.
+The two pools are separated because container builds are resource-intensive and failure-prone (disk ex-
+haustion, OOM, build hangs), while coordination is lightweight and stateless; isolating them ensures that
+builder pod failures do not disrupt orchestration and state management. The separation also enforces cre-
+dential isolation: builder pods execute untrusted Dockerfiles from open-source repositories and do not hold
+credentials for the pipeline’s data storage or internal services. Pod failures—whether from disk pressure,
+hardware faults, or node evictions—are handled by Kubernetes restart; the restarted pod reconnects to the
+Ray cluster and is automatically picked up when the next main pool worker schedules a new task.
+Each builder pod contains two containers sharing NVMe-backed local storage, co-located for build and
+grading efficiency. The main container runs the Ray worker with rootless podman for loading built images
+and running grading containers. The sidecar container runs a rootless BuildKit daemon for OCI image builds
+via buildctl. The two containers communicate through the shared NVMe volume—BuildKit writes OCI
+tar archives that podman loads—and via localhost for the BuildKit control channel. This co-location avoids
+network transfer of large container images between build and grading; the entire build-load-run cycle hap-
+pens on local NVMe. Init containers handle one-time setup including authentication for container registries
+via federated identity.
+The pipeline also exploits BuildKit layer caching to reduce redundant work across same-repo problems.
+Problems are grouped by repository and dispatched to the same persistent Ray actor on a builder node. Since
+the actor persists across same-repo problems, shared base layers—apt-get install, pip install, de-
+pendency compilation—are built once and reused, as dependency installation often dominates Docker build
+97

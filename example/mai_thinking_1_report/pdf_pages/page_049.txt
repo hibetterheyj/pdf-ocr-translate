@@ -1,0 +1,52 @@
+Capability
+Sample weight
+Token weight
+STEM and Coding
+56%
+89%
+Agentic Capability
+11%
+9%
+General Helpfulness and Safety
+33%
+2%
+Table 10. Consolidation SFT data mixture composition by capability.
+Reward design.
+In addition to the reward model introduced in Sec. 3.4.1, we use prompted LLM judges
+to grade outputs along specific axes and penalize undesirable behaviors. These prompted judges grade re-
+sponses on an integer scale of 0, 1, or 2, for major, minor, or no style issues. We found that coarse graders
+outperform more granular graders or prompt-specific rubrics because they give the LLM judge more flexi-
+bility to interpret the rubric appropriately for the given prompt and response, making it harder for models
+to hack the grader. Style graders are applied only after verifiable rewards and safety constraints are satisfied,
+and are weighted alongside other graders depending on the domain.
+3.5 Consolidating Capabilities into a Single Model
+The preceding sections describe three teacher models, trained independently for STEM and competitive
+coding (Sec. 3.2), agentic capabilities (Sec. 3.3), and helpfulness and safety (Sec. 3.4). We consolidate them
+into a single model in two stages, shown in Fig. 12. The SFT stage reuses the self-distillation pipeline of
+Sec. 3.1.4, applied to each of the specialist teachers, though the three teachers require different filtering
+and rejection sampling strategies. For the STEM and agentic teachers, we sample rollouts across multiple
+checkpoints of each climb, following the diversity finding of Sec. 3.1.4, prioritizing later checkpoints. We
+keep multiple correct rollouts per context and apply only light filtering to remove degenerate CoTs. For the
+helpfulness and safety teacher, we use LLM judges and heuristic filters to score traces on style, structure, and
+known defects in addition to correctness.
+Consolidation SFT.
+The SFT stage distills the three teachers into a single model. We iterated on the data
+mixture and hyperparameters to balance reasoning, agentic, and general helpfulness abilities, evaluated on
+public benchmarks, internal benchmarks, and human evaluation. Tab. 10 reports the resulting mixture by
+sample and token weight. We find that balancing the mixture by sample weight is important; the token
+distribution is correspondingly dominated by STEM and coding, owing to their longer traces, which in
+practice does not harm helpfulness and safety capabilities. Deviating from our standard self-distillation
+recipe, consolidation SFT is done for 4 epochs, decaying the learning rate by 2× from a maximum of 1·10−5.
+Consolidation RL.
+The final stage of lightweight RL further improves safety, over-refusals, and style. The
+recipe is based on the Helpfulness and Safety Climb (Sec. 3.4), with a few changes to maintain reasoning
+performance. We train at a maximum sequence length of 128k tokens and retain a small proportion of STEM
+and coding data in the RL mixture; we found both to be important, as reasoning performance on complex
+tasks otherwise degrades slowly over the climb.
+3.6 Reinforcement Learning Infrastructure
+Our RL climb relies on Rocket, an in-house framework for large-scale asynchronous distributed reinforce-
+ment learning, using YOLO for the learner (Sec. 2.8) and SGLang (Zheng et al., 2024) for model inference.
+We built Rocket because our requirements, namely the ability to support asynchronous RL across several
+thousand GPUs at the scale MAI-Thinking-1 demanded, were not served by available open-source RL frame-
+works (von Werra et al., 2020; Hu et al., 2024; Sheng et al., 2024). Rocket’s core RL data flow is organized
+49

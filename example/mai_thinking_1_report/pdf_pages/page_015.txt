@@ -1,0 +1,44 @@
+clusters are abundant in organic datasets, and removing them improves model robustness and task di-
+versity (Sorscher et al., 2023; Abbas et al., 2023; Tirumala et al., 2023). We use an Qwen3-Embedding-
+0.6B (Yang et al., 2025) model to identify semantically similar documents and retain only a limited number
+of representatives per cluster.
+We apply these deduplication techniques both at the early stages of each processing pipeline and again
+across datasets as a final step before training. Historically, we managed overlap among training sources us-
+ing explicit filters–for example, excluding the Wikipedia domain from all web-crawl data. However, as the
+diversity and coverage of our sources have increased, and as our processing pipelines have become more
+complex, opportunities for unintended overlap across datasets have grown.
+To address this, we perform cross-dataset deduplication using a global drop-order over datasets. When
+fuzzy or semantic duplicates are detected, the instance is retained only in the highest-ranked dataset in which
+it appears and removed from all datasets with lower drop-order priority. The choice of drop-order is there-
+fore critical when interpreting experimental results and assessing the contribution or value of individual
+datasets. Modifications to one dataset can introduce new overlaps, effectively shifting data from one source
+to another even when no new content has been added.
+2.4.4 Filtering and Categorization of Data
+A central goal of downstream processing is to convert large, heterogeneous raw corpora into data that is
+both useful for pre-training and controllable for data mixture optimization (Sec. 2.5). Across sources, we
+first remove data that is unlikely to contribute positively to training, including spam, restricted or policy-
+sensitive content, and other source-specific noise. We then categorize the remaining data into interpretable
+buckets, such as quality tiers, language groups, topical categories, educational value, educational level, source
+type, and domain-specific subcorpora.
+The exact filtering and categorization strategy varies by source, since different corpora expose different
+signals and failure modes. We therefore apply and combine several classes of techniques:
+• Leveraging metadata signals, such as domain names, filenames, repository metadata, PDF creator and
+producer fields, and document-level metadata.
+• Source-specific heuristics, such as web text-quality filters, OCR-artifact filters, math-aware filters for
+STEM content, and path- or content-based filters for generated code.
+• Learned classifiers, including fastText-style classifiers (Joulin et al., 2016) and embedding-based models
+for language, topic, educational value, educational level, quality, and other semantic attributes.
+• Prompted LLMs, used selectively for higher-value or more ambiguous decisions such as section-level ex-
+traction, quality judging, and nuanced topic labeling.
+• Manual exploration and labeling, used to identify failure modes, validate filtering precision, audit high-
+impact source categories, and construct training data for classifiers and LLM judges.
+Together, filtering and categorization transform processed source corpora into a structured collection
+of data buckets. Filtering improves data quality by removing low-value or problematic content, while cat-
+egorization organizes the remaining corpus into interpretable dimensions that are useful for data mixture
+optimization. This structure enables controlled ablations across source families, quality tiers, topics, educa-
+tional levels, languages, and source-specific formats. Further implementation details for each major source
+are provided in Appendix B.
+2.4.5 Data Ablations
+Each processed pre-training dataset goes through rigorous ablation. We use two approaches for data ablation:
+single-source ablation and scaling-ladder ablation. Single-source ablation is an isolation methodology used to
+15

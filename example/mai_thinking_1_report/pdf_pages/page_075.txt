@@ -1,0 +1,44 @@
+OpenAI.
+simple-evals: Lightweight library for evaluating language models.
+https://github.com/
+openai/simple-evals, 2025. GitHub repository. Accessed: 2026-05-31.
+Long Ouyang, Jeffrey Wu, Xu Jiang, Diogo Almeida, Carroll Wainwright, Pamela Mishkin, Chong Zhang,
+Sandhini Agarwal, Katarina Slama, Alex Gray, John Schulman, Jacob Hilton, Fraser Kelton, Luke Miller,
+Maddie Simens, Amanda Askell, Peter Welinder, Paul Christiano, Jan Leike, and Ryan Lowe. Training
+language models to follow instructions with human feedback. In Advances in Neural Information Processing
+Systems, 2022. URL https://openreview.net/forum?id=TG8KACxEON.
+Kaan Ozkara, Tao Yu, and Youngsuk Park. Stochastic rounding for llm training: Theory and practice, 2025.
+URL https://arxiv.org/abs/2502.20566.
+Jiayi Pan, Xingyao Wang, Graham Neubig, Navdeep Jaitly, Heng Ji, Alane Suhr, and Yizhe Zhang. Training
+software engineering agents and verifiers with swe-gym. arXiv preprint arXiv:2412.21139, 2024.
+Adam Paszke, Sam Gross, Francisco Massa, Adam Lerer, James Bradbury, Gregory Chanan, Trevor Killeen,
+Zeming Lin, Natalia Gimelshein, Luca Antiga, et al. Pytorch: An imperative style, high-performance deep
+learning library. Advances in neural information processing systems, 32, 2019.
+Shishir G. Patil, Huanzhi Mao, Charlie Cheng-Jie Ji, Fanjia Yan, Vishnu Suresh, Ion Stoica, and Joseph
+E. Gonzalez. The Berkeley Function Calling Leaderboard (BFCL): From tool use to agentic evaluation of
+large language models. In Proceedings of Forty-second International Conference on Machine Learning, 2025.
+Hao Peng, Yunjia Qi, Xiaozhi Wang, Bin Xu, Lei Hou, and Juanzi Li. Verif: Verification engineering for re-
+inforcement learning in instruction following. In Proceedings of the 2025 Conference on Empirical Methods
+in Natural Language Processing, pages 30312–30327, 2025.
+Long Phan, Alice Gatti, Ziwen Han, Nathaniel Li, Josephina Hu, Hugh Zhang, Chen Bo Calvin Zhang, Mo-
+hamed Shaaban, John Ling, Sean Shi, et al. Humanity’s last exam. arXiv preprint arXiv:2501.14249, 2025.
+Mary Phuong, Matthew Aitchison, Elliot Catt, Sarah Cogan, Alexandre Kaskasoli, Victoria Krakovna, David
+Lindner, Matthew Rahtz, Yannis Assael, et al. Evaluating frontier models for dangerous capabilities, 2024.
+URL https://arxiv.org/abs/2403.13793.
+Felipe Maia Polo, Lucas Weber, Leshem Choshen, Yuekai Sun, Gongjun Xu, and Mikhail Yurochkin. tiny-
+Benchmarks: evaluating LLMs with fewer examples, 2024.
+URL https://arxiv.org/abs/2402.
+14992.
+Fabrice Prigent. UT1 URL Blacklist, 2026. URL http://dsi.ut-capitole.fr/blacklists/. Ac-
+cessed 2026.
+Valentina Pyatkin, Saumya Malik, Victoria Graf, Hamish Ivison, Shengyi Huang, Pradeep Dasigi, Nathan
+Lambert, and Hanna Hajishirzi. Generalizing verifiable instruction following. Advances in Neural Infor-
+mation Processing Systems, 38, 2026.
+Penghui Qi, Xinyi Wan, Guangxing Huang, and Min Lin. Zero bubble pipeline parallelism, 2023.
+Zihan Qiu, Zeyu Huang, Bo Zheng, Kaiyue Wen, Zekun Wang, Rui Men, Ivan Titov, Dayiheng Liu, Jin-
+gren Zhou, and Junyang Lin. Demons in the detail: On implementing load balancing loss for training
+specialized mixture-of-expert models, 2025. URL https://arxiv.org/abs/2501.11873.
+Qwen, :, An Yang, Baosong Yang, Beichen Zhang, Binyuan Hui, Bo Zheng, Bowen Yu, Chengyuan Li, Dayi-
+heng Liu, Fei Huang, Haoran Wei, Huan Lin, Jian Yang, Jianhong Tu, Jianwei Zhang, Jianxin Yang, Jiaxi
+Yang, Jingren Zhou, Junyang Lin, Kai Dang, Keming Lu, Keqin Bao, Kexin Yang, Le Yu, Mei Li, Mingfeng
+75

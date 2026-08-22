@@ -1,0 +1,44 @@
+C.1 Data
+We experimented with a number of data mixture variants for the context extension phase, including up-
+weighting long-context documents and adjusting mixture ratios across domains. Ultimately, none of these
+modifications yielded meaningful improvements. The simplest approach—using the same data mixture as
+the preceding mid-training stage, re-packed at the target 256K sequence length—works well and is what we
+adopt for the final model.
+C.2 Evaluation Setup
+We evaluate long-context quality on a variety of evaluation benchmarks, some of which we document below.
+Code NLL.
+We serialize an internal code repository into a linear token stream and extract 256K-token
+chunks. For each chunk, the final 16K tokens serve as the suffix on which we compute NLL, and we progres-
+sively increase the prefix from the immediately preceding tokens such that the total context (prefix + suffix)
+is 16K, 32K, 64K, 128K, or 256K. An ideal long-context model should leverage the additional prefix—which
+contains related code from the same repository—to further reduce the suffix loss. As shown in Fig. 22(b),
+the context-extended checkpoint exhibits exactly this behavior: its NLL decreases monotonically from 16K
+to 256K, demonstrating effective use of the full context window. In contrast, models mid-trained at shorter
+context lengths without extension see their NLL increase once the contexts reach > 2x of the training distri-
+bution.
+Retrieval NLL.
+To test whether the model can retrieve and utilize relevant information regardless of where
+in the context it is located, we design a controlled experiment: we select a 32K-token document (daily
+standup notes from post-training) and split it into two 16K-token blocks, A (suffix) and B (prefix), where
+the prefix B provides useful context for predicting the suffix A (i.e., NLL(A | B) ≪NLL(A)). We then pro-
+gressively insert irrelevant chunks (pre-training related design documents) between A and B, increasing the
+total context length up to 256K tokens. Without dedicated long-context training, the model’s NLL on the suf-
+fix degrades substantially as the related prefix moves further away indicating that the model is increasingly
+distracted by the intervening irrelevant content (22(a)). In contrast, the long-context checkpoint maintains
+a nearly flat NLL regardless of the distance between the related blocks, demonstrating robust information
+retrieval across the full 256K context window.
+Generative QA.
+We construct a simple question-answering benchmark over internal repository docu-
+ments, placing questions at varying positions within the context and measuring answer accuracy as a func-
+tion of total context length and evidence position. On this benchmark, the model exhibits up to 4× length
+extrapolation capability: a model trained at 32K context can answer questions correctly in contexts up to
+128K tokens (Fig. 22(d)). We observe that as the total context length increases beyond the training distribu-
+tion, the model has disproportionate difficulty retrieving information from recent (end-of-context) positions
+rather than distant ones (Fig. 22(e)). This could be explained by the distributional shift—when evaluating a
+model trained at 32K on a 64K input, the first 32K tokens fall within the training distribution, while the final
+tokens occupy positions the model has not been trained on. Long-context training resolves this asymmetry.
+C.3 Progressive Context Length Scaling
+A natural question is how much quality we sacrifice by not mid-training at our maximum desired context
+length. Fig. 22(b) addresses this by comparing five configurations on code NLL : four mid-training runs of
+1T tokens at context lengths 16K, 32K, 64K, and 128K (all following 16K pre-training), and a progressive
+86

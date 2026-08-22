@@ -1,0 +1,45 @@
+2. Full rollouts. The problem worker sends out an additional 128 requests to the rollout workers, again
+retrying failed requests as needed. Each rollout is graded, and this information is aggregated into an
+overall pass rate for task. If the overall pass rate is within a predetermined interval, the problem worker
+proceeds to postprocessing. Otherwise, the RL task is aborted.
+3. Postprocessing. The problem worker computes a normalized advantage for each rollout to use in the
+RL objective (Sec. 3.1.1). Depending on the problem in question, this step may include applying length
+penalties for long rollouts, applying GRPO reward normalization, or other heuristics.
+3.6.3 Rollout Worker
+When the rollout worker receives a request from a problem worker, it generates a single rollout, optionally
+grades it, and then sends the results back to the caller. In a typical flow, the rollout worker starts by generating
+an initial model prompt and sending it to a model inference server. When the response comes back, the
+rollout worker parses it, performs any tool calls, and incorporates the results into a follow-up request to the
+inference server. This process continues until the model stops making tool calls and outputs a final answer,
+or exceeds some pre-determined limit on the number of steps or the amount of time the rollout can take.
+After a rollout finishes, the next step is to grade the model’s output. The grader’s output contains a nu-
+meric reward and an optional pass/fail verdict. Depending on the problem, grading can either happen on
+the rollout worker or on the problem worker. If individual rollouts can be evaluated in isolation, grading is
+performed by the rollout worker. For example, on a math problem, the grader might output (1, pass) if the
+model’s output is mathematically equivalent to the problem’s groundtruth answer and (0, fail) otherwise.
+On the other hand, some graders need to look at the answers for multiple rollouts simultaneously, e.g., so that
+they can ask an LLM to perform pairwise comparisons of different model answers. In that setting, grading
+happens on the problem worker. A single problem can have multiple grades, in which case a user-defined
+policy aggregates the individual grades into a single overall reward.
+3.6.4 Router and Inference
+Inference is one of the most important components of the system: depending on the scale and characteristics
+of the job, the ratio of inference to learner GPUs can be as large as 5:1. In our largest RL job using 4864
+GB300 chips, 4096 chips are dedicated to inference while the remaining 768 chips are dedicated to the
+learner. Inference performance and system stability are therefore first-order concerns. The numerics gap
+between the learner and the inference engine is critical to control for RL training stability.
+Inference setup.
+Our RL inference stack is built on top of SGLang and the SGLang router (Zheng et al.,
+2024). We chose SGLang because it met our needs of a rich set of RL serving features, fast experimentation
+against open-source models, and strong ecosystem velocity. On top of the individual SGLang workers, we
+use the SGLang router to handle load balancing, traffic control, and prefix caching.
+Inference performance.
+Because most of a job’s GPU usage comes from inference, optimizing inference
+throughput is critical for efficient RL. Minimizing request latency is also critical to control staleness. We spe-
+cialize our optimizations depending on whether rollouts occur over single turns or multiple turns. For single-
+turn workloads, prompts are typically short but generations (including thinking) can reach up to 128k tokens,
+so the main bottleneck is KV cache memory. We reduce KV cache and weight footprints via expert paral-
+lelism and data parallelism for attention. We also disable prefix caching so that sliding-window-attention
+tokens can be fully evicted during long generations (our model architecture relies heavily on sliding window
+attention). We further reduce communication overhead via data parallelism on MLP layers, DeepEP (Deep-
+EveryParallel) (Zhao et al., 2025a), and EPLB (Expert Parallelism Load Balancer) (DeepSeek-AI, 2025). For
+51

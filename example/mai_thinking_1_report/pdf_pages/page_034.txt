@@ -1,0 +1,47 @@
+A conversation between User and Assistant. The user asks a question, and the
+assistant solves it. The assistant first thinks about the reasoning process in the
+mind and then provides the user with the answer. The reasoning process and answer are
+enclosed within <think> </think> and <answer> </answer> tags, respectively, i.e.,
+<think> reasoning process here </think>
+<answer> answer here </answer>.
+User: {QUERY}
+Assistant: <think>
+Figure 14. Prompt template used for reasoning prior to the first round of self-distillation with {QUERY} being a
+placeholder for the actual user query (from Guo et al. (2025)).
+Problem sampling.
+For each problem q in the training set, we generate a group of rollouts from the cur-
+rent inference model. To reduce inference cost, we use an early exit strategy: we first sample Gearly < G
+responses and compute their empirical pass rate, i.e. the fraction of responses with positive reward. If the
+early pass rate lies in an acceptable range [ρearly
+min , ρearly
+max ], we sample the full G responses; otherwise the prob-
+lem is discarded.
+After all G responses are generated, we apply a second pass-rate filter [ρmin, ρmax] to the full group. Only
+problems whose full pass rate falls in this range are used for training. The main motivation for this sec-
+ond filter is to remove very low-variance groups: if almost all responses are correct or incorrect, the group
+provides little useful relative learning signal.
+Rollout sampling.
+We employ top-p sampling (Holtzman et al., 2019) using πold to sample rollouts y1:G.
+We found that continuing to backpropagate through logits corresponding to tokens outside the sampled
+nucleus can lead to catastrophic off-policy mismatch, causing divergence within a few training steps. To
+prevent this, we exclude these tokens during training by reusing the top-p truncation mask from rollout
+sampling to set the logits of all excluded tokens to −∞prior to softmax computation, following DeepSeek-
+AI et al. (2025b). We found that top-p masking substantially reduces policy divergence during RL training,
+at the cost of additional overhead for mask storage and replay.
+To improve training efficiency during the early stages of a climb, we initially cap the maximum rollout
+length at 8k tokens. As training progresses, we increase this limit in powers of two until reaching the final
+output length of 128k tokens. We found this length extension curriculum to significantly reduce inference
+cost during the low-performance regime, where long reasoning traces are rarely required, while still allowing
+the model to gradually adapt to longer contexts as its capabilities improve.
+3.1.4 Self‐Distillation
+Achieving strong performance from a mid-trained checkpoint requires training over a large number of RL
+steps. We utilize self-distillation (Huang et al., 2022; Zelikman et al., 2022; Singh et al., 2023; Zhao et al.,
+2026) to make such long-running climbs more practical. For self-distillation, we collect rollouts generated
+during RL and perform SFT on a midtrained checkpoint using these rollouts. The resulting model serves as
+the starting point for continuing our RL climb, while preserving capabilities discovered during previous RL
+stages. We use self-distillation for several purposes:
+• For our initial climb, we use domain- or task-specific prompts to elicit the target behavior; for example,
+Fig. 14 shows the initial raw text prompt used for our STEM climb. Self-distillation allows us to move
+from prompting to using our native chat format by simply updating the formatting of the SFT data.
+• Another primary use case is to recover from occasional run failures. Early in the development of our RL
+34

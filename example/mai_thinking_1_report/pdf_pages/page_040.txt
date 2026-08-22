@@ -1,0 +1,33 @@
+Model tool agentic
+planning loop
+Figure 18. Agentic loop and multi-step orchestration in RL training.
+choose tools or code actions, observe the results, and adapt its plan across multiple steps and turns if needed.
+The training signal combines verifiable rewards, such as tests passing in a software environment or a database
+reaching a target state, with AI-feedback rewards for aspects of behavior that are harder to specify exactly,
+such as task interpretation, helpfulness, and trajectory quality.
+We focus on two agentic domains: (i) software engineering (SWE) (Sec. 3.3.1), which involves executable
+software-engineering environments built from real repositories; and (ii) general tool use (Sec. 3.3.2), which
+involves calling structured tools in multi-step tasks.
+In practice, we jointly climb on a mixture of both agentic- and reasoning-focused STEM tasks, including
+our competitive coding mixture. We found that inclusion of STEM tasks helps to stabilize the RL climb and
+shows positive transfer to multi-step software engineering and tool-calling performance. Conversely, the
+agentic tasks transferred neither positively nor negatively to STEM-related single-pass performance. Sim-
+ilar to the STEM climbing, we observe evolving model behaviors throughout climbing, with examples in
+Appendix D.2. The agentic setting differs from the STEM setting in its use of multi-step rollouts and con-
+tainerized environments, as described in the following sections.
+Multi‐step RL framework.
+Our agentic multi-step RL uses the same core objective as the single-step rea-
+soning RL recipe in Sec. 3.1, but extends rollouts from a single sampled response to a trajectory of policy
+steps and environment steps (observations). Each RL environment consists of a task specification, a Sandbox
+Execution Environment (SEE) session for executing tools, and a set of verifiable or judged rewards for evalu-
+ating task completion while tracking environment state. At each policy step, the model can emit tool calls or
+produce a final answer. Tool calls are executed inside the SEE session, and their outputs are appended to the
+context before the next policy step. The complete trajectory is then graded for correctness and, optionally,
+given AI feedback, after which credit assignment is applied uniformly across all tokens from all policy steps.
+The orchestration harness is a ReAct-style loop (Yao et al., 2023): it parses the model’s reasoning and
+actions, dispatches tool calls to SEE, appends returned observations to the context, and returns control to the
+policy for the next action. All the previous steps’ tokens are preserved in context and they are strict prefixes
+for the next steps. The same loop supports both software-engineering and general tool-use workloads. In
+SWE, actions read and edit files, run shell commands, and inspect repository state inside a problem-specific
+container image. In general tool use, actions call structured tools backed by mutable task state, such as seeded
+40

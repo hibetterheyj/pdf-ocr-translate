@@ -1,0 +1,40 @@
+D Evolution of Reasoning Traces
+Our models climb from scratch, without distilling on any third-party chain-of-thoughts (CoTs). This gives
+us a clean vantage point for studying how CoTs evolve as the model strengthens. In this section, we study
+some of the behaviors that emerge in our model’s CoTs during RL training. We analyze both our STEM climb
+Sec. 3.2 and our agentic climb Sec. 3.3’s rollouts for change of behavior archetypes, refleced in CoTs. (Guan
+et al., 2025; Baker et al., 2025)
+D.1 STEM CoTs
+Weak models guess, strong models work hard.
+Consider the following problem from AIME 2024
+(answer: 240).
+There are exactly three positive real numbers $k$ such that the function $f(x)=\frac{(x-18)(x
+-72)(x-98)(x-k)}{x}$, defined over the positive real numbers, achieves its minimum value at
+exactly two positive real numbers $x$. Find the sum of these three values of $k$.
+The key distinction is not in the initial algebraic setup, but in the final verification step. The strong
+model derives the four algebraic candidates k ∈{8, 32, 200, 512} and filters them by the domain condition
+x > 0, excluding 512. The weak model instead guesses candidate minimizers from the visible roots 18, 72, 98,
+producing spurious values such as 40 and 152.
+Weak model excerpt: guesses the minimizers, fabricating roots
+Or maybe the other two k's are when x1, x2 are related to 18, 72, 98 in another way, maybe when
+k is such that x1 = 18, x2 = 72, or similar. If x1, x2 are 18, 72, then from (1) x1+x2 =
+90 = 94 + k/2 -> k/2 = 90 - 94 = -4 -> k = -8, which is not positive. So not. Or if x1, x2
+are 18, 98: 116 = 94 + k/2 -> k/2 = 20 -> k = 40. Or if x1, x2 are 72, 98: 170 = 94 + k/2
+-> k/2 = 76 -> k = 152. So possible k's are 40, 152, 512. Let's verify k = 40: if k = 40,
+then x1+x2 = 94 + 40/2 = 114. x1x2 = sqrt(18*72*98*40).
+[...] Are 18, 98, 72, 40 related? [...] Not sure, but maybe this is possible. So these may be
+the three k's. So the three k's are 40, 152, 512. Then the sum is 40 + 152 + 549 = 704?
+Wait, 40 + 152 = 192, 192 + 512 = 704.
+So the sum is 704.
+Strong model excerpt: derives each candidate and checks the domain
+[...] Now check each:
+$k=8$: quadratic $x^2 - 98 x + 1008$ has roots $x1\approx11.68>0, x2\approx86.33>0$. Yes.
+Therefore, for $k=8$, $f(x;8)= m + \frac{(x-x1)^2 (x-x2)^2}{x}$ with $m= -10368$, and the
+global minimum over $x>0$ is $m$ attained exactly at $x1,x2$. Yes, matches (these are in
+the two negative intervals $(8,18)$ and $(72,98)$).
+$k=32$: quadratic $x^2 - 110 x + 2016$ has roots $x1\approx23.24>0, x2\approx86.76>0$. Yes.
+Global minimum $m= -7200$ attained exactly at these two points (intervals $(18,32)$ and $
+(72,98)$).
+$k=200$: quadratic $x^2 - 194 x + 5040$ has roots $x1\approx30.90>0, x2\approx163.10>0$. Yes.
+Global minimum $m= -194688$ attained exactly at these two points (intervals $(18,72)$ and $
+89

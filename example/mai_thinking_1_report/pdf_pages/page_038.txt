@@ -1,0 +1,72 @@
+Phase 1 · Hierarchical Parsing
+Phase 2 · Q-A Pairing (N rounds)
+Phase 4 · Scoring
+Phase 3 · Curation
+rejects
+Long-form PDFs
+OCR & Cleanup
+Strip boilerplate &
+normalize text
+Hierarchical Structure
+Build & LLM-assisted
+repair
+Q/A Extraction
+LLM-marked Q/A spans
+Candidate Proposal
+Structural &
+semantic search
+LLM Selection
+Pick among
+candidates → validate
+Annotate & Filter
+Taxonomy, PII,
+Answer Leakage
+Rewrite (3× consensus)
+MCQ / Proof →
+open-ended
+Solving (Pass@k)
+k attempts × 4 solvers
+(AIME tiers)
+Consensus Grading
+Blind grade vs
+ground truth
+Difficulty Rating
+Pass-rate bins;
+Drop faulty GT
+Verified training data
+(Q-A with metadata)
+Figure 17. Pipeline for extracting (q, a) pairs from textbooks and academic PDFs for STEM Mix.
+3.2.1 Data Pipeline
+Our STEM data pipeline transforms heterogeneous raw sources— textbooks, academic PDFs, forum discus-
+sions, competition archives, and problems obtained from various vendors—into a dataset of (q, a) pairs. The
+pipeline is built around a composeable, stage-based architecture: each processing step is implemented as an
+independent asynchronous stage. Source-specific instantiations of our pipeline select and compose subsets
+of these stages as needed.
+We describe several pipeline stages below, grouped into four phases following the example shown in
+Fig. 17 for extracting (q, a) pairs from long-form textbooks and academic PDFs. Stages that are sensitive to
+noise or hallucinations are run multiple times with consensus voting.
+Hierarchical parsing.
+This phase comprises the stages that convert raw documents into initial (q, a) pairs.
+Depending on the document type, OCR is performed using a vision-language model or OCR services. Doc-
+uments are chunked, pages without STEM content are discarded, and boilerplate is removed. A separate
+stage builds a hierarchical representation using structural cues in the OCR output, and resolves broken cross-
+references, misaligned numbering, and split-across-page artifacts. Finally, in the Question and Answer (QA)
+extraction stage, an LLM marks question and answer spans within the cleaned document structure, produc-
+ing candidate (q, a) pairs.
+QA pairing.
+For sources where questions and answers appear in separate locations (e.g., exercises at the
+end of a chapter, answer keys in appendices), a multi-round pairing stage matches each question to its corre-
+sponding answer. A question is first matched against candidate answers using structural signals and semantic
+similarity; among the retrieved candidates, an LLM then selects the best-matching answer and validates the
+pairing.
+Curation.
+Stages in the curation phase annotate, filter, and rewrite (q, a) pairs to ensure quality and format
+consistency. Several of these stages are LLM-based classifications:
+• Verifiability: Items are classified as verifiable or non-verifiable; non-verifiable items (e.g., open-ended fo-
+rum discussions with no checkable answer) are dropped.
+• Question type: We distinguish among question types, including open-ended questions, multiple-choice
+questions, and proofs.
+• Taxonomy: A hierarchical topic classifier assigns fine-grained STEM topics, spanning mathematics,
+physics, chemistry, biology, computer science, and engineering.
+• PII detection: A dedicated classifier flags personally identifiable information; flagged items are dropped.
+38

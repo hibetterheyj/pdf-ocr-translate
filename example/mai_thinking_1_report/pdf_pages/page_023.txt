@@ -1,0 +1,47 @@
+0
+5T
+10T
+15T
+20T
+25T
+30T
+1
+1.5
+2
+2.5
+Tokens
+Training Loss
+Figure 9. Pre-training loss curve for MAI-Base-1 (35B active / 1T total parameters) over 30T tokens, shown
+without smoothing. Loss recovered quickly from several early-stage spikes. No training batches were skipped,
+and no manual interventions were made to the training configuration mid-run.
+We fuse casts with adjacent operations (e.g., RMSNorms) where possible. Stochastic rounding (Zamirai
+et al., 2020; Ozkara et al., 2025) is applied when gradients flow from higher to lower precision. This oc-
+curs because the computation precision within a layer is lower than that of the residual stream, so gradient
+downcasts are required in the backward pass.
+2.6.4 Training Loss Curve
+The training loss curve of MAI-Base-1 is presented in Fig. 9, without smoothing. Several spikes appeared
+early in training, but the loss value recovered quickly in each case and we continued the run without inter-
+ventions. From runtime logging we identified that the spikes predominantly affected coding datasets and
+correlated with high expert imbalance under dropless routing: a disproportionate concentration of tokens
+in a few experts.
+2.7 Evaluation and Comparison with Contemporaneous Models
+In this section we compare MAI-Base-1 with contemporaneous base models available, over a subset of the
+same NLL evaluations that we use for development, as discussed in Sec. 2.3. One of them is based on the
+source code for our internal training stack (Sec. 2.8); the others were commissioned from vendors, so we
+are confident that they were not in the training set of any models. We do not use multilingual benchmarks
+described on Tab. 3 which are drawn from public sources that we excluded from our own training, but are
+unable to make a reliable comparison with those.
+We focus on pre-training base models in this comparison and report bits-per-byte (BPB) values which are
+invariant across tokenizers. NLL evaluation is not possible through most model APIs, so we have focused on
+open-weight models hosted on huggingface.co: DeepSeek v3.2 (DeepSeek-AI et al., 2025b)3, DeepSeek
+v4 Pro (DeepSeek-AI, 2026)4, Kimi-K2 (Kimi Team et al., 2026)5 and Gemma4-31B (Gemma Team, 2026)6.
+In addition, we include one of our previous-generation 23B models that was also trained for 30T, allowing
+us to quantify our progress.
+The results are summarized in Fig. 10. MAI-Base-1 shows a clear advantage over models with a simi-
+lar number of active parameters, achieving lower bits-per-byte across all four held-out tasks. DeepSeek-v4
+achieves the best results, with 1.4× active parameters and 1.6× total parameters relative to MAI-Base-1. Our
+3deepseek-ai/DeepSeek-V3.2-Exp-Base
+4deepseek-ai/DeepSeek-V4-Pro
+5moonshotai/Kimi-K2-Base
+6google/gemma-4-31B
+23

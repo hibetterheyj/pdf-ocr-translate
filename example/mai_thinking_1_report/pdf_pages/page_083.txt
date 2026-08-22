@@ -1,0 +1,47 @@
+value. On top of these attributes, we train a quality model and filter out the bottom 70% of English docu-
+ments. We then apply Gopher-style (Rae et al., 2022) heuristic filters based on word statistics, punctuation
+patterns, common n-grams, and related document-quality features. This retains roughly 4.6 billion English
+documents from our proprietary crawl and 2.8 billion English Common Crawl documents. For the purpose
+of data mixing, these documents are binned using a combination of metadata and embedding-based quality
+scoring. Multilingual web data is prepared similarly to English general web data, but with language-aware
+filtering and quality scoring.
+In addition to the broad general-web pipeline, we construct a high-quality subset of human-curated
+web content to better capture engaging, well-written long-form prose. We source candidate domains from
+human-curated surfaces, such as magazine and long-form reading aggregators, as well as external reference
+links from social platforms, and retrieve the corresponding pages from our web corpus.
+STEM pages.
+Broad coverage of high-quality STEM content during pre-training is important for down-
+stream mathematical and scientific reasoning capabilities. However, such content is relatively sparse on the
+web and often contains structured elements such as equations, code snippets, and technical markup that
+are not well handled by generic web processing pipelines. We therefore construct a dedicated pipeline to
+identify and extract STEM content from the web.
+We identify candidate STEM pages using embedding-based classifiers along three dimensions: topic, edu-
+cational value, and educational level. Topic is modeled using seven binary classifiers corresponding to Math-
+ematics, Physics, Statistics, Chemistry, Biology, Engineering, and Computer Science. A shared educational-
+value classifier is used to separate educational content, such as research papers, Q&A forums, tutorials, lec-
+ture notes, and blogs, from low-value pages such as product listings, citation indices, commercial content,
+and boilerplate. Finally, an educational-level classifier assigns each document to high school, undergradu-
+ate, or graduate level for data mixing. To improve corpus quality, we additionally apply a set of heuristics
+tailored for STEM content, as generic web filters often over-penalize documents containing equations and
+numerical expressions. These heuristics remove PDF URLs, calculator domains, patent domains, known
+AI-generated-content domains, and domains identified as low quality, and filter documents based on word
+count, digit ratio, alphabetic character ratio, duplicate-line fraction, stop-word density, and the fraction of
+lines ending with ellipses.
+Because Trafilatura does not always preserve mathematical equations and code well, we build a cus-
+tom extraction pipeline for STEM documents. Starting from the raw HTML, we normalize MathML and
+LATEX content and convert the document to Markdown. We then split the document into sections, preserv-
+ing each math and code block as separate units, and use a language model to classify each section as keep
+or remove. The model is restricted to binary inclusion decisions and cannot generate synthetic content. Fi-
+nally, we clean and normalize the extracted content using OpenWebMath-style post-processing (Gokaslan
+and Cohen, 2019), so that equations are consistently delimited.
+This pipeline yields an English STEM corpus of 680B tokens, of which 76B are mathematics-related.
+For multilingual data, we obtain an additional 760B STEM tokens, including 58B high-quality mathematics-
+related tokens.
+Code pages.
+For code-specific web pages, we reuse the STEM pages pipeline, including topic classifica-
+tion, educational-value classification, and LLM-based extraction, filtering on the Computer Science topic.
+To further improve quality, we score each candidate document using Qwen3-30B (Yang et al., 2025). The
+judge prompt is optimized with GEPA / DSPy (Agrawal et al., 2026) with approximately 2,000 human labels.
+After filtering out low-quality documents with additional heuristics, we obtain a dataset of approximately
+233B tokens.
+83

@@ -1,0 +1,46 @@
+\subsection{D 推理轨迹的演进}\label{d-evolution-of-reasoning-traces}
+
+我们的模型从零开始攀登，不蒸馏任何第三方思维链（CoTs）。这为我们研究思维链随模型增强而如何演化提供了一个干净的视角。在本节中，我们研究模型在 RL 训练期间思维链中浮现的一些行为。我们分析了 STEM 攀登（第 3.2 节）和智能体攀登（第 3.3 节）的 rollout，考察行为原型的变迁，这些变迁反映在思维链中。(Guan et al., 2025; Baker et al., 2025)
+
+\subsection{D.1 STEM 思维链}\label{d.1-stem-cots}
+
+弱模型靠猜，强模型下苦功。考虑来自 AIME 2024 的如下题目（答案：240）。
+
+存在恰好三个正实数 $k$，使得定义在正实数上的函数 $f(x)=\frac{(x-18)(x
+-72)(x-98)(x-k)}{x}$ 恰好有两个正实数 $x$ 取得最小值。求这三个 $k$ 值之和。
+
+关键区别不在初始的代数设定，而在最后的验证步骤。强模型推导出四个代数候选值 k ∈ \{8, 32, 200, 512\}，并通过定义域条件 x \textgreater{} 0 进行筛选，排除 512。弱模型则从可见的根 18、72、98 猜测候选极小值点，产生 40 和 152 这样的虚假值。
+
+\subsection{弱模型摘录：猜测极小值点，捏造根}\label{weak-model-excerpt-guesses-the-minimizers-fabricating-roots}
+
+或者，另外两个 k 值可能对应 x1、x2 以另一种方式与 18、72、98 相关，比如当 k 使得 x1 = 18、x2 = 72 或类似情况时。若 x1、x2 为 18、72，则由 (1) 得 x1+x2 = 90 = 94 + k/2 -> k/2 = 90 - 94 = -4 -> k = -8，不是正数，所以排除。若 x1、x2 为 18、98：116 = 94 + k/2 -> k/2 = 20 -> k = 40。若 x1、x2 为 72、98：170 = 94 + k/2 -> k/2 = 76 -> k = 152。所以可能的 k 是 40、152、512。验证 k = 40：若 k = 40，则 x1+x2 = 94 + 40/2 = 114，x1x2 = sqrt(18*72*98*40)。{[}\ldots{]} 18、98、72、40 之间有关联吗？{[}\ldots{]} 不确定，但也许可行。所以这三个 k 值可能就是 40、152、512。于是和为 40 + 152 + 512 = 704？等等，40 + 152 = 192，192 + 512 = 704。所以和是 704。
+
+\subsection{强模型摘录：逐一推导每个候选值并检查定义域}\label{strong-model-excerpt-derives-each-candidate-and-checks-the-domain}
+
+{[}\ldots{]} 现在逐一检查：$k=8$：二次式 $x\^{}2 - 98 x + 1008$ 的根为 $x1\approx11.68\textgreater0, x2\approx86.33\textgreater0$。成立。因此，对 $k=8$，$f(x;8)= m + \frac{(x-x1)^2 (x-x2)^2}{x}$，其中 $m= -10368$，在 $x\textgreater0$ 上的全局最小值 $m$ 恰好由 $x1,x2$ 取得。成立，相符（这两点位于两个负区间 $(8,18)$ 和 $(72,98)$ 内）。$k=32$：二次式 $x\^{}2 - 110 x + 2016$ 的根为 $x1\approx23.24\textgreater0, x2\approx86.76\textgreater0$。成立。全局最小值 $m= -7200$ 恰好在这两点取得（区间 $(18,32)$ 和 $(72,98)$）。$k=200$：二次式 $x\^{}2 - 194 x + 5040$ 的根为 $x1\approx30.90\textgreater0, x2\approx163.10\textgreater0$。成立。全局最小值 $m= -194688$ 恰好在这两点取得（区间 $(18,72)$ 和 $(98,200)$）。$k=512$：二次式 $x\^{}2 - 350 x - 8064$ 的根为 $x1\approx371.70\textgreater0, x2\approx -21.70 \textless{} 0$。因此，对 $k=512$，$f(x;512)= m + \frac{(x-x1)^2 (x-x2)^2}{x}$，其中 $x2\textless0 =\textgreater$$f(x)\textgreater= m$ 对所有 $x\textgreater0$ 成立，但等号仅在 $x1\textgreater0$ 处取得。所以全局最小值恰好在一个正实数 $x$ 处取得（而不是两个）。此外我们还看到有另一个局部极小值，但其值高于 $m$。因此 $k=512$ 被排除。现在我们得到三个值：$k=8, 32, 200$。再快速确认一下：对这些 $k$，没有其他点使得 $f(x)=m$（题目表述为``恰好两个正实数 $x$ 取得最小值''）。由于 $f(x)-m = \frac{(x-x1)^2 (x-x2)^2}{x}$ 且 $x1!=x2$，等号仅在 $x=x1$ 或 $x=x2$ 时成立。成立，且两者都 \textgreater{} 0。再检查定义域为 $x\textgreater0$。现在我们得到三个值：$k=8, 32, 200$，所以和为 240。{[}\ldots{]}
+
+弱模型暴力搜索，强模型寻找不变量。考虑以下 AIME25 题目。
+
+设 N 为满足如下条件的有序正整数三元组 (a, b, c) 的个数：a, b, c \textless= 3\^{}6 且 a\^{}3 + b\^{}3 + c\^{}3 是 3\^{}7 的倍数。求 N 除以 1000 的余数。
+
+弱模型试图通过假设立方运算是模 $3^7$ 的单位群上的双射来简化同余式。这把三次条件变成线性条件，但这一假设是错误的：gcd(3, φ($3^7$)) = 3，而不是 1。相比之下，强模型识别出相关的不变量：对于 3 的幂，单位立方数并非任意的单位。它们构成一个指数为 3 的子群，其特征是同余于 ±1 (mod 9)。
+
+\subsection{弱模型摘录：错误的线性化}\label{weak-model-excerpt-incorrect-linearization}
+
+或者，观察模 3 的条件：如果 3 不整除其中某些数。\#\#\# 情况 1：3 不整除 a，3 不整除 b，3 不整除 c（都是模 3 的单位）那么 a,b,c 属于 $(\mathbb{Z}/3\textsuperscript{7\mathbb{Z})}*$。由于 x-\textgreater x\^{}3 是双射，设 $x \equiv u\^{}3 \pmod{3^7}$，$y \equiv v\^{}3 \pmod{3^7}$，$z \equiv w\^{}3 \pmod{3^7}$，其中 u,v,w 属于 $(\mathbb{Z}/3\textsuperscript{7\mathbb{Z})}*$。{[}..{]} 实际上，更仔细地看，由于立方运算是单位群上的双射，映射 (a,b,c) mod3\^{}7 -\textgreater{} (a\^{}3,b \textsuperscript{3,c}3) mod3\^{}7 是 $(\mathbb{Z}/3\textsuperscript{7\mathbb{Z})}* \times (\mathbb{Z}/3\^{}7\mathbb{Z})\^{}* \times (\mathbb{Z}/3\textsuperscript{7\mathbb{Z})}*$ 上的双射。因此，满足 3 \nmid a,b,c 且 a\^{}3 + b\^{}3 + c\^{}3 \equiv 0 \pmod{3^7} 的解的个数，等于满足 3 \nmid a,b,c 且 a + b + c \equiv 0 \pmod{3^7} 的解的个数。
+
+\subsection{强模型摘录：识别不变量}\label{strong-model-excerpt-identifying-the-invariant}
+
+再回顾指数提升引理 / 模 3 的幂的单位立方结构：对 $x \not \equiv 0 \pmod{3}$，看 $x \pmod{3^s}$。{[}\ldots{]} 注意对 $x \not\equiv 0 \pmod{3}$，由欧拉定理，$x\textsuperscript{\{\phi(3}e)\} = x\^{}\{2\cdot 3\^{}\{e-1\}\} \equiv 1 \pmod{3^e}$，且模 $3\^{}e$（$e\ge2$）的乘法群是阶为 $2\cdot 3\^{}\{e-1\}$ 的循环群。映射 $x \mapsto x\^{}3$ 的像是唯一的指数为 3 的子群。{[}\ldots{]}
+
+另外，对 $3 \nmid y$，看 $y\^{}3 \pmod{3^m}$。{[}\ldots{]} 注意对 $e\ge2$，$(\mathbb{Z}/3\textsuperscript{e\mathbb{Z})}* = \langle -1 \rangle \times \langle 4 \rangle \cong C\_2 \times C\_\{3\^{}\{e-1\}\}$。元素 4 模 $3\^{}e$ 的阶为 $3\^{}\{e-1\}$（1-单位的一个生成元）。{[}\ldots{]} 那么 $y \equiv (-1)\^{}s 4\^{}t \pmod{3^e}$，$s\in\{0,1\}, t\in\{0,\ldots,3\^{}\{e-1\}-1\}$，且 $y\^{}3 \equiv (-1)\^{}\{3s\} 4\^{}\{3t\} \equiv (-1)\^{}s (4\textsuperscript{3)}t \pmod{3^e}$。{[}\ldots{]} 另外，像 $\{y\^{}3 \pmod{3^e} : 3\nmid y\}$ 是 $(\mathbb{Z}/3\^{}e\mathbb{Z})\^{}*$ 中指数为 3 的子群：它由满足 $z \equiv \pm 1 \pmod{9}$ 的元素 $z$ 构成。
+
+强模型是多疑的。另一个来自 AIME25 的题目。这里，强模型在存疑时会停下来重新审视自己的解答（``等等，重新检查一下''），抓住了边界情形，从而答对。
+
+\subsection{弱模型摘录：把空格子标为``极大''且从不复核}\label{weak-model-excerpt-labels-the-empty-grid-maximal-and-never-rechecks}
+
+零棋子的放置可能是极大的吗？{[}\ldots{]} 那么对空格子，能添加棋子吗？能，可以在任意格子添加白棋。但在我们的情形中，若所有行都是 W、所有列都是 B，你能添加白棋吗？我们看看：要在格子 (i,j) 添加白棋，该格子会变成白色。所以第 i 行必须是白色，没问题（第 i 行是 W）。第 j 列必须是白色，但第 j 列是 B，所以不能添加白棋。能添加黑棋吗？第 i 行必须是黑色，但第 i 行是 W，所以不行。所以实际上，若所有行都是 W、所有列都是 B，空格子就是极大的（无法添加任何棋子）。因此放置零个棋子是允许的。{[}\ldots{]} 所以总放置数为 Case 1 + Case 2 + Case 3 = 960 + 32 + 32 = 1024。
+
+\subsection{强模型摘录：质疑自己的逆命题并用小例子检验}\label{strong-model-excerpt-distrusts-its-own-converse-and-tests-it-on-a-small-case}
+
+以这个例子为例：$s\_i=W$ 对所有 i，$t\_j=B$ 对所有 j =\textgreater{} $S=\emptyset$，$c$ 是空函数。现在取这个 $(S,c)=(\emptyset, \emptyset)$（空放置）。我们能在格子 (1,1) 再放一个棋子吗？{[}\ldots{]} 选 $x=W$。那么第 1 行有白棋：没问题。第 1 列有白棋：没问题。条件 1、2 满足。因此，放置 $(\emptyset, \emptyset)$ 不满足条件 3。但根据我们上面的一般论证，我们写过：``反之，若任取 $s\_i,t\_j \in \{W,B\}$，定义 $S=\{s\_i==t\_j\}, c(i,j)=s\_i$，则 $(S,c)$ 满足条件 3。''这在逻辑上有问题吗？等等，我们针对这个例子重新检查这个论证。{[}\ldots{]} \#\#\# 小测试用例 我们试一个更小的例子来检验逻辑，比如 $1\times 1$ 网格，1 个白棋、1 个黑棋。求个数。{[}\ldots{]} 现在用我们的公式逻辑：网格 $1\times 1 =\textgreater$ 1 行、1 列。求 $\textbar Y\textbar{} = $满足 $\{s\_1\} = \{t\_1\}$ 的 $(s\_1, t\_1) \in \{W,B\}\^{}2$ 的个数。{[}\ldots{]} 所以 (W,W) 和 (B,B) 两种：2 对。成立，完全吻合。

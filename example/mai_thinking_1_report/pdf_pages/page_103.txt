@@ -1,0 +1,44 @@
+• Statistical efficiency under a fixed evaluation budget, since judging is expensive and confidence intervals
+on per-category metrics tighten slowly with sample size.
+• Discriminative power when comparing against other frontier models, so that aggregate scores actually
+move when a model improves rather than saturating against trivially-easy or trivially-hard prompts.
+Source pool and annotation:
+The candidate prompt pool is assembled from three complementary
+sources: public safety benchmarks, consumer Copilot logs with PII filtered, and prompts collected by exter-
+nal vendors against our policy taxonomy. Every candidate prompt is passed through the annotation frame-
+work described above, attaching labels for the 5 strata that will be used for sampling: harm category, policy
+violation, sensitivity, user scenario, and jailbreaks.
+Informativeness‐weighted experiment design.
+From this pool of candidate prompts, we seek to select
+the most informative prompts to evaluate on. We approach this in the framing of an automated test assembly
+problem. This aligns with recent efforts to drastically compress LLM evaluation costs via psychometric
+modeling, such as tinyBenchmarks (Polo et al., 2024), which utilizes Item Response Theory to identify static,
+universally representative evaluation subsets. As an extension to this framework, we upweight prompts
+where the model is not always failing or always passing. This helps us to proactively identify areas where
+we’re most likely to be able to make improvements to the model.
+Threshold setting.
+The evaluation set described above is the primary mechanism by which safety con-
+siderations enter MAI-Thinking-1’s hill-climbing process. Every internal release candidate must pass an
+acceptance threshold on a fixed bundle of safety evaluations and must do so without regressing against the
+previous accepted release. The bundle covers both targeted policy-area performance and aggregate behavior
+on an unbiased leaderboard set, so that a regression localized to a single harm category cannot be averaged
+away by improvements elsewhere. Thresholds enter the process at two points: as gates at release-candidate
+sign-off, where a candidate falling below threshold on any bundle metric is not eligible for promotion into
+release recipe, and also to trigger advance warning alerts if experimental models fall below a lower threshold.
+The thresholds themselves are derived from a Pareto analysis over the achievable trade-off surface be-
+tween safety, over-refusal, and downstream model quality: for each release cycle we plot the frontier of
+recipes evaluated during that cycle and identify the elbow at which marginal safety gains begin to extract
+a disproportionate cost in over-refusal or quality. The threshold is then placed at a fixed percentile along
+this frontier rather than at a static absolute number, so the bar tracks what is currently achievable on the
+architecture and data mix rather than a stale historical floor. This makes the gating signal stable in meaning
+across release cycles — passing the bar provides the same evidence of safety quality, relative to the current
+frontier, regardless of how that frontier has shifted — while leaving room for the absolute numbers to rise
+as the underlying recipes improve.
+K General Capabilities Evaluations
+Below we discuss benchmarks covering knowledge, instruction following, long context, safety, honesty,
+health, and tool calling are shown in Tab. 12.
+K.1 Knowledge
+We evaluate MAI-Thinking-1 on SimpleQA Verified (Haas et al., 2026) and MMLU-Pro (Wang et al., 2024b)
+to assess its knowledge and reasoning capabilities. The results are reported in Tab. 12, alongside comparisons
+with other models.
+103

@@ -1,0 +1,41 @@
+excellence in environmental sustainability and energy efficiency. As one example, our backup generators
+here use a renewable diesel that reduces net carbon emissions compared to a traditional petroleum-based
+diesel.
+Microsoft’s Community-First AI Infrastructure initiative commits to minimizing environmental impact
+and investing in the communities where it builds and operates. This approach is grounded in close part-
+nership with Phoenix-area utilities, water authorities, and conservation organizations to strengthen shared
+infrastructure while reducing overall system demand.
+Microsoft has committed more than $50M to growing public water assets, including a municipal water
+storage facility with the City of Goodyear, alongside funding for water and wastewater pipeline extensions
+and broader system upgrades that benefit the community. These investments are paired with conservation
+efforts in collaboration with partners such as the Gila River Water Storage system and The Nature Conser-
+vancy, helping recharge groundwater and improve basin-level efficiency.
+At the same time, Microsoft is investing in long-term workforce development through its Datacenter
+Academy hosted at Estrella Mountain Community College and Glendale Community College, ensuring that
+infrastructure growth in Phoenix translates into durable economic opportunity for the community.
+7 Conclusion and Future Directions
+We introduced our hill-climbing machine, our approach to model development that optimizes every com-
+ponent of the pipeline, from data and infrastructure to RL recipes and evaluation. MAI-Thinking-1 is the
+first model produced by this machine: a 35B active / 1T total parameter MoE trained without distillation
+from third-party models. MAI-Thinking-1 stands among the strongest models in its weight class on STEM
+reasoning and software engineering tasks.
+MAI-Thinking-1 is a starting point, not a destination. Looking forward, we plan to extend our hill-
+climbing to more modalities, larger scales, and refined capabilities. Progress in AI is not the product of any
+single model; it is the product of pipelines that can be reliably improved. We will continue refining ours,
+and we look forward to sharing our future climbing progress.
+References
+Amro Abbas, Kushal Tirumala, Dániel Simig, Surya Ganguli, and Ari S. Morcos. Semdedup: Data-efficient
+learning at web-scale through semantic deduplication, 2023. URL https://arxiv.org/abs/2303.
+09540.
+Joshua Achiam, David Held, Aviv Tamar, and Pieter Abbeel. Constrained policy optimization. In Interna-
+tional Conference on Machine Learning, volume 70, pages 22–31. PMLR, 2017.
+Lakshya A Agrawal, Shangyin Tan, Dilara Soylu, Noah Ziems, Rishi Khare, Krista Opsahl-Ong, Arnav
+Singhvi, Herumb Shandilya, Michael J Ryan, Meng Jiang, Christopher Potts, Koushik Sen, Alex Di-
+makis, Ion Stoica, Dan Klein, Matei Zaharia, and Omar Khattab. GEPA: Reflective prompt evolution
+can outperform reinforcement learning. In ICLR, 2026. URL https://openreview.net/forum?id=
+RQm2KQTM5r.
+Joshua Ainslie, James Lee-Thorp, Michiel de Jong, Yury Zemlyanskiy, Federico Lebrón, and Sumit Sanghai.
+GQA: Training generalized multi-query transformer models from multi-head checkpoints, 2023. URL
+https://arxiv.org/abs/2305.13245.
+Chenxin An, Zhihui Xie, Xiaonan Li, Lei Li, Jun Zhang, Shansan Gong, Ming Zhong, Jingjing Xu, Xipeng
+61

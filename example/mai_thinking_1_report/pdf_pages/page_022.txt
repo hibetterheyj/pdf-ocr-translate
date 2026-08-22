@@ -1,0 +1,97 @@
+0
+100
+200
+0
+128
+255
+Token index
+0
+100
+200
+0
+100
+200
+0
+25
+50
+75
+100
+0
+2
+Violation rate
+max=2.98
+min=-1.00
+0
+100
+200
+Hidden dim index
+0
+128
+255
+Token index
+0
+100
+200
+Hidden dim index
+0
+100
+200
+Hidden dim index
+0
+25
+50
+75
+100
+Expert index
+0
+2
+Violation rate
+max=0.59
+min=-0.53
+2
+1
+0
+1
+2
+Activation
+RMSNorm(x0)
+attention input
+F(RMSNorm(x0))
+attention contribution
+RMSNorm(x0 + F)
+router input
+Violation rate
+(a) ATTN random init
+(b) ATTN zero init
+Figure 8. (a) With random initialization, the attention layer initially produces collapsed representation by es-
+sentially performing causal mean pooling across the sequence dimension. High correlations between different
+rows can be observed in attention’s contribution, which reduces diversity in token representations and leads to
+high imbalance of the subsequent MoE layer. (b) With attention layer’s output initialized as zero the token distri-
+bution in MoE layers is better behaved. The violation rate for an expert is its fractional deviation from the mean
+token count across experts.
+All phases use a global batch size of 134M tokens. The mid-training phases inherit the pre-training hyper-
+parameter setup unless otherwise specified. Mid-training phase 1 uses a cosine decay learning rate schedule
+with a peak learning rate of 2 × 10−5 and a minimum of 1 × 10−5, without warmup. Mid-training phase 2
+uses a constant learning rate of 1 × 10−6, also without warmup.
+Attention initialization.
+Upon initialization, the attention softmax is close to uniform, which effectively
+performs average pooling over tokens subject to the causal constraint, as illustrated in Fig. 8. This behavior
+reduces the diversity in token representations and can lead to highly imbalanced routing in subsequent MoE
+layers, increasingly so with depth. To address this, we initialize the attention output to zero, achieved by
+setting the output RMSNorm gains to zero. This means the model initially behaves like a stack of feedfor-
+ward layers applied to individual tokens, while the cross-token interactions captured by the attention layers
+gradually kick in over the course of training. We confirmed that the significant reduction in initial peak
+imbalance achieved through this method translates to quality gains as measured by EG (see Sec. 2.2.2).
+2.6.3 Numerical Precision
+For model training our default weight and activation data type is BF16. We use FP8 E4M3 for GEMMs in
+the forward pass, FP8 E5M2 for the data-gradient, and BF16 for the compute of the weight-gradient with
+FP32 gradient accumulation (Micikevicius et al., 2017, 2022). All FP8 operations use delayed scaling with a
+1024-step history of the absolute maximum value.
+We use FP32 in a number of numerically sensitive locations. For activations, this covers any pre-softmax
+activations (attention scores, MoE router logits, and the final output logits), MoE combine, and the entire
+residual stream all the way from the input embedding to the output. For parameters, this includes the em-
+bedding weights, RMSNorm weights, and router weights. The main parameters and the momentum buffers
+in the optimizer are kept in FP32, as is all the AdamW computation. The data-parallel all-reduce and the
+micro-batch gradient accumulation buffers run in FP32. The MoE routing and the final vocabulary weight
+GeMMs are also both kept in FP32.
+22

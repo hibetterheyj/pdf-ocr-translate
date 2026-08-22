@@ -1,0 +1,43 @@
+Figure 13. Adaptive entropy control during training. Top: observed entropy ˆH(πθ) over 800 steps of an RL
+climb with target entropy H⋆= 0.3. Bottom: corresponding values of k with kmax = 1.0: it is decreased when
+the observed entropy exceeds the target and increased otherwise. Adjusting k provides an effective mechanism
+for regulating policy entropy.
+We found that the upper bound requires careful tuning to avoid exploding entropy when it is too large, or
+entropy collapse when it is too low (see also Cui et al., 2025; Xi et al., 2025).
+To address this, we dynamically adjust k based on the current policy’s entropy using a simple integral con-
+troller. At each training step, we estimate the target policy’s per-token entropy via an importance-weighted
+estimator:
+ˆH(πθ) =
+1
+|T |
+∑
+(i,t)∈T
+−log πθ(yi,t | q, yi,<t) · ri,t(θ) ,
+(7)
+where T denotes the set of all (response index, token index) pairs in the current training batch. Given a target
+entropy H⋆, the controller updates k with a step size δ ∈R+ after each step:
+k ←clip
+(
+k + δ · sign
+(
+H⋆−ˆH(πθ)
+)
+, 0, kmax
+)
+.
+(8)
+Intuitively, when entropy is too low, increasing k widens the upper clipping bound, allowing the policy
+to increase the probability of alternative tokens more aggressively. When entropy is sufficiently high, k is
+decreased to tighten the trust region. As illustrated in Fig. 13, this mechanism acts as an automatic entropy
+regularizer without requiring an explicit entropy bonus term in the loss, which we found to underperform
+the adaptive entropy mechanism.
+We initialize k = 0, so that the clipping bounds 1 −ϵ and (1 −ϵ)−1 are multiplicative inverses, making
+the initial clipping interval symmetric in log-ratio space. We then update k online according to the entropy
+controller above.
+Outer ratio clip.
+The GRPO objective deliberately leaves two cases unclipped: (a) advantage is negative and
+the new policy assigns higher probability than the old (i.e. Ai < 0 and ri,t > 1), and (b) advantage is positive
+and the new policy assigns lower probability (Ai > 0 and ri,t < 1). The original motivation (Schulman et al.,
+2017) is to leave the policy unbounded when it corrects itself in the right direction, only bounding moves
+that exploit the advantage estimate.
+32

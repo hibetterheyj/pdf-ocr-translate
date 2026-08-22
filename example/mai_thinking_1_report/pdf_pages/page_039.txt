@@ -1,0 +1,42 @@
+• Answer leakage: (q, a) pairs where a is trivially contained in q are detected and dropped.
+Two further curation stages transform the problems to be more useful for RL climbing. Conversion
+rewrites multiple-choice and proof-style questions into open-ended form; multiple-choice questions can
+often be solved by guessing, providing an unreliable reward signal, and proofs are hard to verify directly
+without relying on a stronger AI judge. This stage is run three times followed by a consensus stage; an item
+that does not reach consensus is treated as not reliably convertible and is dropped. Cleanup removes extra-
+neous, non-mathematical text and external references not relevant to the question.
+Scoring.
+This final phase quantifies problem difficulty and filters items whose ground-truth answers are
+likely incorrect. In the solving stage, each problem is solved k times by each of four model tiers, whose AIME
+2025 performance serves as a proxy for ability. Pass rates are used to group items into difficulty brackets.
+A blind-grading stage guards against faulty ground truths. For items the strongest tier solves at a low
+pass rate, we present that model’s consensus answer and the ground truth to a judge, in randomized order. If
+it prefers the consensus answer, we drop the item as having a suspect ground truth; if it prefers the ground
+truth, we keep it as a genuinely hard problem.
+3.2.2 Competitive Coding Data
+We use a dedicated pipeline for competitive coding data that deviates from our main STEM pipeline; this is
+because for competitive coding problems, we require a set of test cases t1, . . . , tn for each prompt. Prompts
+with comprehensive test cases are unlikely to be found in unstructured sources such as PDF documents.
+We therefore rely on targeted sources and vendor-acquired data, which removes the need for many of the
+extraction and filtering steps used in our STEM data pipeline.
+For each problem, we obtain reference solutions and verify that they pass all associated test cases. In
+total, we collect 160k problems from multiple sources, covering a diverse range of topics, including divide-
+and-conquer, dynamic programming, graph and tree algorithms, and search algorithms. In addition to test
+cases, each problem includes runtime and memory constraints. Our final dataset supports 17 programming
+languages, including Python, C++, C#, Java, JavaScript, Rust, and TypeScript.
+3.2.3 Deduplication and Decontamination
+Both our STEM Mix dataset and our competitive coding datasets are self-deduplicated and deduplicated
+against benchmarks we report in Sec. H, as well as in-house Olympiad and graduate-level STEM evaluations
+that we track internally. We deduplicate using a three-stage pipeline:
+1. Exact deduplication. As a first step, we identify exact duplicates using SHA-256 question hashes.
+2. Lexical fuzzy deduplication. We use character-level n-gram shingling followed by MinHash locality-
+sensitive hashing to identify near-duplicate questions. Pairs with Jaccard similarity above a given
+threshold are marked as duplicates.
+3. Vector deduplication. Finally, questions are embeddeded using a lightweight embedding model. Pairs
+with cosine similarity above a given threshold are marked as duplicates.
+We carefully tuned the hyperparameters at each stage to retain as much data as possible while ensuring
+strict exclusion of any benchmark leakage.
+3.3 Agentic Climb
+The agentic climb trains MAI-Thinking-1 to solve tasks that require interaction with an external environ-
+ment rather than a single-pass text response. In this setting, the model must decompose a user request,
+39

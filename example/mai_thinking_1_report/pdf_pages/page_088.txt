@@ -1,0 +1,109 @@
+(a)
+(b)
+16K 32K
+64K
+96K
+128K
+160K
+192K
+224K
+256K
+Total Context Length (K tokens)
+2.85
+2.90
+2.95
+3.00
+3.05
+3.10
+3.15
+LM Loss (NLL) on 16K suffix
+related 16K context moves further away 
+Can the model use related context at a distance?
+midtrain w/o long context
+context_extension@256K
+16K
+32K
+64K
+128K
+256K
+Context length
+0.55
+0.60
+0.65
+0.70
+0.75
+0.80
+0.85
+0.90
+NLL
+Code NLL vs Context Length
+midtrain@16K
+midtrain@32K
+midtrain@64K
+midtrain@128K
+lctx on midtrain@32K
+(c)
+(d)
+0
+200
+400
+600
+800
+1000
+LC Extension Training Steps
+0.50
+0.51
+0.52
+0.53
+0.54
+Code NLL
+Code NLL@256K During Context Extension
+context_extension@256K
+midtrain (before extension)
+16K
+32K
+64K
+128K
+256K
+Context Length (K tokens)
+0
+20
+40
+60
+80
+100
+Accuracy (%)
+Answer Accuracy vs Context Length
+pretrain@16K
+midtrain@32K
+context_extension@256K
+(e)
+front
+early_middle
+middle
+late_middle
+end
+Evidence Position
+0
+20
+40
+60
+80
+100
+Accuracy (%)
+Accuracy by Evidence Position (averaged across context lengths)
+pretrain@16K
+midtrain@32K
+context_extension@256K
+Figure 22. Long-context extension evaluation. (a) Retrieval NLL: suffix NLL as related 16K prefix is pushed
+further away by irrelevant context. The long-context checkpoint maintains flat NLL regardless of distance; with-
+out long-context training, NLL degrades substantially. (b) Code NLL vs. context length for five configurations:
+mid-training at 16K, 32K, 64K, and 128K (1T tokens each), plus a progressive approach (32K mid-training +
+short 256K extension). The progressive checkpoint matches or exceeds mid-training at 128K. (c) 256K code
+NLL during the context extension phase. Most of the improvement occurs within the first 1–10% of training
+iterations. (d) Answer accuracy vs. context length on the generative QA benchmark. The pre-trained base and
+mid-trained (32K) models degrade sharply beyond their training context lengths, while the long-context check-
+point maintains near-perfect accuracy up to 256K. (e) Answer accuracy by evidence position (averaged across
+context lengths). Without long-context training, accuracy drops as evidence moves toward the end of context—
+the out-of-distribution region. Long-context training resolves this asymmetry.
+88

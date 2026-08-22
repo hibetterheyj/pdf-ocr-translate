@@ -1,0 +1,71 @@
+0
+20
+40
+60
+Share of problems (%)
+MCQ
+Proof
+Open ended
+10.6%
+33.3%
+56.1%
+Problem Format
+0
+20
+40
+60
+Share of problems (%)
+Economics
+Civil Engineering
+Mechanics of Materials
+Biology
+Mechanical Engineering
+Computer Science
+Electrical Engineering
+Other
+Chemistry
+Physics
+Mathematics
+0.7%
+0.9%
+1.0%
+1.9%
+2.6%
+2.6%
+3.4%
+4.3%
+10.9%
+13.2%
+58.5%
+Taxonomy
+Figure 16. Distribution of our STEM Mix dataset by original problem format (left) and subject taxonomy (right),
+where Other aggregates topics each below 0.5% of the dataset. Multiple-choice and proof problems are converted
+to open-ended form during ingestion (and dropped where conversion is infeasible); we retain a small fraction of
+multiple-choice problems so the model remains familiar with the format.
+We carefully tune two hyperparameters during self-distillation: dropout (Srivastava et al., 2014) and the
+MoE load balancing loss coefficient. We use a relatively high dropout rate of 0.15, which increases entropy
+and helps prevent model collapse, improving performance in subsequent RL stages. As the data distribution
+in domain-specific RL is substantially narrower than the mixtures used during pre- and mid-training, expert
+selection during RL can become highly imbalanced. However, using a large load balancing coefficient during
+RL also harms stable performance improvement. To address this, we use a comparatively large load balancing
+coefficient 1 · 10−2 during self-distillation and a much smaller coefficient 1 · 10−5 during RL. Since the self-
+distillation contexts are generated from the RL run itself and therefore follow a similar distribution, the
+expert balancing effect induced during self-distillation is preserved during RL.
+3.2 STEM Climb
+The STEM climb is the longest of our three domain-specific RL training runs and is designed to strengthen
+the model’s core reasoning abilities in single-turn problem-solving settings. It covers a broad set of STEM
+domains, including mathematics, physics, chemistry, and competitive programming. We also witness the
+evolving model behavior reflected in rollouts during the climbing, described in more details in Appendix
+D.1. Since data quality is central to the success of this climb, we focus on our training data and the pipeline
+we have built to construct, verify, and filter this data.
+Our entire STEM climb operates on pairs of verifiable data: To produce the task-specific reward
+Rtask(q, yi), we extract the model’s final answer from yi and either compare it to a ground truth using a for-
+mal verifier such as SymPy (Meurer et al., 2017), an AI judge, or, in the case of competitive coding, we run
+the model-produced code snippet against a suite of problem-specific test cases. Thus, every RL data instance
+comprises either a pair (q, a) of a query and a ground truth answer, or a pair (q, {t1, . . . , tn}) of a query and
+n test cases. In designing our pipeline to obtain such pairs, we take three main criteria into account: high
+quality, appropriate difficulty, and topical diversity.
+Using our STEM data pipeline, we processed millions of documents, producing the STEM Mix dataset
+with more than 5M samples that is used for our STEM climb; the most challenging portion of this mix
+contains more than 550k (q, a) pairs. Some properties of this dataset are illustrated in Fig. 16.
+37

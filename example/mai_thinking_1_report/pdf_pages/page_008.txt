@@ -1,0 +1,74 @@
+MoE every layer (8/384)
+MoE every layer (7+1 shared/384)
+Eval Category
+EGFLOPs
+EGTime
+EGFLOPs
+EGTime
+General
+0.88
+0.69
+0.99
+0.78
+STEM
+0.93
+0.73
+1.04
+0.82
+Math
+0.94
+0.74
+1.06
+0.84
+Code
+0.94
+0.74
+1.03
+0.82
+Multilingual
+0.94
+0.75
+1.05
+0.82
+Weighted Average
+0.94
+0.73
+1.03
+0.82
+Table 2. Efficiency gain for two MoE-every-layer variants over the interleaved layout of MAI-Base-1 (8/512 MoE
++ dense FFN). Both variants are near the baseline when measured by EGFLOPs, but are clearly behind on EGTime.
+2.2.2 Efficiency Gain
+In our architecture and scaling discussions, efficiency gain (EG) measures how much higher a training cost
+the baseline model would need to match an evaluation metric reached by a given candidate model (Kaplan
+et al., 2020; Hoffmann et al., 2022). In most cases, the evaluation metric is an aggregated evaluation loss
+defined using our pre-training evaluation suite (Sec. 2.3). We first fit a scaling law to the baseline ladder,
+L = f(C) = AC−α + E
+(1)
+where C denotes the training cost such as FLOPs or time with the given infrastructure. A is the scaling
+coefficient that controls the overall magnitude of the reducible loss term, α is the scaling exponent that
+controls how fast the loss decreases with more compute, and E is the irreducible loss. For a candidate run
+achieving L′ with cost C′, we compute the baseline cost budget required to reach the same loss as f −1(L′),
+and define EG as
+EG = f −1(L′)
+C′
+(2)
+As an example, EG = 1.3 means that the baseline model would require a 30% higher cost to reach the
+candidate model’s loss (Liu et al., 2025a; Dey et al., 2023). We further perform ablations at different cost
+budgets to obtain a series of EG vs. cost, which helps us in finding improvements that persist as the scale
+increases.
+We most commonly use FLOPs to define the cost C, which intentionally does not account for the wall-
+clock efficiency that can be achieved in training. Implementations of established architectures have often
+accumulated numerous performance optimizations over time, which can make them appear stronger than
+newer variants. By decoupling the metric from FLOPs utilization (MFU) (Chowdhery et al., 2023), we can
+look at how architectures may stack up against each other if equal effort is given to optimizing their imple-
+mentations. However, in cases where we do care about hardware efficiency given our existing stack, we use
+the time definition for cost C above. In those cases, we refer to efficiency gain as EGTime explicitly.
+2.2.3 Model Ablation Examples
+We use ladder and EG comparisons extensively in our day-to-day ablations. Below we present two sets of
+experiments that demonstrate how EGs may vary across different evaluation categories, and how EGs can
+be extended to reflect co-design factors with our infrastructure.
+Example 1: Sparsity allocation.
+Tab. 2 compares our interleaved layout with high-sparsity MoE and
+dense FFN against the more common design of using medium-sparsity MoE layers throughout. Experi-
+ments are conducted in a sparsity-controlled setup, in which all model families share similar total-to-active
+8

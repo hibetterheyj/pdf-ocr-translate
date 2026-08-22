@@ -1,0 +1,49 @@
+2 Pre‐training
+The base model for MAI-Thinking-1, called MAI-Base-1, is a 35B-active / 1T-total sparse MoE model pre-
+trained from scratch on 8K GB200 GPUs on a Microsoft-operated cluster within the Azure platform, using
+an in-house distributed training infrastructure (Sec. 2.8). Our training corpus was built entirely in-house
+from both publicly available and acquired data sources, free of any distillation data (Sec. 2.4). From this
+corpus we ran a main pre-training phase of 30 trillion tokens, followed by mid-training phases totaling 3.55
+trillion tokens (Sec. 2.6).
+Our goal in pre-training is to produce a base model that is capable across a wide range of domains, and
+whose capabilities are learned from human knowledge, rather than imitations of existing AI models. We es-
+tablish an ablation protocol to carefully examine the scaling properties of our model decisions by measuring
+efficiency gains (Sec. 2.2) along a “ladder” of pre-trained models of increasing scale. To support these abla-
+tions, we developed a suite of pre-training metrics (Sec. 2.3), consisting of held-out negative log-likelihood
+(NLL) evaluations covering a broad range of subjects, tasks, and data distributions. We report the perfor-
+mance of MAI-Base-1 and contemporaneous base models to illustrate the use of these evaluations on models
+without post-training (Sec. 2.7).
+Repeat x (L / 2)
+Norm
+Local / global Attention
+Norm
++
+Norm
+Dense FFN
+Norm
++
+Norm
+Local / global Attention
+Norm
++
+Norm
+Sparse MoE (8 / 512)
+Norm
++
+Dispatch
+Combine
+Down Proj
+e0
+e1
+e2
+e510
+e511
+Router
+Up Proj
+...
+...
+e392
+Figure 2. Overview of the MAI-Base-1 architecture. Left: the overall layout of the Transformer body, where we
+interleave high-sparsity MoE layers with small dense FFNs, and global attention with local attention. Right: The
+MoE layer, in which 8 of 512 experts are activated per token in a compressed latent space.
+5

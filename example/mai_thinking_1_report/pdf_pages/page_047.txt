@@ -1,0 +1,48 @@
+Category
+Pipeline
+Source
+Harmful
+Human Red-Teaming
+Vendor-written prompts
+Internal red-team exercises
+Automated Attacks
+Template-based attacks, e.g., PyRIT (Munoz et al., 2024)
+Non-interactive LLM-generated, e.g., PAP (Zeng et al., 2024a)
+Interactive LLM-based, e.g., TAP (Mehrotra et al., 2024)
+Borderline
+Do-Not-Refuse Slice
+Curated data carried across data generations
+Capability Data
+Annotated via safety pipeline into do-not-refuse slice
+Table 8. Sources of harmful and borderline prompts.
+• Harmful prompts: requests where some or all assistance is disallowed by policy. The response strategy is
+full refusal or partial refusal (decline the unsafe portion while offering safe alternatives).
+• Borderline prompts: requests that touch sensitive domains but remain answerable within policy. The
+response strategy is do-not-refuse: provide a bounded, helpful answer rather than hedging or refusing.
+Data sources. Tab. 8 summarizes how prompts in each category are sourced. Harmful prompts are collected
+through both human red-teaming and automated adversarial generation. Borderline prompts are drawn
+from an existing do-not-refuse slice carried forward across data generations, as well as from capability data
+that is routed through the safety annotation pipeline and selected into the do-not-refuse slice, exposing the
+model to policy-adjacent requests that should remain answerable.
+Reward design.
+Each model response is scored by safety judges along three dimensions:
+• Policy compliance measures whether the response violates our safety policies.
+• Response engagement compares a response’s engagement level to the expected target (refuse, partial-refuse,
+or do-not-refuse), penalizing both over-refusals and compliance on severe requests.
+• Response style measures whether the response is following the expected tone and guiding principles, e.g.,
+acknowledging difficulty without moralizing or recounting traumatic events back to the user for sensitive
+self harm requests.
+The judge scores are combined with the reward signal from our reward model and, depending on the data
+source, additional AI judge signal. A simple weighted average is insufficient: scalar rewards can remain posi-
+tive on policy-non-compliant responses.9 We therefore use a safety-gated aggregator: the policy-compliance
+field gates the reward as described in Sec. 3.4.1. If the safety judge marks a response non-compliant, the
+rollout receives the minimum reward regardless of other scores; otherwise the normal weighted mixture is
+used.
+3.4.4 Honesty
+We define honesty as the model’s ability to produce correct responses when it knows the answer, and to
+hedge appropriately when it does not. At the same time, the model should not over-hedge, since minimizing
+factual errors alone can simply push the model to make fewer claims (Min et al., 2023). The objective must
+therefore balance factual precision with informativeness.
+9In a paired rollout audit, expected safety Likert had only moderate agreement with the policy-compliance field (Pearson 0.293,
+Spearman 0.344), and 87.8% of policy-non-compliant responses received reward model scores ≥3.
+47

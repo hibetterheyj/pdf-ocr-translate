@@ -1,0 +1,40 @@
+MMLU‐Pro.
+MMLU-Pro extends MMLU (Hendrycks et al., 2021) by incorporating more challenging,
+reasoning-focused questions and increasing the number of answer choices from 4 to 10. It evaluates mod-
+els across a broad set of difficult knowledge and reasoning tasks. We adopt the instruction prompt from
+OpenAI’s simple-evals package (OpenAI, 2025) to specify the required answer format, and use a custom
+regex-based extraction procedure to compare model outputs against the ground-truth answers.
+SimpleQA Verified.
+SimpleQA (Wei et al., 2024b) evaluates short-form factual knowledge on challeng-
+ing questions with short, unambiguous answers covering a variety of topics. We report model accuracy on
+SimpleQA Verified (Haas et al., 2026), a curated subset that addresses label noise and redundancy.
+K.2 Instruction Following
+A key aspect of model usability is how well it responds to user instructions. We have a suite of internal
+benchmarks, though we report numbers for three common public benchmarks below.
+• IFBench (Pyatkin et al., 2026) evaluates the ability to follow precise instructions and covers 58 diverse
+and verifiable constraints.
+• AdvancedIF (He et al., 2025) measures complex, multi-turn, and system-prompted instruction following
+abilities using rubrics and a calibrated LLM judge.
+• MultiChallenge (Deshpande et al., 2025) targets multi-turn conversations and requires accurate instruc-
+tion following, context allocation, and in-context reasoning.11 We verified that for public models, we match
+the scores reported on the official leaderboard with our implementation.
+K.3 Long Context
+Long context performance for MAI-Thinking-1 is evaluated across four benchmarks shown in Table 12 and
+Table 19. We omitted MRCR (Vodrahalli et al., 2024) for reasons discussed below.
+GraphWalks.
+GraphWalks is a synthetic multi-hop reasoning benchmark where the model is given an edge
+list representation of a graph and is asked to traverse the graph to find either neighboring nodes (via Breadth-
+First-Search) or parent nodes for a given starting node. The overall score report in Table 12 is the F1 score
+of model-predicted answer versus the ground truth. We report GraphWalks results on the ≤128k subset as
+measured by o200k_base tokeniser.
+LongBenchV2.
+LongBenchV2 (Bai et al., 2024) consists of 4-way multiple-choice questions for long con-
+text understanding tasks. We use the same eval setup as the official implementation, with a caveat that the
+input context length is limited to 256k tokens, resulting in 408 unique questions.
+CorpusQA.
+CorpusQA (Lu et al., 2025) is a multi-document freeform QA data where a model response is
+scored by an AI judge. Instead of using the default deepseek-v3 (DeepSeek-AI et al., 2025a) as judge, we
+use GPT-5.4 (high) which offers higher precision.
+11We followed the official benchmark’s judge model, Gemini 2.5 Pro as the judge. https://labs.scale.com/leaderboard/
+multichallenge
+104

@@ -1,0 +1,45 @@
+6 Cluster Environment
+MAI-Thinking-1 required a cluster environment that is composable enough to support rapid iteration across
+data, model, training, evaluation, and serving components; scalable enough to test improvements at frontier
+size; and reliable enough that measured gains in model quality remain the focus rather than infrastructure
+noise.
+We therefore treat the cluster environment as an active part of model development. In training, the objec-
+tive is to maximize useful FLOPs per wall-clock day while preserving numerical correctness, deterministic
+recovery, high MFU, and high goodput. During inference, the objective is to maximize useful tokens per
+second and per watt while preserving quality, long-context correctness, predictable latency, and deployment
+efficiency. The same systems principles apply in both regimes: topology matters, memory movement mat-
+ters, silent correctness failures are unacceptable, and aggregate throughput is only useful when it translates
+into reliable model progress or reliable serving capacity.
+This section describes three parts of that environment. Sec. 6.1 describes how the training cluster con-
+verted raw accelerator capacity into a stable experimental substrate. Sec. 6.2 describes the stability, de-
+terminism, and goodput metrics used to measure whether allocated GPUs were producing useful learning
+progress. Sec. 6.3 briefly describes inference results from running MAI-Thinking-1 on Microsoft’s MAIA-
+200 hardware (Microsoft, 2026).
+6.1 Training Cluster
+The cluster was designed as a system-level optimization problem. The required compute envelope was de-
+rived from scaling-law estimates, data quality targets, token budget, and observed training efficiency. In-
+frastructure planning then translated that envelope into usable FLOPs across datacenter power and cooling,
+GPUs, CPUs, scale-up NVLink domains, scale-out InfiniBand fabric, storage, system software, diagnostics,
+scheduling, checkpointing, and observability.
+The planning target was not theoretical peak FLOPs alone. Long-running training jobs lose useful ca-
+pacity to MFU loss, checkpoint overhead, recomputation, hardware attrition, maintenance, validation work-
+loads, and recovery buffers. We therefore optimized for usable training capacity: the fraction of delivered
+hardware that could be scheduled, kept healthy, driven at high MFU, and recovered quickly when failures
+occurred.
+MAI-Base-1 was trained on a single logical cluster with 8K GB200 GPUs, and the MAI-Thinking-1 RL
+climb was run with 4.6K GB300s. This reduced experimental variance by keeping the run on a homoge-
+neous accelerator generation, within known-good rack health boundaries, under stable scheduler behavior,
+and close to predictable storage paths. The broader lab environment included H100, GB200, and GB300
+systems for development, validation, comparative profiling, and next-generation bring-up, but the main run
+prioritized locality, topology stability, and operational homogeneity.
+More details about our cluster environment are in Appendix L.
+6.2 Training Stability, Determinism and Goodput Metrics
+Training stability was measured by the cluster’s ability to keep the job stepping productively, recover quickly
+from failures, and preserve numerical correctness across restart paths. We tracked both visible failures
+and silent efficiency losses. Visible failures included crashloops, node failures, InfiniBand and NVLink
+link flaps and link downs, out-of-memory errors, pod terminations, checkpoint stalls, and manual requeues.
+Silent efficiency losses included MFU degradation, recomputation, long startup paths, slow actor schedul-
+ing, checkpoint-induced stalls, degraded memory behavior, and fabric conditions that did not immediately
+crash the job but reduced useful throughput.
+Determinism was treated as a first-class infrastructure property. At frontier scale, deterministic training
+59

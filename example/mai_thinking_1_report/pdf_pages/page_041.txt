@@ -1,0 +1,47 @@
+databases, with the tool outputs returned as observations for the next model action. The loop terminates
+when the model emits no tool calls, or when the rollout exceeds the step, context-length, or time budget; the
+rollout and its corresponding SEE are then sent to graders. They combine format checks, rule-based checks,
+executable tests, verifiable state comparisons, and AI judges. Fig. 18 sketches a summary of our agentic RL
+framework. The RL environments come from two major domains: software engineering Sec. 3.3.1 and
+general tool-use Sec. 3.3.2.
+Sandbox execution environment.
+Our Sandbox Execution Environment (SEE) provides on-demand,
+isolated container environments at scale. SEE is used during RL to provide highly parallel, low latency
+containers for model training environments. It provisions a fresh container for each agentic task and destroys
+it upon task completion. This ensures reproducibility, enables safe exploration, and prevents state leakage
+between tasks.
+Containers are network-isolated by default, ensuring that training episodes are deterministic and free
+from external side effects such as rate limits or transient failures. When an environment does require net-
+work access (for example, to install packages), traffic is mediated through caching proxies and domain al-
+lowlists, balancing the needs for environment fidelity, training reproducibility, and safety.
+3.3.1 Software Engineering
+Training a frontier model to perform SWE tasks requires the model to interact with real codebases inside
+realistic development environments. A large number of high-quality coding environments is essential for
+training a strong coding model. To achieve this, we source naturally-harvested data from contributions to
+real codebases. To curate our repository of RL environments, we rely on the following primitives: a large
+dataset of code repositories (e.g., public GitHub code), a pipeline to create executable software engineering
+problems from real-world open-source developer pull requests, and our sandbox container service SEE for
+execution.
+SWE RL environments, tasks, and tools.
+Each SWE RL problem is packaged as a self-contained con-
+tainer image that includes a repository checked out at a specific commit with all dependencies pre-installed,
+a problem statement, and unit tests for grading. Because the image captures all dependencies of the reposi-
+tory, environments are deterministic and immediately ready for use with no setup required at the start of the
+rollout. During the rollout, the model interacts with the container through tool calls: reading and editing
+files, running shell commands, and navigating the repository. When the model signals completion or a turn
+limit is reached, a grader executes the tests inside the same container and compares the results to expected
+outcomes, producing a verifiable reward signal.
+Two common tools are available for the model to use: Bash, a tool that executes bash commands and
+returns standard output and error streams, and String replace editor: a tool for models to edit files via exact
+string replacements, instead of having to use non-ergonomic bash tools for this purpose (Anthropic, 2025).
+Full tool descriptions and parameter schema are provided in Appendix E.
+In‐house scalable SWE environment building.
+Existing work (Pan et al., 2024; Chen et al., 2026b; Fu
+et al., 2026) has explored transforming raw code repositories from the Internet into RL environments. We
+use public GitHub repository issues and pull requests (PRs) as the source of our organic data and develop
+a scalable pipeline for ingesting real-world verifiable SWE problems, inspired by SWE-ReBench (Badertdi-
+nov et al., 2026a,b). To construct high-quality RL environments, we ensure that problem statements provide
+sufficient information for agents to correctly implement solutions without overspecifying the task. We ad-
+ditionally ensure that graders provide sufficient coverage while avoiding overly specific evaluation criteria.
+The pipeline consists of the following stages, with additional infrastructure details provided in Appendix G:
+41

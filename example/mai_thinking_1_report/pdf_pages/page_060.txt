@@ -1,0 +1,45 @@
+is not only a model-code concern. It depends on the correctness and stability of the full execution substrate.
+The cluster must eliminate silent data corruption (Hochschild et al., 2021; Dixit et al., 2021), keep commu-
+nication topology stable, prevent unhealthy devices and links from entering the job, and preserve the order
+of floating-point reductions and accumulations across checkpoint and restart boundaries.
+Goodput was the primary production KPI. We define goodput as the ratio of ideal training duration to
+actual wall-clock duration (Jiang et al., 2024; Grattafiori et al., 2024), with the gap decomposed into overhead
+categories. This framing made the cost of failure explicit. A failure did not only cost the time until restart. It
+could also force recomputation since the last durable checkpoint, trigger startup and actor-scheduling delays,
+perturb placement, block checkpoint progress, or cause lower MFU after recovery. Similarly, an MFU drop
+was treated as a production incident even when the job continued running, because the cluster was still
+consuming allocated GPU-hours while producing less training progress than expected.
+6.2.1 MFU and Goodput
+The broader pattern was a transition from reliability to efficiency. The first layer of improvement came
+from reducing interruptions like crashloops, node failures, link flaps, requeues, out-of-memory (OOM) er-
+rors, and checkpoint stalls. The second and harder layer came from eliminating silent goodput loss like MFU
+degradation, recomputation, long startup paths, slow process scheduling, checkpoint-induced stalls, and de-
+graded network or memory behavior. At frontier scale, both layers mattered because every hour of overhead
+compounded across thousands of GPUs. The operating goal was to treat goodput as the primary produc-
+tion KPI: every failure mode, runtime slowdown, checkpoint event, and MFU regression had an owner, a
+detection signal, a prevention path, and a quantified impact on usable FLOPs.
+MAI-Base-1 pre-training run reached 90.0% goodput at 8K GPUs, despite being larger than earlier pre-
+training runs. Total overhead dropped to 51 hours. Recomputation, the time spent reproducing previously-
+computed steps after falling back to a checkpoint, fell to 6.5 hours, only 15% of overhead. Non-stepping
+time dropped to 14 hours, or 27% indicating that the system became much better at staying alive, avoiding
+repeated rework, and recovering without long manual intervention. However, the final run also showed the
+next bottleneck clearly. MFU drop overhead became the largest single remaining category, at 18 hours and
+35% of overhead. This was driven by checkpointing, network degradation, memory pressure, and hardware
+health transitions. The failure trends also improved but did not disappear.
+6.3 Inference Efficiency and Model Deployment
+As reasoning models become increasingly important, inference cost, latency, and serving scalability emerged
+as key constraints on deployment. We therefore treated inference efficiency as a first-class objective through-
+out the development of the model, pursuing opportunities across the stack: model architecture, serving
+engine, and even choice of hardware for deployment.
+To improve our performance per watt, we implemented MAI-Thinking-1 on Microsoft’s MAIA-200
+hardware. Compared to a GB200-based deployment, MAIA-200 delivers over 40% higher token genera-
+tion throughput under the same rack power budget. This improvement in performance per watt enables
+more efficient utilization of datacenter power and supports serving larger inference workloads at scale.
+6.4 Sustainability and Community‐First AI Infrastructure Initiatives
+It is important to us that the development of AI is sustainable socially, environmentally, and within the
+communities that our infrastructure is built and operated. Microsoft is committed to being carbon negative,
+water positive, zero waste, and to protecting ecosystems. In 2025, the company met a milestone on this
+journey by matching 100% of our annual global electricity consumption with renewable energy.
+MAI-Thinking-1 was primarily trained on Microsoft-owned infrastructure in Phoenix, AZ and post-
+trained in Dallas, TX. Phoenix sites have been built to meet LEED Gold Certification standards, recognizing
+60

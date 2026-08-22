@@ -1,0 +1,47 @@
+SYSTEM_PROMPT = """Compare two responses, [RESPONSE] and [CORRECT_ANSWER] to a question. Follow the rubric
+below in [NOTES]. Then output [FINAL JUDGMENT].
+Some general guidelines to follow in determining alignment:
+- Units: If the question does NOT explicitly require units/formatting, then if one response provides units (
+like km/s) and the other does not, but both have the correct numerical value, you can consider both
+responses equally correct. If the question explicitly requires units, missing/incorrect units is NOT
+acceptable.
+- Formatting: If the question does NOT explicitly require a specific format, then Latex vs plain text or
+markdown does not matter as long as the answer is equivalent. If the question explicitly requires a
+specific format/structure, deviations are NOT acceptable.
+- Rounding: If the question does NOT explicitly require an exact value or specific rounding/precision, small
+rounding differences are acceptable when clearly equivalent (e.g., 9.42 vs 9.43 with the same intended
+precision). If the question explicitly requires exactness or a specified precision, you must enforce it.
+Judgment guidance:
+- If [RESPONSE] is exactly identical to [CORRECT_ANSWER] or differs only by harmless formatting, you should
+indicate that (alignment) is met in the [NOTES].
+- If [RESPONSE] is not exactly identical to but is equivalent to, or can be straightforwardly reduced/
+simplified to, [CORRECT_ANSWER] (without adding new assumptions or changing meaning), you should still
+indicate that (alignment) is met in the [NOTES].
+- If [RESPONSE] clearly does not align with the [CORRECT_ANSWER], you should indicate that (alignment) is NOT
+met in the [NOTES] and output [FINAL JUDGMENT] = no.
+Examples:
+1) [RESPONSE]
+Answer: 10
+[CORRECT_ANSWER]
+10
+-> in [NOTES], (alignment) is met, and [FINAL JUDGMENT] = yes.
+2) [RESPONSE]
+X=\frac{\pi^2}{3}
+[CORRECT_ANSWER]
+\frac{\pi^2}{3}
+-> in [NOTES], (alignment) is met, and [FINAL JUDGMENT] = yes.
+[NOTES]
+(alignment) How well do the CONTENTS of [RESPONSE] align with the CONTENTS of [CORRECT_ANSWER]? Note any true
+mathematical/numerical differences.
+(final) Briefly summarize whether [RESPONSE] should be treated as correct overall, based on alignment.
+[FINAL JUDGMENT]
+Should [RESPONSE] be considered as correct as [CORRECT_ANSWER] (alignment satisfied)? Answer in yes/no."""
+USER_PROMPT = """[QUESTION]
+{question}
+[RESPONSE]
+{response}
+[CORRECT_ANSWER]
+{correct_answer}"""
+Figure 25. AI judge prompt for STEM problems. We include additional few-shot examples in the conversation
+history as prior user and assistant turns to improve grading reliability and reduce susceptibility to judge hacking.
+100

@@ -1,0 +1,92 @@
+Capability
+Description
+Context switching
+Model’s ability to track when the user switches topics or returns to a previous
+topic.
+Instruction retention
+Ability to track, update and retrieve instructions and facts across long dia-
+logues.
+Instruction layering
+Ability to maintain and retain a set of active constraints with instructions in-
+troduced over multiple previous turns.
+Memory & recall
+Proper retrieval and use of facts and statements from previous turns.
+Self coherence
+Avoid unintended contradiction of previous statements.
+Version editing
+Ability to revert to an earlier version, selectively undo edits, or reproduce exact
+text from a prior turn.
+Table 16. Example of IF capabilities specific to multi-turn.
+Benchmark
+MAI-Thinking-1 Sonnet 4.6 Opus 4.6 GPT 5.4 Kimi K2.6 DeepSeek V3.2 DeepSeek V4 GLM-5.1
+128k
+256k
+AIME 2025
+95.0
+97.0
+95.6
+99.8
+—
+—
+93.1
+—
+—
+AIME 2026
+93.6
+94.5
+—
+—
+—
+96.4
+—
+—
+95.3
+HMMT Feb 2026 84.3
+84.9
+—
+—
+—
+92.7
+—
+95.2
+82.6
+GPQA Diamond
+84.2
+84.2
+89.9
+91.3
+92.8
+90.5
+82.4
+90.1
+86.2
+LCB v6
+87.3
+87.7
+—
+—
+—
+89.6
+83.3
+93.5
+—
+Table 17. Post-trained model evaluation results on STEM benchmarks, comparing MAI-Thinking-1 evaluated
+at 128k vs. 256k maximum output tokens. Other model numbers are taken from respective official model cards.
+Models listed with “—” scores do not report numbers for the respective benchmark.
+2026). The expected answers for these competitions are simple numbers or expressions. We require the
+model to output its final answer in boxed format, which enables regex-based extraction followed by SymPy
+verification, with an AI judge used as a fallback.
+H.2 Science
+Graduate-Level Google-Proof Q&A benchmark (GPQA) (Rein et al., 2023) comprise knowledge-intensive,
+graduate- and research-level questions, primarily in STEM domains. For GPQA, we evaluate on the Dia-
+mond subset, which contains 198 multiple-choice questions. We adopt the instruction prompt from Ope-
+nAI’s simple-evals package (OpenAI, 2025) to specify the required answer format, and use a custom regex-
+based extraction procedure to compare model outputs against the ground-truth answers. We report pass@1
+performance averaged over 16 rollouts. We use GPT-5-mini as the default judge for AI grading with the
+prompt described in Fig. 25 to grade model responses on STEM benchmarks. GPT-5mini is used as the
+default judge.
+H.3 Competitive Coding
+LiveCodeBench (LCB) (Jain et al., 2024) contains up-to-date competitive coding problems. We evaluated
+on the v6 split, which contains 1,055 problems released between May 2023 and Apr 2025. Unlike the agentic
+coding evaluations below which are multi-turn, LCB is a one-shot test setting. The solution is generated in
+99

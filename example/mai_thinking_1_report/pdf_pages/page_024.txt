@@ -1,0 +1,127 @@
+0.24
+0.25
+0.26
+0.2594
+0.2505
+0.2483
+0.2478
+0.2441
+0.2401
+Gemma4
+(31B)
+DS-V3.2
+(37B/685B)
+MAI L66
+(23B/612B)
+Kimi-K2
+(32B/1T)
+MAI-Base-1
+(35B/1T)
+DS-V4-Pro
+(49B/1.6T)
+(lower is better)
+Bits per byte
+Held-Out Code (MAI's YOLO repo)
+0.43
+0.44
+0.45
+0.46
+0.47
+0.4627
+0.4549
+0.4511
+0.4459
+0.4421
+0.4344
+Gemma4
+(31B)
+DS-V3.2
+(37B/685B)
+MAI L66
+(23B/612B)
+Kimi-K2
+(32B/1T)
+MAI-Base-1
+(35B/1T)
+DS-V4-Pro
+(49B/1.6T)
+(lower is better)
+Bits per byte
+Held-Out QA
+0.39
+0.40
+0.41
+0.42
+0.43
+0.44
+0.45
+0.4386
+0.4149
+0.4133
+0.4038
+0.3978
+0.3939
+Gemma4
+(31B)
+DS-V3.2
+(37B/685B)
+MAI L66
+(23B/612B)
+Kimi-K2
+(32B/1T)
+MAI-Base-1
+(35B/1T)
+DS-V4-Pro
+(49B/1.6T)
+(lower is better)
+Bits per byte
+Held-Out STEM
+0.37
+0.38
+0.39
+0.40
+0.41
+0.42
+0.43
+0.44
+0.4280
+0.4075
+0.3937
+0.3853
+0.3844
+0.3788
+Gemma4
+(31B)
+DS-V3.2
+(37B/685B)
+MAI L66
+(23B/612B)
+Kimi-K2
+(32B/1T)
+MAI-Base-1
+(35B/1T)
+DS-V4-Pro
+(49B/1.6T)
+(lower is better)
+Bits per byte
+Held-Out Math
+Figure 10. Bits-per-byte (BPB) comparison of base pre-trained models across four held-out evaluation tasks
+(lower is better). MAI models are illustrated in yellow. We also provide an additional data point with 23B (L66
+from an older version of our ladder 2.2.1), a prior run of ours trained over the same number of tokens (30T) with
+the MAI-Base-1. The internal held-out evaluation tasks used are described in Sec. 2.7.
+23B model outperforms the DeepSeek v3.2 base model while using only 62% of its active parameters and a
+comparable number of total parameters.
+2.8 YOLO: Distributed Training at Scale
+You Only Launch Once (YOLO) is MAI’s in-house framework for large-scale training used throughout the
+development cycle of MAI-Thinking-1. YOLO is built on top of PyTorch (Paszke et al., 2019) and sits inside
+the scheduling and runtime stack described in Sec. L.3.
+YOLO is designed to support all phases of large-scale model training, including pre-training, mid-
+training, supervised fine-tuning, and (the training aspect of) reinforcement learning. It implements the
+core training loop including our model definition, sharding, optimizer, dataloading and checkpointing.
+We built YOLO from scratch to give us full end-to-end control over the training stack: from kernels to
+parallelism to scheduling. YOLO draws from the experience of large-scale training frameworks such as
+Megatron-Core (Yan et al., 2026), DeepSpeed (Rasley et al., 2020), and TorchTitan (Liang et al., 2024) and
+is co-designed and deeply integrated with the rest of our compute infrastructure and model training. This
+allows us to equally prioritize training speed, goodput, determinism, flexibility, and developer agility as
+the compute environment and model architecture evolve. The following section describes YOLO’s main
+24

@@ -1,0 +1,75 @@
+\subsection{K 通用能力评测}\label{k-general-capabilities-evaluations}
+
+下文讨论涵盖知识、指令遵循、长上下文、安全、诚实性、健康与工具调用等维度的基准，结果见表 12。
+
+\subsection{K.1 知识}\label{k.1-knowledge}
+
+我们分别在 SimpleQA Verified（Haas et al., 2026）和 MMLU-Pro（Wang et al., 2024b）上评测 MAI-Thinking-1，以评估其知识与推理能力。结果见表 12，并与其他模型进行了对比。
+
+MMLU‐Pro。MMLU-Pro 在 MMLU（Hendrycks et al., 2021）的基础上，引入更具挑战性、更侧重推理的题目，并将选项数从 4 个增加到 10 个。它评估模型在一系列广泛的知识与推理任务上的表现。我们采用 OpenAI 的 simple-evals 包（OpenAI, 2025）中的指令提示词来规定所需答案格式，并使用自定义的基于正则表达式的提取流程，将模型输出与标准答案进行比对。
+
+SimpleQA Verified。SimpleQA（Wei et al., 2024b）评估模型在答案简短、无歧义且覆盖多种主题的难题上的短问答事实性知识掌握。我们报告模型在 SimpleQA Verified（Haas et al., 2026）上的准确率，该子集经过精选，用于解决标签噪声和冗余问题。
+
+\subsection{K.2 指令遵循}\label{k.2-instruction-following}
+
+模型可用性的一个关键方面是其对用户指令的响应质量。我们拥有一套内部基准，但下文仅报告三个常见公开基准的结果。
+
+• IFBench（Pyatkin et al., 2026）评估模型遵循精确指令的能力，涵盖 58 种多样且可验证的约束。
+
+• AdvancedIF（He et al., 2025）使用评分细则（rubrics）和经校准的 LLM 评测模型，衡量复杂的、多轮的以及带系统提示的指令遵循能力。
+
+• MultiChallenge（Deshpande et al., 2025）针对多轮对话，要求模型具备准确的指令遵循、上下文分配和上下文内推理能力\footnote{我们遵循官方基准的评测模型设置，采用 Gemini 2.5 Pro 作为评测模型。https://labs.scale.com/leaderboard/multichallenge}。我们已验证，对于公开模型，我们的实现与官方排行榜上报告的分数一致。
+
+\subsection{K.3 长上下文}\label{k.3-long-context}
+
+MAI-Thinking-1 的长上下文性能通过四个基准进行评测，结果见表 12 和表 19。我们出于下文讨论的原因省略了 MRCR（Vodrahalli et al., 2024）。
+
+GraphWalks。GraphWalks 是一个合成多跳推理基准：模型获得图的边列表表示，并被要求遍历图，以找到给定起始节点的相邻节点（通过广度优先搜索）或父节点。表 12 中的总体得分是模型预测答案与标准答案之间的 F1 分数。我们报告按 o200k\_base 分词器测量的 ≤128k 子集上的 GraphWalks 结果。
+
+LongBenchV2。LongBenchV2（Bai et al., 2024）由面向长上下文理解任务的 4 选 1 多选题构成。我们使用与官方实现相同的评测设置，但有一个限制：输入上下文长度限定为 256k tokens，最终得到 408 个唯一问题。
+
+CorpusQA。CorpusQA（Lu et al., 2025）是一个多文档自由问答数据，模型回答由 AI 评测模型评分。我们没有使用默认的 deepseek-v3（DeepSeek-AI et al., 2025a）作为评测模型，而是使用 GPT-5.4（high），其精度更高。
+
+表 19. 其他长上下文基准。Sonnet 4.6 的结果由我们自己的独立评测生成。所有模型均在最大 128k 输出 tokens、最大推理强度（如适用）的设置下评测。结果为 4 次独立评测的平均值。
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}|l|l|l|@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\hline
+模型 & LongBenchV2 & CorpusQA \\
+\hline
+MAI-Thinking-1 & 61 & 82 \\
+\hline
+Sonnet 4.6 & 66 & 79 \\
+\hline
+\end{longtable}
+}
+
+MRCR。OpenAI 的 MRCR（Vodrahalli et al., 2024）是一个人工构造的基准，用于测试模型在长上下文中的计数和复制能力。虽然理想模型应当表现良好，但该任务的性质与真实用户查询有本质差异。我们发现，在未进行针对性训练的情况下，MAI-Thinking-1 在该任务上相比现有模型表现不佳，在 avg\_similarity@256K 上仅达到 60\%，而目前最先进的结果为 95\%。相比之下，仅用 1,000 个合成生成的同分布训练样本，就能将 MAI-Base-1 系列中一个规模小得多的模型在 MRCR 上的表现提升到 90\% 以上，这表明该基准容易过拟合。由于我们没有证据表明针对此类数据进行训练能带来更普遍的模型能力提升，因此决定将 MRCR 从优先的长上下文基准集中移除。
+
+\subsection{K.4 安全}\label{k.4-safety}
+
+AIR‐Bench。AIR-Bench（Zeng et al., 2024b）基于法规与政策衍生的危害分类体系，对基于策略的拒答行为给出整体评估。评测使用针对每个风险类别定制的类别专属 LLM 评测提示词，评分设计旨在奖励安全参与，而非仅仅惩罚不安全响应。MAI-Thinking-1 在该基准上达到了与 Sonnet 4.6 相同的表现。
+
+CyberSecEval。CyberSecEval 4（Wan et al., 2024; Meta, 2024）是一个涵盖多种网络安全相关能力的评测套件。这里我们重点关注不安全代码生成。其中 Instruct 基准提出旨在诱导已知不安全代码模式的编程请求，而 Autocomplete 基准则向模型提供一段已知不安全模式之前的代码上下文，由模型续写完成。两者均通过静态分析规则衡量模型是否生成了存在漏洞的代码。MAI-Thinking-1 在 Autocomplete 基准上优于 Sonnet 4.6，在 Instruct 上表现相近。
+
+\subsection{K.5 诚实性}\label{k.5-honesty}
+
+为衡量 MAI-Thinking-1 的诚实性，我们选取了覆盖两种不同失败模式的基准：在短问答中重复看似合理的错误陈述，以及在长文本生成中引入无依据的论断。MAI-Thinking-1 在这两个基准上的表现均与 Sonnet 4.6 相当。
+
+TruthfulQA。TruthfulQA（Lin et al., 2022）评估模型对常见误解的抵抗能力，每个问题都旨在诱导出看似合理但错误的答案。为获得可复现的结果，我们报告模型在推荐的多选题设置下于该数据集上的准确率。
+
+LongFact。LongFact（Wei et al., 2024c）评估包含多个论断的长文本生成的事实精确性；我们采用 OpenAI 的简化论断提取与 LLM 评测协议（Singh et al., 2025a）替代原有的 SAFE 流水线，保留 LongFact 提示词集，并报告论断级别的精确率。
+
+\subsection{K.6 健康}\label{k.6-health}
+
+HealthBench Professional。HealthBench（Arora et al., 2025）是一套用于评估 LLM 与个人及医疗专业人士进行真实健康对话能力的基准。语言模型被给定一段多轮对话，并被要求生成回复作为现有对话线程的延续。回复由经校准的基于模型的评测模型，依据医生小组创建的对话专属评分细则进行评估，涵盖临床正确性、指南遵从性和安全性。我们报告最新 HealthBench 版本 HealthBench Professional 上的表现，该版本聚焦于医学专家与语言模型之间的 525 段对话（Hicks et al., 2026）。HealthBench Professional 对主要指标引入了长度惩罚，以修正长期观察到的冗长回复与 LLM 评分虚高之间的相关性。所有报告分数均使用 OpenAI 提供的标准 GPT-5.4 评测模型与评分细则。
+
+MedXpertQA。MedXpertQA Zuo et al.~(2025) 是一个具有挑战性、尚未饱和的多选题基准，通过 2,450 道专家精选的多选题评估专科级医学知识。这些题目旨在考察高级临床知识与多步推理能力。每道多选题有 10 个选项（A-J）。我们遵循 Muse Spark Team (2026) 引入的评测方法，该方法使用辅助 LLM（GPT-5.4）从自由文本中解析模型预测的答案选项字母。
+
+\subsection{K.7 工具调用}\label{k.7-tool-calling}
+
+BFCL v3（Patil et al., 2025）评测 LLM 在单轮、并行和多函数场景以及多轮、多步 agent 交互中的工具使用与函数调用能力。它通过抽象语法树匹配和执行结果匹配来评估函数选择与参数生成，同时考察长程推理、跨轮状态跟踪以及对噪声或缺失函数的鲁棒性。为获得更好的确定性，我们按照官方排行榜的建议，在推理时使用 T = 0.001、p = 0.97。

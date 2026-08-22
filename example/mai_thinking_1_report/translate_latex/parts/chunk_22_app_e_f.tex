@@ -1,0 +1,71 @@
+\subsection{E SWE 智能体工具 Schema}\label{e-swe-agent-tool-schema}
+
+我们以兼容 OpenAI 的函数调用（function calling）Schema 格式，在图 23 和图 24 中描述 SWE 智能体强化学习（RL）所使用的工具。
+
+
+
+\pandocbounded{\includegraphics[keepaspectratio,alt={image}]{images/3d04078f1a0ec2ba5f184bf94f60bc850b80c998dce5748a845b6f0abf34d99f.jpg}}
+
+图 23. Bash 工具 Schema。
+
+
+
+\{ ``type'': ``function'', ``function'': \{ ``name'':
+``str\_replace\_editor'', ``description'': ``Custom editing tool for
+viewing, creating and editing files.\n* State is persistent across
+command calls and discussions with the user\n* If `path` is a file,
+`view` displays the result of applying `cat -n`. If `path` is a
+directory, `view` lists non-hidden files and directories up to 2 levels
+deep\n* The `create` command cannot be used if the specified `path`
+already exists as a file\n* If a `command` generates a long output, it
+will be truncated and marked with `<response clipped>`\n* The
+`undo\_edit` command will
+revert the last edit made to the file at `path`\n\nNotes for using the
+`str\_replace` command:\n* The `old\_str` parameter should match EXACTLY
+one or more consecutive lines from the original file. Be mindful of
+whitespaces!\n* If the `old\_str` parameter is not unique in the file,
+the replacement will not be performed. Make sure to include enough
+context in `old\_str` to make it unique\n* The `new\_str` parameter
+should contain the edited lines that should replace the
+`old\_str`'', ``parameters'': \{ ``type'': ``object'',
+``additionalProperties'': false, ``required'': {[}``command'',
+``path''{]}, ``properties'': \{ ``command'': \{ ``type'': ``string'',
+``description'': ``The commands to run. Allowed options are: `view`,
+`create`, `str\_replace`, `insert`, `undo\_edit`.'' ``enum'':
+{[}``view'', ``create'', ``str\_replace'', ``insert'', ``undo\_edit''{]}
+\}, ``path'': \{ ``type'': ``string'', ``description'': ``Absolute path
+to file or directory, e.g.~`/testbed/file.py` or `/testbed`.'' \},
+``file\_text'': \{ ``type'': {[}``string'', ``null''{]}, ``default'':
+null, ``description'': ``Required parameter of `create` command, with
+the content of the file to be created.'' \}, ``view\_range'': \{
+``type'': {[}``array'', ``null''{]}, ``default'': null, ``items'': \{
+``type'': ``integer'' \}, ``minItems'': 2, ``maxItems'': 2,
+``description'': ``Optional parameter of `view` command when `path`
+points to a file. If none is given, the full file is shown. If provided,
+the file will be shown in the indicated line number range, e.g.~{[}11,
+12{]} will show lines 11 and 12. Indexing at 1 to start. Setting
+{[}start\_line, -1{]} shows all lines from start\_line to the end of the
+file.'' \}, ``old\_str'': \{ ``type'': {[}``string'', ``null''{]},
+``default'': null, ``description'': ``Required parameter of
+`str\_replace` command containing the string in `path` to replace.'' \},
+``new\_str'': \{ ``type'': {[}``string'', ``null''{]}, ``default'':
+null, ``description'': ``Optional parameter of `str\_replace` command
+containing the new string (if not given, no string will be added).
+Required parameter of `insert` command containing the string to
+insert.'' \}, ``insert\_line'': \{ ``type'': {[}``integer'',
+``null''{]}, ``default'': null, ``description'': ``Required parameter of
+`insert` command. The `new\_str` will be inserted AFTER the line
+`insert\_line` of `path`.'' \} \} \}\\
+图 24. String Replace Editor 工具 Schema。
+
+
+
+\subsection{F 指令遵循数据的约束分类体系}\label{f-constraint-taxonomy-for-instruction-following-data}
+
+我们构建了一个约束分类体系，用于组织模型可能被要求遵循的指令。它有两个用途：引导数据采集覆盖更广的范围（包括罕见的约束组合），并允许在细粒度层面分析模型性能。我们按约束的检查方式来划分约束，与第 3.4.1 节的奖励类型相对应。
+
+客观（硬性）约束。这类约束基于规则，会触发来自自定义与开源检查器目录的 Python 函数（Pyatkin et al., 2026；Zhou et al., 2023）。示例包括数值约束（如``恰好用 3 个句子回答''）、格式约束（如``以包含 name 和 age 键的 JSON 对象输出''）以及语言约束（如``用法语回答''）。
+
+主观（软性）约束。这类约束需要判断才能评估，由奖励模型或 AI 裁判评分。示例包括语气（如``保持鼓励但不要居高临下''）、人设（如``以历史学者身份作答''）和交互行为（如``如果不清楚，先提出澄清问题再回答''）。表 15 展示了示例子类别。
+
+多轮对话场景分类体系。受 Deshpande et al.~(2025) 启发，我们将对话用例拆解为多种场景，用于在涉及多轮的复杂对话中测试模型的指令遵循（IF）能力，如表 16 所示。

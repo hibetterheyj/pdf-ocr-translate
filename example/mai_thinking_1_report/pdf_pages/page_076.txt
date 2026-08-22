@@ -1,0 +1,47 @@
+Xue, Pei Zhang, Qin Zhu, Rui Men, Runji Lin, Tianhao Li, Tianyi Tang, Tingyu Xia, Xingzhang Ren, Xu-
+ancheng Ren, Yang Fan, Yang Su, Yichang Zhang, Yu Wan, Yuqiong Liu, Zeyu Cui, Zhenru Zhang, and
+Zihan Qiu. Qwen2.5 technical report, 2025. URL https://arxiv.org/abs/2412.15115.
+Alec Radford, Jeffrey Wu, Rewon Child, David Luan, Dario Amodei, and Ilya Sutskever.
+Language
+models are unsupervised multitask learners.
+OpenAI, 2019.
+URL https://cdn.openai.com/
+better-language-models/language_models_are_unsupervised_multitask_learners.
+pdf. Accessed: 2024-11-15.
+Jack W. Rae, Sebastian Borgeaud, Trevor Cai, Katie Millican, Jordan Hoffmann, Francis Song, John
+Aslanides, Sarah Henderson, Roman Ring, Susannah Young, Eliza Rutherford, Tom Hennigan, Jacob
+Menick, Albin Cassirer, Richard Powell, George van den Driessche, Lisa Anne Hendricks, Maribeth Rauh,
+Po-Sen Huang, Amelia Glaese, Johannes Welbl, Sumanth Dathathri, Saffron Huang, Jonathan Uesato,
+John Mellor, Irina Higgins, Antonia Creswell, Nat McAleese, Amy Wu, Erich Elsen, Siddhant Jayakumar,
+Elena Buchatskaya, David Budden, Esme Sutherland, Karen Simonyan, Michela Paganini, Laurent Sifre,
+Lena Martens, Xiang Lorraine Li, Adhiguna Kuncoro, Aida Nematzadeh, Elena Gribovskaya, Domenic
+Donato, Angeliki Lazaridou, Arthur Mensch, Jean-Baptiste Lespiau, Maria Tsimpoukelli, Nikolai Grig-
+orev, Doug Fritz, Thibault Sottiaux, Mantas Pajarskas, Toby Pohlen, Zhitao Gong, Daniel Toyama, Cy-
+prien de Masson d’Autume, Yujia Li, Tayfun Terzi, Vladimir Mikulik, Igor Babuschkin, Aidan Clark,
+Diego de Las Casas, Aurelia Guy, Chris Jones, James Bradbury, Matthew Johnson, Blake Hechtman, Laura
+Weidinger, Iason Gabriel, William Isaac, Ed Lockhart, Simon Osindero, Laura Rimell, Chris Dyer, Oriol
+Vinyals, Kareem Ayoub, Jeff Stanway, Lorrayne Bennett, Demis Hassabis, Koray Kavukcuoglu, and Ge-
+offrey Irving. Scaling language models: Methods, analysis & insights from training gopher, 2022. URL
+https://arxiv.org/abs/2112.11446.
+Samyam Rajbhandari, Jeff Rasley, Olatunji Ruwase, and Yuxiong He. Zero: Memory optimizations toward
+training trillion parameter models. In SC20: international conference for high performance computing, net-
+working, storage and analysis, pages 1–16. IEEE, 2020.
+Jeff Rasley, Samyam Rajbhandari, Olatunji Ruwase, and Yuxiong He. Deepspeed: System optimizations
+enable training deep learning models with over 100 billion parameters. In Proceedings of the 26th ACM
+SIGKDD international conference on knowledge discovery & data mining, pages 3505–3506, 2020.
+David Rein, Betty Li Hou, Asa Cooper Stickland, Jackson Petty, Richard Yuanzhe Pang, Julien Dirani, Julian
+Michael, and Samuel R Bowman. GPQA: A graduate-level google-proof q&a benchmark. arXiv preprint
+arXiv:2311.12022, 2023.
+Leonard Richardson.
+Beautiful soup documentation.
+https://www.crummy.com/software/
+BeautifulSoup/bs4/doc/, 2026. Beautiful Soup version 4.14.3; accessed 31 May 2026.
+Aurko Roy, Mohammad Saffar, Ashish Vaswani, and David Grangier. Efficient content-based sparse attention
+with routing transformers, 2020. URL https://arxiv.org/abs/2003.05997.
+Mark Russinovich, Ahmed Salem, and Ronen Eldan. Great, now write an article about that: The crescendo
+multi-turn LLM jailbreak attack, 2024. URL https://arxiv.org/abs/2404.01833.
+John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, and Oleg Klimov. Proximal policy optimiza-
+tion algorithms, 2017. URL https://arxiv.org/abs/1707.06347.
+Gian Segato. Quantifying infrastructure noise in agentic coding evals. Engineering at Anthropic. https:
+//www.anthropic.com/engineering/infrastructure-noise, February 2026.
+76

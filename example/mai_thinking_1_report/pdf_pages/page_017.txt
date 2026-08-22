@@ -1,0 +1,43 @@
+2.5.1 Challenges to Optimization
+The choice of datamix has a significant influence on the resulting model, and so we want to take a principled
+and structured approach to this problem. An effective technique must deal with several challenges:
+• The definition of utility. How do we concretely define the goal against which to optimize? Our overarching
+goal is to develop models that are effective in real-world use, but running a full post-training process for
+each candidate data mixture would be prohibitively expensive.
+• Vast search space. As the number of datasets grows to the hundreds, the space of datamixes is so large that
+an exhaustive search is not computationally feasible.
+• Scale-dependent effects. One data source may be particularly useful for models at smaller scale, while
+another is more useful at large scale (Ye et al., 2025).
+• Cross-dataset interactions. Datasets are both complementary and substitutive for each other in different
+ways. The utility of a dataset cannot be measured independently of the rest of the mixture.
+• Multi-epoch effects. Datamixes cannot be evaluated in isolation: training horizons matter (Chen et al.,
+2026a). While tempting, placing high weight on high quality but small datasets can lead to diminishing
+returns when the training horizon is large, as the dataset ends up being consumed many times. In the worst
+case, this can lead to overfitting.
+• Compute cost. Training many models with various data mixes quickly becomes expensive, especially when
+trying to explore an extremely high dimensional search space.
+2.5.2 Forecasting‐Based Approaches
+One class of approaches to data selection is to train many models at significantly smaller scale and then build
+a predictive model over these model’s evaluation results. From these fit-functions on the smaller models, one
+can try to estimate the globally optimal data mixture or, at least, guide the search. This family of approaches
+includes methods like RegMix (Liu et al., 2025b). One key feature of these techniques is that by relying on
+small models, they enable rapid iteration.
+We experimented with variants of these methods, sampling data mixtures based on a baseline mixture
+and training several thousand small models, each with between 760M and 4B active parameters (L12-L36
+models as per Tab. 1) – examples of the Web / Code data frontier are shown in Fig. 5. For each model, we
+compute our full NLL suite looking at correlations between different data subsets and different evaluations
+– both aggregated and individual – an example of which is shown in Figs. 5 and 7. Ultimately, we assign a
+single score for each mix, as given by Eq. 3 in Sec. 2.3, which we attempt to globally optimize (minimize).
+A case of scale dependence in practice.
+During our data-mixing experiments, we uncovered an em-
+pirical finding that challenged one of our core scaling assumptions: the idea that the relative ordering of
+two datamixes – which one yields better evaluation performance – is preserved as compute increases. This
+assumption, often referred to informally as the rank invariance hypothesis (Liu et al., 2025b), is appealing
+because it suggests that inexpensive small-scale experiments can reliably guide decisions for large-scale runs.
+However, we found this to not always be the case.
+In an earlier model generation, we sought to measure the sensitivity of coding and STEM reinforce-
+ment learning to pretraining data mixtures. We produced two candidate mixtures with different mixture
+optimization methods and weightings of our evaluations: a code-heavy-mix (approximately 50% code,
+predicted to be especially strong on our Coding category) and stem-heavy-mix (STEM data significantly
+upweighted, to target the STEM and Math categories). Intermediate scale verifications were run, followed
+17

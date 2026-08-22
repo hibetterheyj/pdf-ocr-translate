@@ -1,0 +1,41 @@
+Key domains.
+For selected high-value domains, we use modified extraction pipelines to better preserve
+domain-specific structure and content. For example, for Wikipedia, we err on the side of inclusion to avoid
+dropping useful information when standard extraction would otherwise discard important page elements.
+B.2 Web PDFs
+We collect a web-crawled PDF corpus of approximately 10B documents spanning educational, lifestyle, tech-
+nical, and professional documents. Using heuristics and classifiers on text extracted from PDF bytes, we filter
+this down to 620M documents for further processing. To convert the documents into trainable text, we use
+Azure Document Intelligence (Azure DI).
+We apply several post-processing steps to the OCR outputs:
+• equation and table normalization
+• removal of boilerplate such as headers, footers, and text detected in figures
+• removal of OCR artifacts such as glyph errors
+• line unwrapping by removing line breaks and hyphenation
+• removal of reference sections from academic documents
+We remove SEO and spam content using text-level classifiers and PDF metadata heuristics. In particular,
+the PDF metadata fields “creator” and “producer” are useful high-precision signals for filtering. We further
+filter documents using heuristics such as text length, gzip compressibility, alphanumeric ratio, and table ratio,
+as well as quality classifiers.
+After fuzzy deduplication, the PDF dataset consists of 1.8T English tokens and 1.85T multilingual tokens.
+To support data mixing, we classify documents as educational or non-educational. Educational documents
+are further categorized into mathematics, computer science, STEM, and non-STEM, and assigned an edu-
+cational level among high school, undergraduate, and graduate.
+B.3 Books and Journals
+We acquire books and journals from various providers, including through direct agreements with publishers.
+For each provider, we build a dedicated ingestion pipeline suited to the underlying data format and con-
+sistent with the usage limitations attached to the content. Each pipeline transforms the raw content into
+a canonical text format. The standardized text is then processed through OCR artifact cleaning, heuristic
+filtering, and content selection. The cleaned text goes through exact deduplication, title deduplication, and
+fuzzy deduplication to reduce unwanted repetition. Finally, using an LLM for annotation, each document in
+the corpus is given topic and quality labels to assess each work’s usefulness for LLM pre-training and enable
+better control over data mixing.
+B.4 Public GitHub
+We source most of our 7.4T-token code pre-training corpus from public GitHub repositories and organize
+it into three datasets: files, commits, and pull requests (PRs). All three datasets undergo shared filtering,
+deduplication, decontamination, and quality scoring pipelines.
+Shared processing.
+We first apply heuristic file-level filters to remove non-code and low-quality data.
+These filters include:
+• Removal of files in junk folders such as node_modules, build, __pycache__, and .vscode.
+84

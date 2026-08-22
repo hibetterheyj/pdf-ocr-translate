@@ -1,0 +1,124 @@
+\subsection{4 评测}\label{evaluations}
+
+\subsection{4.1 基准评测}\label{benchmark-evaluations}
+
+我们将 MAI-Thinking-1 与多种开源和闭源权重的前沿模型在公开基准以及人工并排评测上进行了比较。这些评测涵盖广泛领域，凸显了模型在不同场景下的通用性：STEM、智能体编码、知识、指令遵循、长上下文、安全、健康、诚实性和工具调用。除非另有说明，MAI-Thinking-1 的所有基准评测结果均为 4 次运行的平均值，采用统一的推理设置，温度 T = 1，top-p 采样 p = 0.97。
+
+表 11 报告了我们在 STEM 和智能体编码基准上的结果。其他模型的数值取自其官方模型卡和发布公告。综合来看，这些结果将 MAI-Thinking-1 置于其他流行 LLM 的有竞争力区间：它并不领先，但在广泛的基准类别上持续表现强劲。值得注意的是，MAI-Thinking-1 在 AIME 2025 上超过 Claude Sonnet 4.6，并在 SWE-Bench Pro 上接近 Claude Opus 4.6 的表现。
+
+此外，我们所有的 SWE 智能体训练数据仅使用 bash 和字符串替换作为工具，不包含针对性的终端交互环境。因此，模型当前的 Terminal-Bench 表现反映的是从更广泛的智能体训练中获得的泛化能力，而非直接针对类似 Terminal-Bench 的环境进行训练。
+
+数学、科学与竞赛编程。在数学方面，我们在 2025 和 2026 年版 AIME 以及 MathArena 的 2026 年 2 月 HMMT 基准（Dekoninck et al., 2026）上评测 MAI-Thinking-1。在科学方面，我们在研究生级 Google-Proof Q\&A 基准（GPQA）（Rein et al., 2023）上评测，该基准包含知识密集型、研究生与研究级问题，主要覆盖 STEM 领域。在竞赛编程方面，我们在 LiveCodeBench v6（LCB v6）（Jain et al., 2024）上评测，该基准包含最新的竞赛编程问题。更多评测细节见附录 H。
+
+表 12. 各公开基准上后训练模型的评测结果。Sonnet 4.6 的所有结果均通过我们自己的评测套件生成。对于 AdvancedIF，我们报告评分细则级分数。
+
+{\def\LTcaptype{none} % 不递增计数器
+\begin{longtable}[]{@{}|l|l|l|l|l|l|l|l|@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\hline
+& \multicolumn{2}{l}{%
+知识} & \multicolumn{3}{l}{%
+指令遵循} & 长上下文 & 工具调用 \\
+\hline
+模型 & & & & & & MMLU Pro SimpleQA Verified IF Bench Adv. IF
+Multi-Challenge GraphWalks ($\leq$128k) & BFCL v3 \\
+\hline
+MAI-Thinking-1 & 85 & 31 & 69 & 85 & 53 & 90 & 72 \\
+\hline
+Sonnet 4.6 & 87 & 29 & 50 & 86 & 57 & 96 & 76 \\
+\hline
+安全 & \multicolumn{3}{l}{%
+} & \multicolumn{2}{l}{%
+诚实性} & \multicolumn{2}{l@{}}{%
+健康} \\
+\hline
+模型 & & & & & & AIR-Bench CyberSec Instruct CyberSec Auto Long Fact
+Truthful QA HealthBench Prof. MedXpert QA & \\
+\hline
+MAI-Thinking-1 & 88 & 63 & 63 & 98 & 88 & 35 & 43 \\
+\hline
+Sonnet 4.6 & 88 & 62 & 56 & 98 & 88 & 38 & 49 \\
+\hline
+\end{longtable}
+}
+
+智能体编码与工具调用。在智能体编码方面，我们在 SWE-bench Verified（Chowdhury et al., 2024）、SWE-Bench Pro（Deng et al., 2025）和 Terminal-Bench 2.0（Merrill et al., 2026）上评测 MAI-Thinking-1。在工具调用方面，我们在 BFCL v3（Patil et al., 2025）上评测 MAI-Thinking-1。与 STEM 评测不同，这些评测是多轮交互的，需要模型与环境交互。对于这三个基准，我们都使用一个非常简单的 ReAct 风格（Yao et al., 2023）循环来评测模型，该循环始终追加到图 18 所示的智能体循环。对于 SWE-bench Verified 和 SWE-Bench Pro，我们同时启用 bash 和字符串替换工具。对于 Terminal-Bench 2.0，我们仅启用 bash 工具，以模拟最精简的终端界面。为消除推理速度和基础设施的混杂因素（Segato, 2026），我们忽略 Terminal-Bench 2.0 的预定义超时。评测设置的更多细节见附录 I。
+
+综合能力。在表 12 中，我们报告了涵盖知识、指令遵循、长上下文、安全、诚实性、健康和工具调用的基准结果。对于这些领域的基准，我们发现并非所有实验室都会在模型卡或模型公告中报告官方结果。为了提供与 MAI-Thinking-1 对比的基线，我们在这些基准上使用最大推理努力（max reasoning effort）和最大序列长度评测了 Sonnet 4.6，并将结果一并报告在表 12 中。在大多数基准上，我们发现我们的模型与 Sonnet 4.6 相当。
+
+具体而言，我们报告 SimpleQA Verified（Haas et al., 2026）和 MMLU-Pro（Wang et al., 2024b）以衡量知识与推理能力，IFBench（Pyatkin et al., 2026）、AdvancedIF（He et al., 2025）和 MultiChallenge（Deshpande et al., 2025）以衡量指令遵循，GraphWalks 以衡量长上下文能力，AIR-Bench（Zeng et al., 2024b）和 CyberSecEval 4（Wan et al., 2024; Meta, 2024）以衡量安全，TruthfulQA（Lin et al., 2022）和 LongFact（Wei et al., 2024c）以衡量诚实性，HealthBench（Arora et al., 2025）和 MedXpertQA（Zuo et al., 2025）以衡量健康知识任务。各评测设置的说明见附录 K。
+
+\subsection{4.2 人工并排评测}\label{human-sidebyside-evaluations}
+
+为补充上述以能力为导向的公开基准——它们聚焦于狭窄且客观定义的质量标准——我们还在广泛的真实世界任务上进行了人工评测。这些评测整体性地并排比较两个模型，重点关注整体有用性。并排评测有助于揭示单独审阅回复时不易察觉的质量差异。
+
+表 13. 人工并排评测的任务分布。
+
+{\def\LTcaptype{none} % 不递增计数器
+\begin{longtable}[]{@{}|l|l|@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\hline
+任务类别 & 提示词占比 \\
+\hline
+开放式问答、头脑风暴与建议、内容创作 & 各 13--14\% \\
+\hline
+结构化问题求解、信息抽取、学业辅导、洞见生成、内容摘要 & 各 6--7\% \\
+\hline
+任务规划、基于上下文的问答、其他文本分析 & 各 5\% \\
+\hline
+个人支持、娱乐、闲聊、角色扮演 & 各 3--4\% \\
+\hline
+\end{longtable}
+}
+
+评测任务选择。评测任务源自互补的多个来源，以确保全面覆盖真实用户需求，并具备较强的模型区分度。最终集合包含 1276 个任务，全部为英文，其中 30\% 为多轮任务。任务分布的详细信息见表 13。
+
+第一个任务来源是遵循结构化分类法编写的专家提示词，涵盖复杂度各异的真实世界用例，包括单轮和多轮对话。第二个来源是微软消费级 Copilot 产品的日志，经过仔细过滤，排除了包含个人可识别信息（PII）的提示词、不完整或缺乏必要对话上下文的提示词、对抗性提示词，以及需要自定义配置（如编码环境、图像生成能力或外部工具访问）的提示词。我们使用分层采样以确保用例覆盖，并在特异性和约束多样性等维度上平衡难度。
+
+评分者池与评测流程。为开展这些模型评测，我们与由 Surge AI（一家信誉良好的数据标注供应商）管理的评测者合作。这些评测者是以英语为母语、来自各种通才和专业背景的人士。评测者须经过多阶段资格筛选流程，该流程评估他们评测核心 LLM 能力与失败模式的能力，包括事实核查、阅读理解和指令遵循。培训材料包括评分说明和常见失败模式的示例。
+
+对于每个提示词，评分者首先需要从多个维度分别仔细评估 MAI 和其他模型的回复：指令遵循（包括显式和隐式）、事实性（使用搜索引擎辅助事实核查）、简洁性与相关性、完整性，以及风格与语气。在每个维度上，评分者判断回复是否存在无问题、轻微问题或重大问题。最后一步，评分者在两个回复之间给出整体偏好评分，采用 7 点 Likert 量表，范围从 ``远差于''(-1.5) 到 ``远优于''(1.5)。我们观察到评分者池具有较强的一致性，验证了评分在可接受的噪声阈值内是稳定且可复现的。
+
+结果。表 14 展示了整体成对偏好在 {[}−1.5, 1.5{]} 区间上的结果，以及各质量维度在 {[}−1, 1{]} 区间上的差值。总体而言，评分者更偏好 MAI-Thinking-1 而非 Sonnet 4.6，但更偏好 Opus 4.6 而非 MAI-Thinking-1。对比 Sonnet 4.6，MAI-Thinking-1 在 49\% 的比较中获胜，6\% 持平，45\% 落败。对比 Opus 4.6，MAI-Thinking-1 在 43\% 中获胜，5\% 持平，52\% 落败。在定向维度上，评分者认为 MAI-Thinking-1 在简洁性与相关性以及风格与语气上优于 Sonnet 4.6，而在指令遵循、事实性和完整性上大致相当（在噪声范围内）。
+
+\subsection{4.3 内部安全评测}\label{internal-safety-evaluation}
+
+安全与过度拒答。我们构建了一个内部基准，用于衡量模型在被判定为低风险请求（模型应当回答）的提示词上的过度拒答。拒答判定器（refusal judge）随后根据既定策略对每个回复打分，标记拒答、回避或不当的部分拒答。过度拒答率是回复未能依从的提示词占比，有用性定义为 1 减去该比率。结合高敏感条目上的安全通过率（1--5 Likert 量表上判定器安全得分 \textgreater{} 3），这揭示了理想的模型行为：对更高风险、有害的请求更安全，对低风险、良性的请求更有帮助。评测方法与数据集构建的详细说明见附录 J。
+
+表 14. MAI-Thinking-1 对比 Sonnet 4.6 和 Opus 4.6 的人工评测结果。正值表示偏好 MAI-Thinking-1，负值表示偏好 Sonnet 或 Opus。
+
+{\def\LTcaptype{none} % 不递增计数器
+\begin{longtable}[]{@{}|l|l|l|@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\hline
+模型表现 & 对比 Sonnet 4.6 & 对比 Opus 4.6 \\
+\hline
+整体并排偏好 & $0.07 \pm 0.06$ & $-0.07 \pm 0.06$ \\
+\hline
+指令遵循 $\Delta$ & $-0.01 \pm 0.02$ & $-0.04 \pm 0.02$ \\
+\hline
+事实性 $\Delta$ & $-0.02 \pm 0.02$ & $-0.03 \pm 0.02$ \\
+\hline
+简洁性与相关性 $\Delta$ & $0.11 \pm 0.02$ & $0.07 \pm 0.02$ \\
+\hline
+完整性 $\Delta$ & $-0.01 \pm 0.02$ & $-0.02 \pm 0.02$ \\
+\hline
+风格与语气 $\Delta$ & $0.08 \pm 0.02$ & $0.05 \pm 0.02$ \\
+\hline
+\end{longtable}
+}
+
+图 20 展示了 MAI-Thinking-1 对比 Sonnet 4.6 的安全-有用性平衡。在八个类别中的五个上，MAI-Thinking-1 位于 Sonnet 4.6 的上方和/或右方，表明表现更优，其中在化学、生物、放射与核（CBRN）、自伤以及选举与政治上的提升最大。
+
+越狱攻击。我们从供应商、内部红队以及包括 HarmBench（Mazeika et al., 2024）和 StrongREJECT（Souly et al., 2024）在内的开源基准中收集了 2.5K 个独特的种子场景，构建了内部越狱评测套件。我们对收集到的提示词进行扩充，最终形成约 9.5K 条越狱提示词的评测集。我们按变换程度和攻击者自适应性将这些提示词分为三类：基础技术、组合技术与自适应技术（定义见图 21）。基础技术（Foundational Techniques）是单步变换，通过越狱包装或提示词模板等简单修改保留有害意图。组合技术（Compositional Techniques）结合多种变换或结构化改写，包括基于模板的攻击，如 PyRIT（Munoz et al., 2024）、PAP 风格变换（Zeng et al., 2024a），以及非英语或混合语言变体。自适应技术（Adaptive Techniques）引入交互、搜索或多轮结构，包括 TAP（Mehrotra et al., 2024）和多轮攻击（Russinovich et al., 2024）。
+
+图 21 报告了这三类攻击的成功率（ASR）；数值越低表示安全性越强。在这些提示词变换类型上，MAI-Thinking-1 取得了与 Sonnet 4.6 和 Opus 4.6 相当的低 ASR。

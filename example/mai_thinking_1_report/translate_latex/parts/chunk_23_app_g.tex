@@ -1,0 +1,58 @@
+\subsection{G 构建 SWE 环境的基础设施}\label{g-infrastructure-for-building-swe-environments}
+
+该基础设施的设计主要旨在应对规模、稳定性和安全方面的挑战。构建基础设施组织为一个双池（two-pool）Ray 集群，运行在约 30,000 个 CPU 核心上。主池（main pool）负责工作调度、Lance I/O 和流水线状态跟踪。构建池（builder pool）运行实际的容器构建；所有构建节点都标记了 Ray 自定义资源标志（custom resource flag），构建步骤利用 Ray 的逻辑资源调度，确保其 actor 只落在具备构建能力的节点上。
+
+两个池之所以分离，是因为容器构建对资源要求高且容易失败（磁盘耗尽、OOM、构建挂起），而协调工作轻量且无状态；将它们隔离可确保构建 pod 的失败不会干扰编排和状态管理。这种分离还实现了凭据隔离：构建 pod 执行来自开源仓库的不可信 Dockerfile，不持有流水线数据存储或内部服务的凭据。Pod 失败——无论由磁盘压力、硬件故障还是节点驱逐引起——都由 Kubernetes 重启处理；重启后的 pod 重新连接到 Ray 集群，并在下一个主池 worker 调度新任务时被自动接管。
+
+每个构建 pod 包含两个容器，共享基于 NVMe 的本地存储，协同部署以提升构建与评分的效率。主容器运行 Ray worker，并使用 rootless podman 加载构建好的镜像、运行评分容器。sidecar 容器运行 rootless BuildKit 守护进程，通过 buildctl 进行 OCI 镜像构建。两个容器通过共享的 NVMe 卷通信——BuildKit 将 OCI tar 归档写入该卷，podman 再加载这些归档——并通过 localhost 走 BuildKit 控制通道。这种协同部署避免了大型容器镜像在构建与评分之间的网络传输；整个构建-加载-运行循环都在本地 NVMe 上完成。Init 容器负责一次性初始化，包括通过联合身份（federated identity）完成容器镜像仓库的身份验证。
+
+该流水线还利用 BuildKit 分层缓存，减少同一仓库内不同问题之间的冗余工作。问题按仓库分组，并分派给构建节点上同一个持久的 Ray actor。由于该 actor 在同一仓库的问题之间保持存活，共享的基础层——apt-get install、pip install、依赖编译——只构建一次并被复用，因为依赖安装往往主导 Docker 构建
+
+
+
+表 15. 来自我们分类体系的高层约束示例，按客观（硬性）和主观（软性）类别划分，并给出相应的子类别与示例。
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}|l|l|@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\hline
+约束类型 & 子类别 \& 示例 \\
+\hline
+客观（硬性）约束 & \\
+\hline
+数值 & 显式长度限制、句子/段落数量、条目数量、范围约束和比例。 \\
+\hline
+格式 & 文档结构、列表、表格、代码格式、数据序列化（JSON/YAML）、
+标记/样式、模板和引用格式。 \\
+\hline
+内容 & 必需/禁止的术语和符号、必需的元素或概念、来源/引用要求，
+以及时间/地域范围。 \\
+\hline
+语言 & 语言选择、方言、语域、句子结构、词性、形态约束和语法规则。 \\
+\hline
+时间 & 顺序 & 时间先后排序、程序步骤和字母顺序。 \\
+\hline
+否定约束 & 排除特定行为或格式模式的指令 \\
+\hline
+主观（软性）约束 & \\
+\hline
+风格 & 语气、口吻、词汇水平、受众适配、情感效价和品牌语调。 \\
+\hline
+人设 \& 自我呈现 & 角色扮演、个性特质、价值观和情绪状态。 \\
+\hline
+交互 \& 响应策略 & 对话导航、确定性/模糊表达、澄清策略、
+征询行为和亲社会行为。 \\
+\hline
+结构 \& 推理 & 推理过程要求、论证结构、条件分支和范围约束。 \\
+\hline
+指令处理 & 条件性、多步指令链、冲突处理。 \\
+\hline
+\end{longtable}
+}
+
+大型仓库的构建时间。
+
+主要的吞吐瓶颈是 LLM token 消耗，而非 CPU 或磁盘。该流水线运行在 10,000 个 CPU 核心上，具备每分钟 1200 万 tokens 的 LLM 容量，实现了 83\% 的提示词缓存命中率。在该配置下，流水线每分钟大约产出 20 个通过评分（grading）的环境。

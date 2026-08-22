@@ -1,0 +1,47 @@
+• Tensor parallelism in YOLO is implemented via column-parallel and row-parallel GEMMs, in which both
+activations and weight tensors are sharded across the same number of ranks (commonly referred to as
+sequence parallelism) (Shoeybi et al., 2019; Korthikanti et al., 2023). Any additional sharding of activations
+tensors beyond the degree of the weight sharding is treated as context parallelism in the attention layer and
+as data-parallelism otherwise.
+• Context parallelism. YOLO uses Ulysses-style context parallelism (Jacobs et al., 2023), in which activation
+tensors are re-partitioned via a parallel matrix-transpose (all-to-all) to move the sharding of the sequence
+dimension to the attention-head (hidden) dimension. For MAI-Base-1, context parallelism was only used
+for long-context mid-training, whereas tensor/sequence parallelism was used for all training stages.
+• Expert parallelism. Initially, YOLO’s implementation of expert parallelism was similar to GShard (Lep-
+ikhin et al., 2020) which uses all-to-all communication with static tensor shapes and a pre-defined capacity
+factor. In later runs, we switched to a dropless MoE implementation that routes every token to its selected
+experts using variable-size all-to-all communication. All pre-training runs use expert-parallelism within
+the NVLink domain (with tensor-parallelism of size one) and data-parallelism across racks.
+Activation checkpointing and offloading.
+When training MAI-Base-1 with ZeRO data parallelism, acti-
+vations consumed the majority of the available high-bandwidth device memory (HBM). To reduce the mem-
+ory footprint and enable expert parallelism within a single NVLink domain, YOLO supports both activation
+checkpointing and offloading activations to host memory. Similar to frameworks such as Megatron-Core, ac-
+tivation checkpointing can be configured at different granularities, ranging from recomputing one or more
+full transformer layers to fine-grained recomputation of intermediate activations within a layer (e.g., recom-
+puting the output of the activation function). Across all training phases of MAI-Base-1, we use a combi-
+nation of transformer-layer checkpointing and fine-grained recomputation. Since the memory required to
+store activations for checkpointing scales linearly with the number of transformer layers, YOLO also im-
+plements activation offloading. Activation offloading complements checkpointing and introduces minimal
+overhead as device-to-host transfers are executed asynchronously on dedicated CUDA streams using pinned
+host memory.
+Mixture of experts.
+Our MoE layer balances research flexibility with training efficiency. It supports
+both dropless and capacity-capped modes, multiple load-balancing strategies (including global-batch load
+balancing loss (Qiu et al., 2025; Yang et al., 2025) and loss-free (Wang et al., 2024a)), configurable top-k
+scoring, fine-grained telemetry, and router replay for RL rollouts. For expert parallelism, we partition local
+experts into groups of configurable size and pipeline the dispatch →compute →collect phases across
+groups, so that all but the first dispatch and last collect overlap with expert computation; the remaining ex-
+posed communication is overlapped with global load-balance computation and, optionally, shared experts.
+To prevent imbalance-induced memory swings, fragmentation, and OOMs in dropless mode, we support
+a static-memory dropless mode that runs multiple capped dispatch →compute →collect rounds per
+group, each processing up to a fixed capacity of tokens. In the backward pass, we then perform per-expert-
+per-round fine-grained recompute in order to avoid storing imbalanced activations. For performance, we
+use custom Grouped GEMM and quantization kernels supporting all numerics recipes with low overhead,
+and custom CuTe DSL symmetric-memory kernels for device-initiated, variably-sized, high-throughput all-
+to-all communication over NVLink.
+2.8.2 Determinism and Correctness
+We enforce determinism in training for reasons including scientific reproducibility, developer agility, and
+debugging system health, even at the cost of reduced training efficiency (e.g., MFU). For a fixed hardware
+topology, model configuration, and software version, we ensure bitwise reproducibility in the pre-training
+26

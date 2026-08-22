@@ -1,0 +1,54 @@
+Constraint Type
+Subcategories & Examples
+Objective (Hard) Constraints
+Numerical
+Explicit length limits, sentence/paragraph counts, item counts, range con-
+straints, and ratios.
+Format
+Document structure,
+lists,
+tables,
+code formatting,
+data serialization
+(JSON/YAML), markup/styling, templates, and citation formats.
+Content
+Required/prohibited terms and symbols, required elements or concepts,
+source/citation requirements, and temporal/geographic scope.
+Linguistic
+Language selection, dialect, register, sentence structure, parts of speech, mor-
+phological constraints, and grammar rules.
+Temporal & sequential
+Chronological ordering, procedural steps, and alphabetical order.
+Negative constraints
+instructions to exclude certain behaviors or formatting pattern
+Subjective (Soft) Constraints
+Stylistic
+Tone, voice, vocabulary level, audience adaptation, emotional valence, and
+brand voice.
+Persona & self-presentation
+Role adoption, personality traits, values, and emotional state.
+Interaction & response policy
+Conversation navigation, certainty/hedging, clarification strategies, solicita-
+tion behaviors, and prosocial behaviors.
+Structure & reasoning
+Reasoning process requirements, argumentation structure, conditional branch-
+ing, and scope constraints.
+Instruction handling
+Conditionality, multi-step instruction chains, conflict handling.
+Table 15. Examples of high-level constraints from our taxonomy, divided into objective (hard) and subjective
+(soft) categories with corresponding subcategories and examples.
+time for large repositories.
+The primary throughput bottleneck is LLM token consumption rather than CPU or disk. The pipeline
+runs on 10,000 CPU cores with 12 million tokens per minute of LLM capacity, achieving an 83% prompt
+cache hit rate. Under this configuration, the pipeline produces approximately 20 grading-passed environ-
+ments per minute.
+H STEM Evaluations Setup
+For all STEM benchmarks, we report pass@1 performance using a maximum output token budget of 256k
+tokens. We show how our model performs at 128k maximum output tokens in Tab. 17 in addition to the
+already presented numbers at 256k.
+H.1 Math
+The American Invitational Mathematics Examination (AIME) and the Harvard–MIT Mathematics Tourna-
+ment (HMMT) are prestigious high school mathematics competitions. These competition-math evaluations
+serve as useful proxies for a model’s reasoning ability. We evaluate MAI-Thinking-1 on the 2025 and 2026
+editions of AIME, as well as the February 2026 HMMT benchmark from MathArena (Dekoninck et al.,
+98

@@ -1,0 +1,43 @@
+• Detection of generated code via path patterns such as protobuf outputs like _pb2.py and TypeScript
+declaration files such as .d.ts.
+• Exclusion of non-code file types such as binaries, images, archives, documents, and fonts.
+• Rejection of files exceeding 30K characters or containing excessively long lines.
+• Character-composition checks to filter out data dumps.
+We then perform exact deduplication via SHA-512 hashing, followed by MinHashLSH-based fuzzy
+deduplication and semantic deduplication using cosine similarity over 1024-dimensional embeddings from
+Qwen3-Embedding-0.6B (Yang et al., 2025). We also decontaminate against coding problems used in rea-
+soning training and evaluations. Finally, each example is assigned a quality score and placed into discrete
+quality bins for quality-aware sampling.
+After dataset-specific processing, examples in each dataset are greedily packed into fixed-length se-
+quences, yielding approximately 1.26T, 4.5T, and 1.19T tokens for files, commits, and PRs, respectively.
+Files.
+The raw files dataset consists of the latest version of each file across all repositories. We apply ad-
+ditional heuristic filtering using filters similar to those described in StarCoder2 (Lozhkov et al., 2024), and
+specifically discard non-programming files from repositories with large token counts. Files are grouped by
+repository, sorted in depth-first traversal order of the repository structure, and concatenated into repository-
+level sequences.
+Commits.
+The raw commits dataset consists of the most recent 10K commits extracted from each repos-
+itory. Each row contains the pre-commit state of all modified files together with the patch applied by the
+commit. Commits that appear as constituents of a PR are removed to avoid redundancy across datasets. The
+pre-commit state of modified files serves as a loss-masked prefix, while the trainable text consists solely of
+the commit patches, rendered in either git-diff or search-and-replace format.
+Pull requests.
+The raw PR dataset is constructed by extracting all constituent commits from cloned repos-
+itories and joining relevant metadata to each PR. Each row contains the PR title, body, linked issues, issue
+comments, reviews, threads, review comments, pre-commit file states, and the ordered list of constituent
+commits. The PR dataset is additionally decontaminated against SWE-bench Verified by removing all PRs
+used in the benchmark. The pre-commit state of modified files serve as a loss-masked prefix; the trainable
+text comprises the remaining fields, including the PR title, body, linked issues, reviews, comments, and the
+patches from the constituent commits. When metadata can be mapped to a specific commit (e.g., review
+comments and threads), it is placed immediately after the corresponding commit patch rather than at the
+PR level. We also apply prefix compression for excessively long prefixes by stochastically selecting lines sur-
+rounding each git patch location to fit within a fixed token budget. Sequences that still exceed 256K tokens
+after compression are discarded.
+C Long Context Extension
+Our pre-training target is a 256K token context window. Rather than training at the full 256K context length
+throughout pre-training or mid-training—which would be impractical due to the low MFU at long sequence
+lengths—we adopt a staged approach: the model is pre-trained at 16K, mid-trained at 64K (Stage 1), and then
+extended to 256K in a short dedicated phase (Stage 2). This section presents the ablations and evaluations
+that informed this recipe. Unless otherwise mentioned, all ablations are done on small scale models
+85

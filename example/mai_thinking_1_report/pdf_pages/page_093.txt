@@ -1,0 +1,55 @@
+requires `[lng, lat]` order - For Marker: `{type: 'Point', coordinates: [lng, lat]}` - For
+Polyline: `{type: 'LineString', coordinates: [[lng, lat], ...]}` - For Polygon: `{type: '
+Polygon', coordinates: [[[lng, lat], ...repeat first...], [[ho...
+- I need to make sure my old_str exactly matches the content in the file. Let me view more of
+the end of the Marker.js file to see the exact structure and line endings.
+- Now I see the exact structure. The file has mixed indentation (tabs are used in some places,
+spaces in others - I need to preserve the style). Let me add the `toGeoJSON()` method to
+Marker, following the same formatting style.
+- Looking at the file again, I see it uses tabs for indentation rather than spaces. I need to
+match the exact tab indentation used in the file.
+- Let me view the exact range from line 265 to the end to see the precise formatting.
+- Now I can see the exact formatting with tabs (shown as spaces but they're likely tabs). Let
+me add the toGeoJSON method.
+Strong model excerpt: fully explores the repository and collect extensive evidence without taking actions pre-
+maturely.
+- Let me start by exploring the codebase. I need to understand how the check enforcer currently
+works - how it handles CI checks, webhooks, and processes GitHub events. This will help me
+understand what needs to be modified to support GitHub Actions as a first-class citizen
+alongside Azure Pipelines.
+- Let me read the main code files - main.go, types.go, and other key files. I need to
+understand the architecture. The problem mentions Azure Pipelines check-suite handling,
+webhooks, and CI evaluation logic. Let me see how it's currently implemented.
+- I see the structure. The code currently handles: 1. Issue comments that contain `/check-
+enforcer` commands 2. Check suite events from Azure Pipelines (app named "Azure Pipelines")
+But the problem says we need to handle: 1. GitHub Actions as a first-class signal (not
+just Azure Pipelines) 2. Multiple relevant suites may exist - currently GetCheckSuiteStatus
+in github_client.go I need to see 3. Workflow-run events -...
+- I see in GetCheckSuiteStatus (line 105-138 in github_client.go) - it gets all check suites,
+then finds the first one that matches AppTarget (which is "Azure Pipelines" in the current
+code). But it returns just the first matching suite's status/conclusion. But the problem
+says "evaluate the overall commit status from the relevant suites rather than assuming
+’theres only one app or one event shape involved" and "mul...
+- Looking at the codebase, I see the current implementation. Let me read more of the test files
+and understand what's expected. I see in main_test.go there are tests. Also I need to
+understand what the requirements are more precisely. Let me look at all the tests to
+understand what behavior is expected. I see in main_test.go, github_client_test.go,
+types_test.go. Let me also look at the README and docs for context.
+- Let me continue reading the tests to understand the full expected behavior.
+- I see the tests. Now let me look at the other test files to get a fuller picture. Also let me
+search for terms like "workflow_run", "GitHub Actions", to understand what the
+requirements are in the full problem context. Looking at the problem more carefully - I
+need to understand what "workflow-run events" are. And I need to understand how GitHub
+Actions integrates. Let me look at the full problem. Actually let me ...
+Strong models seek source of truth, weak models speculate adjacent paths.
+Strong CoT locates the
+source data as source of truth. Weak CoT understands visibility and code paths on surface but reasons around
+adjacent generated-code paths and leaves an edge case.
+Weak model excerpt: tracing step by step around the adjacent paths but mostly by trial and error.
+- I see TypeExtendsReader collects all superclasses and interfaces. But I notice it's not
+checking visibility (public/package-private). Let me look more closely at the issue. The
+key is in understanding what "package protected class and interface" means. In Java, if a
+class is not public, it's package-private (accessible only within the package). Similarly
+...
+- Hmm, let me search more specifically for isAddBeanFor in test files.
+93

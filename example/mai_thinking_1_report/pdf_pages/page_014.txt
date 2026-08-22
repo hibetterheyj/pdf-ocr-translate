@@ -1,0 +1,44 @@
+where we use this approach, the LLM only ever chooses to keep or remove text from the original source
+text and is unable to add additional synthetic content to the output.
+• Training on raw content is used when further processing risks discarding important information. For ex-
+ample, Wikipedia’s bespoke markup language, wikitext (MediaWiki, 2026), lacks mature tooling compared
+to HTML, and elements such as infoboxes are not always faithfully preserved by existing parsers. Although
+wikitext is roughly 3× more verbose, we find that training on the complete raw markup yields better re-
+sults than relying on stripped-down conversions. For high-value, low-volume sources like Wikipedia, this
+tradeoff is well justified.
+2.4.3 Deduplication
+Models at the scale and sparsity of ours possess an exceptional capacity to acquire and recall detailed knowl-
+edge. While this capability is central to their effectiveness as generalist systems, it also increases the risk
+of memorization and overfitting to training data (Lee et al., 2022; Abbas et al., 2023). When memorization
+occurs, the model fails to generalize the underlying concepts, leading to degraded performance in other
+domains. A primary driver of such overfitting is repetition within the training corpus.
+Large-scale web data contains substantial redundancy: many documents are near-duplicates, differ only
+by minor formatting changes, or are replicated across multiple sites. Without careful filtering, a model may
+be exposed to numerous instances of the same content. As model capacity increases, the impact of this
+redundancy becomes more pronounced. In particular, predictive scaling behavior is sensitive to the effec-
+tive number of unique tokens: larger models show degraded scaling when trained on corpora with reduced
+novelty, because they exhaust the supply of new information earlier. Once the dataset’s unique content is
+saturated, additional training tokens provide little benefit, limiting further improvement. Across many ex-
+periments, we consistently observe that rigorous deduplication and removal of redundant data improve both
+pre-training metrics and downstream reasoning benchmarks.
+Given the importance of limiting redundancy, our pipeline incorporates multiple deduplication stages,
+each targeting a different class of redundancy. All of our data, regardless of source, receives one or more of
+these deduplication treatments. For the specifics on how each of the sources (web HTML and PDFs, books
+and journals, public GitHub code) is handled, see the full technical details in Appendix B. Here we describe
+the variety of techniques that we employ:
+• Boilerplate removal. Web HTML pages often contain repeated boilerplate text. Using line-occurrence
+statistics within and across documents, we remove elements such as headers, navigation bars, footers, side-
+bars, and redundant paragraphs introduced by parsing artifacts.
+• Exact duplicates. Identical content can appear multiple times due to republication across sites or repeated
+snapshots caused by system-level faults. We remove all exact byte-level and hash-level duplicates.
+• Fuzzy duplicates. We apply MinHash Locality-Sensitive Hashing(LSH) based fuzzy deduplication (Broder,
+1997) with a similarity threshold of 0.8, following the configuration of Smith et al. (2022).
+• Templated web pages. Many sites generate pages from a shared template with only minor lexical variation
+(e.g.,“calculator” web pages with raw arithmetic tables). We skeletonize each page to its most frequent
+tokens and perform fuzzy deduplication over these templates to eliminate large families of near-identical
+pages.
+• Semantic duplication. Documents produced independently can still be highly similar due to shared con-
+text or canonical problem formulations. This is especially common in code datasets, where well-known
+programming exercises recur across homework sets, exams, interviews, and competitions. Although au-
+thored independently, solutions often converge (e.g., standard traversals of a binary search tree). Such
+14

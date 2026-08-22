@@ -1,0 +1,43 @@
+Michael Sullivan, Mareike Hartmann, and Alexander Koller. Procedural environment generation for tool-
+use agents. In Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing,
+pages 18555–18573, 2025.
+Sijun Tan, Siyuan Zhuang, Kyle Montgomery, William Tang, Alejandro Cuadron, Chenguang Wang, Raluca
+Popa, and Ion Stoica. Judgebench: A benchmark for evaluating llm-based judges. In International Confer-
+ence on Learning Representations, volume 2025, pages 63277–63303, 2025.
+Team OLMo, Pete Walsh, Luca Soldaini, Dirk Groeneveld, Kyle Lo, Shane Arora, Akshita Bhagia, Yuling Gu,
+Shengyi Huang, Matt Jordan, Nathan Lambert, Dustin Schwenk, Oyvind Tafjord, Taira Anderson, David
+Atkinson, Faeze Brahman, Christopher Clark, Pradeep Dasigi, Nouha Dziri, Michal Guerquin, Hamish Ivi-
+son, Pang Wei Koh, Jiacheng Liu, Saumya Malik, William Merrill, Lester James V. Miranda, Jacob Morri-
+son, Tyler Murray, Crystal Nam, Valentina Pyatkin, Aman Rangapur, Michael Schmitz, Sam Skjonsberg,
+David Wadden, Christopher Wilhelm, Michael Wilson, Luke Zettlemoyer, Ali Farhadi, Noah A. Smith,
+and Hannaneh Hajishirzi. 2 OLMo 2 Furious. 2024. URL https://arxiv.org/abs/2501.00656.
+Kushal Tirumala, Daniel Simig, Armen Aghajanyan, and Ari S. Morcos. D4: Improving LLM pretraining
+via document de-duplication and diversification, 2023. URL https://arxiv.org/abs/2308.12284.
+Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Ł ukasz Kaiser,
+and Illia Polosukhin. Attention is all you need. In I. Guyon, U. Von Luxburg, S. Bengio, H. Wallach,
+R. Fergus, S. Vishwanathan, and R. Garnett, editors, Advances in Neural Information Processing Systems,
+volume 30. Curran Associates, Inc., 2017. URL https://proceedings.neurips.cc/paper_files/
+paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf.
+Kiran Vodrahalli, Santiago Ontanon, Nilesh Tripuraneni, Kelvin Xu, Sanil Jain, Rakesh Shivanna, Jeffrey
+Hui, Nishanth Dikkala, Mehran Kazemi, Bahare Fatemi, Rohan Anil, Ethan Dyer, Siamak Shakeri, Roopali
+Vij, Harsh Mehta, Vinay Ramasesh, Quoc Le, Ed Chi, Yifeng Lu, Orhan Firat, Angeliki Lazaridou, Jean-
+Baptiste Lespiau, Nithya Attaluri, and Kate Olszewska. Michelangelo: Long context evaluations beyond
+haystacks via latent structure queries, 2024. URL https://arxiv.org/abs/2409.12640.
+Leandro von Werra, Younes Belkada, Lewis Tunstall, Edward Beeching, Tristan Thrush, Nathan Lambert,
+Shengyi Huang, Kashif Rasul, and Quentin Gallouédec. TRL: Transformers Reinforcement Learning,
+2020. URL https://github.com/huggingface/trl.
+Eric Wallace, Kai Xiao, Reimar Leike, Lilian Weng, Johannes Heidecke, and Alex Beutel. The instruction
+hierarchy: Training llms to prioritize privileged instructions. arXiv preprint arXiv:2404.13208, 2024.
+Shengye Wan, Cyrus Nikolaidis, Daniel Song, David Molnar, James Crnkovich, Jayson Grace, Manish Bhatt,
+Sahana Chennabasappa, Spencer Whitman, Stephanie Ding, Vlad Ionescu, Yue Li, and Joshua Saxe. Cy-
+berseceval 3: Advancing the evaluation of cybersecurity risks and capabilities in large language models,
+2024. URL https://arxiv.org/abs/2408.01605.
+Junhao Wang, Daoguang Zan, Shulin Xin, Siyao Liu, Yurong Wu, and Kai Shen. Swe-mirror: Scaling issue-
+resolving datasets by mirroring issues across repositories. arXiv preprint arXiv:2509.08724, 2025a.
+Lean Wang, Huazuo Gao, Chenggang Zhao, Xu Sun, and Damai Dai. Auxiliary-loss-free load balancing
+strategy for mixture-of-experts, 2024a. URL https://arxiv.org/abs/2408.15664.
+Yubo Wang, Xueguang Ma, Ge Zhang, Yuansheng Ni, Abhranil Chandra, Shiguang Guo, Weiming Ren,
+Aaran Arulraj, Xuan He, Ziyan Jiang, et al. MMLU-Pro: A more robust and challenging multi-task lan-
+guage understanding benchmark. Advances in Neural Information Processing Systems, 37:95266–95290,
+2024b.
+78

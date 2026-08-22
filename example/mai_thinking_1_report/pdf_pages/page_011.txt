@@ -1,0 +1,47 @@
+In recognition of this, we have developed private benchmarks for our own use which we are confident
+are not found elsewhere on the web.
+2.3.2 Comparison of Accuracy and NLL Evaluations
+We use internal proprietary evaluations for day-to-day development. These evaluations are curated by mem-
+bers of the MAI team, with some commissioned from data vendors who employ domain experts, and others
+collected from domain experts across the global Microsoft organization.
+For pre-training, we choose to focus on evaluations with an NLL scoring method rather than multi-
+ple choice, generative, or other formulations. Evaluations that measure how many questions a model can
+correctly answer are convenient for comparing across models and to human benchmarks, but they have a
+number of operational challenges outlined below.
+Efficiency and cost of evaluations.
+Many frontier benchmarks require chain-of-thought reasoning
+(Phan et al., 2025; Rein et al., 2023), tool use, or other generations. This autoregressive generation is ex-
+pensive and time-consuming. Training frameworks and configurations are often not optimized for the fast
+autoregressive inference suited to these evaluations. The use of more efficient inference frameworks can
+accelerate these evaluations, but introduces additional complexity and support for architectural variants.
+Evaluations with open-ended or natural language answers often require the use of a judge model, adding
+further cost. In contrast, NLL evaluations are the same fundamental next-token-prediction objective as pre-
+training and can be run very efficiently. By lowering the cost in time and compute of each evaluation, we
+can run more exhaustive evaluations and ensure consistency across every experiment.
+Sensitivity to confounding factors.
+Evaluations can be highly sensitive to seemingly minor variations
+in the pre-trained model’s behavior. For example, MMLU (Hendrycks et al., 2020), MMLU-Pro (Wang et al.,
+2024b), and related benchmarks (Yue et al., 2024, 2025; Singh et al., 2025b) have been valuable for assessing
+pre-trained knowledge, but their multiple-choice format implicitly assumes that a model has acquired the
+ability to interpret and answer multiple-choice questions—a capability that typically emerges only at sur-
+prisingly large scale when evaluated in pre-training (Du et al., 2024). Although these tasks are sometimes
+evaluated using an NLL-based scoring scheme over logits for A, B, C, and D, many questions require more
+than factual recall, and free-form generation is often a more faithful evaluation protocol.
+Similarly, MATH (Hendrycks et al., 2021) requires strict adherence to formatting conventions such as
+wrapping answers in \boxed{}, and MBPP (Austin et al., 2021) exposes models to inconsistencies between
+Unix-style newlines (\n) in the shared prompt and Windows-style newlines (\r\n) in the problem state-
+ments. Minor formatting discrepancies in pre-training data, especially when they vary across sources, can
+significantly influence how models respond to such inconsistencies. We have observed interactions of this
+kind across many of our experiments, complicating the interpretation of results and increasing the likeli-
+hood of misinterpretation by both new and experienced researchers.
+NLL evaluations are more robust to such issues. At every prediction step, the model is conditioned on
+the ground truth prefix. This teacher-forcing setup limits the degree to which a minor error can compound.
+Our conclusions follow prior work showing that loss- or perplexity-based metrics can provide higher-signal
+model-development feedback over tasks with formatting choices (Heineman et al., 2025; Du et al., 2024).
+Complexity of construction.
+Building a high-quality Q&A evaluation requires substantial and carefully
+coordinated effort. Multiple iterations of data collection, difficulty calibration, deduplication, and quality
+control are typically necessary before an evaluation reaches an acceptable standard, and each stage must
+be carried out in close collaboration with domain experts. Designing novel questions is itself a nontrivial
+challenge, particularly at the frontier of domain knowledge.
+11

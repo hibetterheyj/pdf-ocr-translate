@@ -1,0 +1,75 @@
+10
+12
+14
+16
+18
+20
+22
+24
+26
+28
+v2
+First GB200 baseline
+v3
+Dropless MoE
+v4
+Chips, sparsity, granularity ↑
+v5
+Model size ↑
+1
+1.25
+1.5
+1.75
+Before MFU optimization
+After MFU optimization
+18%
+22%
+16%
+18%
+22%
+22%
+20%
+20%
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+4K GB200s
+8K GB200s
+1.00×
+1.40×
+1.69×
+1.69×
+MFU (%)
+EG over v2
+Figure 11. Evolution of MFU and EG across pre-training configurations trained on GB200s. From v2 onward,
+each model change improves EG but initially degrades MFU when running with the previous configuration be-
+fore deploying optimizations. In total, we added 20+ optimizations to surpass an MFU of 20% for each pre-
+training run. Note here we only list model changes with notable infrastructure implications—they are not the
+only changes between the model versions that have contributed to the improved EG.
+deployments therefore relied on ZeRO-3 optimizer sharding, but profiling showed that the additional pa-
+rameter all-gather operations caused the backward pass to become communication bound. To address this
+issue, we reduced GPU memory pressure through activation offloading, allowing the training system to re-
+vert to ZeRO-2 sharding. Eliminating the ZeRO-3 parameter all-gather operations restored overlap between
+communication and computation and improved overall training efficiency, enabling the final Version 5 con-
+figuration to sustain an MFU of approximately 20%.
+3 The Reinforcement Learning Climb
+Pre- and mid-training give MAI-Base-1 broad predictive competence and knowledge, but they do not spec-
+ify how the model should behave, solve long-horizon tasks, or allocate inference-time computation. Our
+reinforcement learning (RL) climb addresses this by optimizing the model against task-specific feedback,
+allowing it to produce chains of thought (CoTs) before responding, use external tools, interact with environ-
+ments, and follow preference and safety signals.
+As MAI-Thinking-1 is our first in-house reasoning model, our RL climb starts from a checkpoint with no
+prior exposure to reasoning traces. The model therefore has to develop its reasoning abilities from scratch,
+making long-term training stability a central challenge. We enable this via three mechanisms: (i) two simple
+but crucial adjustments to Group Relative Policy Optimization (GRPO, Shao et al., 2024), (ii) self-distillation
+for resuming RL climbs after crashes or updates to the base policy (Sec. 3.1), and (iii) infrastructure improve-
+ments that eliminate numerical mismatch between training and inference (Sec. 3.6).
+To enable parallel development, we train three domain-specific specialist models: one model for STEM
+and competitive code (Sec. 3.2), one for agentic coding and tool use (Sec. 3.3), and one for helpfulness and
+safety (Sec. 3.4). The RL climbs for all specialists follow the same recipe but differ in the distribution of
+prompts and what the model is rewarded for. As illustrated in Fig. 12, the specialist models are subsequently
+30

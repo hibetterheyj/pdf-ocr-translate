@@ -1,0 +1,47 @@
+components and how they enable optimization with our design principles.
+2.8.1 System Overview
+YOLO consists of a set of building blocks that implement the Transformer model, as well as the training loop
+and any supplementary components such as dataloaders, checkpointing, logging and observability.
+Kernels.
+To efficiently support the numerical recipe at scale (2.6.3), YOLO includes a suite of custom ker-
+nels written in Triton, CUDA, CuteDSL, and CUTLASS. These comprise FP8 GEMM kernels optimized
+for the forward and data-gradient computations with support for FP8 delayed scaling; grouped GEMMs for
+MoE that improve efficiency when each GPU hosts multiple experts—typically 8 in our pre-training runs
+(512 experts with expert parallelism size 64)—and support all mixed-precision execution modes, including
+FP8 delayed scaling; and fused quantization kernels that quantize both the original and transposed tensors
+needed for the backward pass while applying scale-factor swizzling for memory efficiency, with casts ad-
+jacent to RMSNorm layers fused into the normalization kernels where possible to reduce overhead. In ad-
+dition, the non-grouped quantization kernels support Cluster Launch Control (CLC), a Blackwell-specific
+feature for dynamic kernel load balancing.
+Tensor sharding.
+YOLO uses combinations of different forms of parallelism, depending on the model
+size and cluster infrastructure for individual training runs. To enable fine-grained control over how indi-
+vidual tensors in the model are sharded, YOLO implements a set of custom sharding annotations, similar to
+JAX (Bradbury et al., 2018) or PyTorch’s DTensor (Paszke et al., 2019). Sharding annotations describe how
+tensors are partitioned or replicated across n-dimensional cartesian meshes and can be used to group tensors
+by their sharding type. The underlying mesh onto which each tensor is partitioned sits on top of a PyTorch
+communicator that exposes the collective- and point-to-point communication primitives for that tensor. We
+deliberately keep annotations purely descriptive, meaning they do not automatically insert communication
+primitives into the computational graph to avoid creating accidental synchronization points.
+YOLO’s distributed tensors give us the flexibility to define the sharding for each parameter in the model
+independently. This allows flexible tensor-parallelisms within our model. For example, we use tensor-
+parallelism for embedding, loss, and attention weights, but not for MLP and MoE weights. Another example
+is that we can use varying degrees of data parallelism between tensors that belong to an MoE or non-MoE
+layer (referred to as parallel folding (Yan et al., 2026)).
+Parallelism.
+Based on the distributed tensor, YOLO implements all commonly used forms of paral-
+lelism: data parallelism, tensor and context/sequence parallelism, expert parallelism, and pipeline paral-
+lelism (Huang et al., 2019; Qi et al., 2023).
+• Data parallelism. YOLO uses custom versions of ZeRO stages 1-3 (Rajbhandari et al., 2020) built from
+scratch to work with our optimizer and performance optimizations. The implementation groups param-
+eters by their unique shardings, data types, and configurable ZeRO-units, and combines all parameters
+and gradients into contiguous buffers. This minimizes the total number of collectives required for gra-
+dient reduction and ZeRO 1-3. Furthermore, our ZeRO implementation breaks parameters into multi-
+dimensional chunks so that they remain compatible with slicing for distributed checkpointing and to avoid
+reordering before and after executing collectives. YOLO’s ZeRO implementation always stores parameters
+in sharded form, regardless of the ZeRO stage. This simplifies the implementation of distributed AdamW,
+as the optimizer state is always automatically sharded as well. The main difference between the ZeRO
+stages is when and how often the buffers for gathered parameters or gradients are cleared. E.g., for ZeRO-
+1, parameters are all-gathered during the first forward pass and only cleared after the final micro-batch,
+whereas for ZeRO-3 (FSDP), parameters are cleared right after their usage.
+25

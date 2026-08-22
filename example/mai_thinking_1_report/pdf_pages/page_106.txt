@@ -1,0 +1,41 @@
+K.6 Health
+HealthBench Professional.
+HealthBench (Arora et al., 2025) is a suite of benchmarks developed to as-
+sess LLMs’ capabilities in continuing realistic health conversations with individuals and health professionals.
+Language models are prompted with a multi-turn conversation, and asked to generate a response as a con-
+tinuation of the existing conversation thread. The response is assessed with a calibrated model-based judge
+against a conversation-specific rubric created by a panel of physicians, covering clinical correctness, guide-
+line adherence, and safety. We report performance on the most recent HealthBench variant, HealthBench
+Professional, which focuses on 525 conversations between medical experts and language models (Hicks
+et al., 2026). HealthBench Professional introduces a length penalty for the primary metric, to correct for a
+well-observed correlation between lengthy responses and artificially increased LLM-grader scores. For all
+reported scores, we use the standard GPT-5.4 grader and rubrics provided by OpenAI.
+MedXpertQA.
+MedXpertQA Zuo et al. (2025) is a challenging, unsaturated multiple-choice benchmark
+which evaluates specialist-level medical knowledge via 2,450 expert-curated multiple-choice questions.
+These questions are designed to evaluate advanced clinical knowledge and multi-step reasoning. Each multi-
+ple choice question has 10 answer choices (A-J). We follow the evaluation methodology introduced in Muse
+Spark Team (2026), which uses a secondary LLM (GPT-5.4) to parse the predicted answer letter from free-
+form text.
+K.7 Tool Calling
+BFCL v3 (Patil et al., 2025) benchmarks LLMs’ tool-use and function-calling abilities across single-turn,
+parallel, and multi-function scenarios, as well as multi-turn and multi-step agent interactions. It evaluates
+function selection and argument generation using abstract syntax tree and execution result matching, while
+stressing long-horizon reasoning, cross-turn state tracking, and robustness to noisy or missing functions. For
+better determinism, we use T = 0.001 and p = 0.97 for inference as recommended by the official leaderboard.
+L Cluster Environment Details
+This appendix describes the infrastructure mechanisms that made the training environment usable at fron-
+tier scale. The central design choice was to expose physical topology and hardware health as first-class
+scheduling state. Nodes and NVLink rack domains were represented through topology labels, reservation
+objects, rack-level services, and certification gates. A node was not considered useful simply because it had
+been provisioned; it became useful only when it was healthy, topologically valid, observable, and recover-
+able.
+L.1 Hardware and Compute Clusters
+MAI-Thinking-1 was developed on a heterogeneous accelerator fleet spanning NVIDIA H100, GB200, and
+GB300 systems. The main pre-training run, however, was placed on a single GB200 cluster at one site. The
+GB200 and GB300 clusters are hosted in Microsoft first-party datacenters and exposed to MAI through
+custom images co-developed with Azure teams. These systems are provisioned as rack-scale NVL72 units,
+with each rack providing a 72-GPU NVLink domain for high-bandwidth scale-up communication, while
+inter-rack RDMA used InfiniBand. H100 systems also remained part of the lab environment, using 8-GPU
+nodes with node-local NVLink/NVSwitch and InfiniBand for scale-out communication.
+106

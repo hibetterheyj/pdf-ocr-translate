@@ -1,0 +1,52 @@
+Task category
+Share of prompts
+Open QA, brainstorming and advising, content authoring
+13–14% each
+Structured problem-solving, information extraction, academic help, insight generation,
+content summarization
+6–7% each
+Task planning, context-based QA, other text analysis
+5% each
+Personal support, entertainment, chit-chat, role-play
+3–4% each
+Table 13. Task distribution for human side-by-side evaluation.
+Evaluation task selection.
+Evaluation tasks are derived from complementary sources to ensure compre-
+hensive coverage of genuine user needs and strong discriminative power for comparing models. The final
+set contains 1276 tasks, all in English, 30% of which are multi-turn. See Table 13 for details on the task
+distribution.
+The first source of tasks is expert-authored prompts following a structured taxonomy spanning real-
+world use cases of varying complexity, including both single- and multi-turn conversations. The second
+source is logs from Microsoft’s consumer Copilot product, carefully filtered to exclude prompts containing
+personally identifiable information (PII), prompts that are incomplete or lack necessary conversational con-
+text, adversarial prompts, and prompts requiring custom configurations such as coding environments, image
+generation capabilities, or access to external tools. We used stratified sampling to ensure use case coverage
+and balance difficulty across dimensions such as specificity and constraint diversity.
+Rater pool and evaluation process.
+To conduct these model evaluations, we worked with evaluators
+managed by Surge AI, a reputable data labeling vendor. These evaluators are native English speakers from
+a range of generalist and professional backgrounds. Evaluators are screened through a multi-stage qualifica-
+tion process that assesses their ability to evaluate core LLM capabilities and failure modes, including fact-
+checking, reading comprehension, and instruction following. Training materials include rating instructions
+and examples of common failure modes.
+For each prompt, a rater is first asked to carefully assess the MAI and other model responses individually
+across several dimensions: instruction following (both explicit and implicit), factuality (using a search engine
+to help with fact-checking), conciseness and relevance, completeness, and style and tone. For each dimension,
+the rater determines whether the response had no, minor, or major issues. As a final step, the rater decides
+on an overall preference rating between the two responses on a 7-point Likert scale, ranging from “much
+worse than” (-1.5) to “much better than” (1.5). We observed strong inter-annotator agreement across the rater
+pool, validating that ratings are consistent and reproducible within acceptable noise thresholds.
+Results.
+Table 14 shows the human evaluation results on overall pairwise preference on a scale of
+[−1.5, 1.5] and the delta on individual quality dimensions on a scale of [−1, 1]. In aggregate we found that
+raters preferred MAI-Thinking-1 to Sonnet 4.6, but preferred Opus 4.6 to MAI-Thinking-1. Versus Son-
+net 4.6, MAI-Thinking-1 won 49% of comparisons, tied on 6%, and lost on 45%. Versus Opus 4.6, MAI-
+Thinking-1 won on 43%, tied on 5%, and lost on 52%. On targeted dimensions, raters found MAI-Thinking-
+1 superior to Sonnet 4.6 on conciseness and relevance and style and tone, and roughly equivalent (within noise)
+on instruction following, factuality, and completeness.
+4.3 Internal Safety Evaluation
+Safety and over‐refusal.
+We construct an internal benchmark to measure over-refusal on prompts identi-
+fied as low-risk requests that the model should answer. A refusal judge then scores each response against the
+prescribed strategy, flagging refusals, hedging, or unwarranted partial refusals. The over-refusal rate is the
+55

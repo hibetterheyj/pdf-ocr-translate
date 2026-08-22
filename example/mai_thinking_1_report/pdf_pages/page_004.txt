@@ -1,0 +1,65 @@
+C.3
+Progressive Context Length Scaling . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+86
+C.4
+Speed of Adaptation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+87
+C.5
+Final Recipe . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+87
+D Evolution of Reasoning Traces
+89
+D.1
+STEM CoTs . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+89
+D.2 Agentic CoTs . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+91
+E
+SWE Agent Tool Schema
+94
+F
+Constraint Taxonomy for Instruction Following Data
+97
+G Infrastructure for Building SWE Environments
+97
+H STEM Evaluations Setup
+98
+H.1
+Math . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+98
+H.2 Science . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+99
+H.3 Competitive Coding . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+99
+I
+Agentic Coding Evaluations
+101
+J
+Safety Evaluations
+101
+J.1
+Internal Evaluation Details . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 101
+K General Capabilities Evaluations
+103
+K.1
+Knowledge . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 103
+K.2 Instruction Following . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 104
+K.3 Long Context . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 104
+K.4 Safety . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 105
+K.5
+Honesty . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 105
+K.6 Health . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 106
+K.7
+Tool Calling . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 106
+L
+Cluster Environment Details
+106
+L.1
+Hardware and Compute Clusters . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 106
+L.2
+Cluster Readiness and Certification . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 107
+L.3
+Scheduling, Orchestration, and Control Plane . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 107
+L.4
+Observability, Telemetry, and Fleet Monitoring . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 108
+4

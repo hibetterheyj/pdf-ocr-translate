@@ -1,0 +1,41 @@
+code fences for parsing and executed against the test harness for grading. Grading has pre-defined memory
+and runtime limits, similar to the constraints of real coding competitions.
+I Agentic Coding Evaluations
+Agentic coding benchmark results for SWE-bench Verified (Chowdhury et al., 2024), SWE-Bench Pro (Deng
+et al., 2025), and Terminal-Bench 2.0 (Merrill et al., 2026) are shown in the second section of Tab. 11. Un-
+like the STEM evaluations from the previous section, agentic coding evaluations are multi-turn and require
+models to interact with environments. For all three benchmarks, we evaluate our model with a very simple,
+ReAct-style (Yao et al., 2023), always append agent loop described in Figure 18. At each turn, the model can
+generate tool calls where we execute in the environment and append the output to the trajectory before the
+model makes the next tool call. We evaluate with a total context length of 256k tokens, a maximum output
+length of 8k tokens for SWE-bench Verified and SWE-Bench Pro, 32k tokens for Terminal-Bench 2.0, and a
+maximum of 1,000 steps. The agent loop terminates when the model outputs no tool calls, reaches the con-
+text length limit, or reaches the step limit. After the loop terminates, the respective graders are run inside
+the SEE used by the agent. For SWE-bench Verified and SWE-Bench Pro, we evaluate with the same two
+tools used during climbing, bash and string replace editor, as described in Sec. 3.3.1. For Terminal-Bench
+2.0 we evaluate with only the bash tool.
+SWE‐bench Verified.
+SWE-bench Verified is a 500-task human-curated subset of SWE-Bench (Jimenez
+et al., 2024) selected to increase reliability. Each task is a real public GitHub issue from a popular Python
+repository, and the model must generate a patch that resolves the issue and passes the repository’s hidden test
+suite. Tasks have been reviewed to ensure problem statements are solvable and tests fairly assess correctness.
+SWE‐Bench Pro.
+SWE-Bench Pro is a more challenging, 731-task successor to SWE-bench Verified, with
+same unit-test based grading mechanisms, designed to evaluate LLMs on professional-grade software engi-
+neering tasks drawn from real-world open-source repositories. It emphasizes harder, multi-file edits, longer-
+horizon reasoning, and complex bug fixes or feature implementations that better reflect the work of prac-
+ticing engineers. More importantly, SWE-Bench Pro contains repositories in languages other than Python
+unlike SWE-bench Verified.
+Terminal‐Bench 2.0
+Terminal-Bench 2.0 is a human-verified, substantially harder successor to Terminal-
+Bench (Merrill et al., 2026), comprising 89 realistic tasks across software engineering, debugging, data sci-
+ence, machine learning, security, and system administration. Each task runs in a sandboxed terminal en-
+vironment, and is graded programatically based on output or environment final state. Tasks are designed
+to require long-horizon planning, error recovery, and genuine command-line fluency rather than pattern-
+matching.
+J Safety Evaluations
+J.1 Internal Evaluation Details
+J.1.1 Methodology
+Evaluation proceeds in two stages: a structured characterization of the user request, followed by the deriva-
+tion of a response specification against which the model’s behavior is graded. This decomposition allows us
+101

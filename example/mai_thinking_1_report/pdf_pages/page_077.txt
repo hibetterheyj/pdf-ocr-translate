@@ -1,0 +1,44 @@
+Zhihong Shao, Peiyi Wang, Qihao Zhu, Runxin Xu, Junxiao Song, Xiao Bi, Haowei Zhang, Mingchuan
+Zhang, Y. K. Li, Y. Wu, and Daya Guo. Deepseekmath: Pushing the limits of mathematical reasoning in
+open language models, 2024. URL https://arxiv.org/abs/2402.03300.
+Noam Shazeer. Glu variants improve transformer. arXiv preprint arXiv:2002.05202, 2020.
+Guangming Sheng, Chi Zhang, Zilingfeng Ye, Xibin Wu, Wang Zhang, Ru Zhang, Yanghua Peng, Haibin Lin,
+and Chuan Wu. Hybridflow: A flexible and efficient rlhf framework. arXiv preprint arXiv: 2409.19256,
+2024.
+Mohammad Shoeybi, Mostofa Patwary, Raul Puri, Patrick LeGresley, Jared Casper, and Bryan Catanzaro.
+Megatron-lm: Training multi-billion parameter language models using model parallelism. arXiv preprint
+arXiv:1909.08053, 2019.
+Aaditya Singh, Adam Fry, Adam Perelman, Adam Tart, Adi Ganesh, Ahmed El-Kishky, Aidan McLaugh-
+lin, Aiden Low, AJ Ostrow, Akhila Ananthram, et al.
+Openai gpt-5 system card.
+arXiv preprint
+arXiv:2601.03267, 2025a.
+Avi Singh, John D Co-Reyes, Rishabh Agarwal, Ankesh Anand, Piyush Patil, Xavier Garcia, Peter J Liu,
+James Harrison, Jaehoon Lee, Kelvin Xu, et al. Beyond human data: Scaling self-training for problem-
+solving with language models. arXiv preprint arXiv:2312.06585, 2023.
+Shivalika Singh, Angelika Romanou, Clémentine Fourrier, David Ifeoluwa Adelani, Jian Gang Ngui, Daniel
+Vila-Suero, Peerat Limkonchotiwat, Kelly Marchisio, Wei Qi Leong, Yosephine Susanto, et al. Global
+mmlu: Understanding and addressing cultural and linguistic biases in multilingual evaluation. In Proceed-
+ings of the 63rd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers),
+pages 18761–18799, 2025b.
+Joar Skalse, Lewis Hammond, Charlie Griffin, and Alessandro Abate. Lexicographic multi-objective rein-
+forcement learning. In International Joint Conference on Artificial Intelligence, pages 3430–3436, 2022.
+Shaden Smith, Mostofa Patwary, Brandon Norick, Patrick LeGresley, Samyam Rajbhandari, Jared Casper,
+Zhun Liu, Shrimai Prabhumoye, George Zerveas, Vijay Korthikanti, Elton Zhang, Rewon Child, Reza Yaz-
+dani Aminabadi, Julie Bernauer, Xia Song, Mohammad Shoeybi, Yuxiong He, Michael Houston, Saurabh
+Tiwary, and Bryan Catanzaro. Using DeepSpeed and Megatron to train Megatron-Turing NLG 530B, a
+large-scale generative language model, 2022. URL https://arxiv.org/abs/2201.11990.
+Atharv Sonwane, Isadora White, Hyunji Lee, Matheus Pereira, Lucas Caccia, Minseon Kim, Zhengyan Shi,
+Chinmay Singh, Alessandro Sordoni, Marc-Alexandre Côté, et al. Bugpilot: Complex bug generation for
+efficient learning of swe skills. arXiv preprint arXiv:2510.19898, 2025.
+Ben Sorscher, Robert Geirhos, Shashank Shekhar, Surya Ganguli, and Ari S. Morcos. Beyond neural scaling
+laws: beating power law scaling via data pruning, 2023. URL https://arxiv.org/abs/2206.14486.
+Alexandra Souly, Qingyuan Lu, Dillon Bowen, Tu Trinh, Elvis Hsieh, Sana Pandey, Pieter Abbeel, Justin
+Svegliato, Scott Emmons, Olivia Watkins, et al. A strongreject for empty jailbreaks. Advances in Neural
+Information Processing Systems, 37:125416–125440, 2024.
+Nitish Srivastava, Geoffrey Hinton, Alex Krizhevsky, Ilya Sutskever, and Ruslan Salakhutdinov. Dropout: a
+simple way to prevent neural networks from overfitting. J. Mach. Learn. Res., 15(1):1929–1958, January
+2014. ISSN 1532-4435.
+Jianlin Su, Yu Lu, Shengfeng Pan, Ahmed Murtadha, Bo Wen, and Yunfeng Liu. Roformer: Enhanced
+transformer with rotary position embedding, 2023. URL https://arxiv.org/abs/2104.09864.
+77

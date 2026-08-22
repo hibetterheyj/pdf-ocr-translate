@@ -1,0 +1,50 @@
+Dimension
+Description
+Harm category &
+policy violation
+Identifies which policy area the request engages and whether it violates a
+specific rule, grounding the judgment in a concrete policy clause.
+Sensitivity level
+Records topical sensitivity on an ordinal scale based on scope (individual vs.
+broad) and severity (worst-case misuse outcome), independent of whether the
+request is disallowed.
+User intent
+Binary signal: good intent possible vs. malicious intent. Dangerous topics alone
+are not evidence of malice.
+User scenario
+Captures the user’s pragmatic goal (e.g., information-seeking, guidance, creative
+generation, scenario play).
+Jailbreak detection
+Dual role: screens for adversarial wrapping and provides a signal for whether
+the request was adversarially framed.
+Table 18. User request classification dimensions.
+to distinguish genuine safety defects from over-cautious behavior on benign-but-sensitive topics and exposes
+per-policy and per-modality measurements rather than a single aggregate score.
+Both evaluation stages are carried out by LLM judges, with classification steps executed multiple times
+and aggregated by majority vote to control judge variance. Each user request also goes through jailbreak
+detection which screens for adversarial wrapping using a hierarchical taxonomy of attack families and tech-
+nique variants. When a wrapper is detected, an extraction step recovers the underlying request, and subse-
+quent classification operates on that recovered request. This ensures evaluation reflects model behavior on
+the actual underlying intent rather than on the surface attack template, preventing wrapper-specific overfit-
+ting from inflating safety scores.
+Stage 1: user request classification.
+Each user request is characterized along five complementary di-
+mensions as described in Tab. 18. They jointly capture both the policy-relevant content of the request and
+the context in which the request is made. For multi-turn dialogues, the entire dialogue history is treated as
+contextual input.
+Stage 2: response strategy generation.
+The classification from Stage 1 is consumed by a rubric judge
+that emits a per-request response specification covering the relevant policy constraints, the appropriate re-
+fusal posture (which may be compliance, partial refusal, or refusal depending on intent and severity), and
+the prescribed tone and approach for the response. For requests classified as harmless or unclear, this LLM-
+generated rubric is replaced by a deterministic default that explicitly penalizes hedging and unwarranted
+refusal.
+J.1.2 Data Collection & Sampling
+Desiderata:
+Evaluation results are only as informative as the prompts they are computed on: a narrow,
+mis-weighted, or saturated evaluation set yields tight confidence intervals around the wrong quantity, and
+any model-selection decision made on top of it inherits that error. We treat construction of the evaluation
+set as a methodological problem and the set must satisfy three properties (Atkinson et al., 2007).
+• Coverage across the policy areas, sensitivity levels, user scenarios, and adversarial framings introduced
+above, so that no behaviorally distinct slice of inputs is silently underrepresented.
+102

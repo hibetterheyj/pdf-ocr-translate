@@ -1,0 +1,63 @@
+Checkpointing
+Metric Store
+Persistent Rollout
+Store
+Problem Worker
+Problem
+Set 0
+Problem
+Set 1
+Problem
+Set 2
+Problem Set
+Sampler
+Async
+Controller
+Problem Worker
+Problem
+Workers
+Queue
+Problem Worker
+Problem Worker
+Rollout
+Workers
+Queue
+Agentic orchestration layer
+for SWE / tool use
+Problem Worker
+Problem Worker
+SGL servers
+Inference pool
+(including router)
+Queue
+Problem Worker
+Problem Worker
+Learners
+Learner pool
+curriculum
+Weight transfer
+Figure 19. An overview of Rocket, our large scale Reinforcement Learning framework.
+around a single controller, a pool of problem and rollout workers, and the router and inference servers that
+produce model generations. The controller, problem workers, and rollout workers are each implemented as
+a single Python process / Ray actor, while routing and inference are provided by the SGLang-based serving
+stack. An overview of the Rocket architecture is shown in Fig. 19.
+3.6.1 Controller
+The controller loads RL tasks and sends them to the problem workers for processing. For each task, the
+controller receives a set of completed rollouts with associated grading metadata (pass/fail decisions, rewards,
+normalized advantages, etc.). The completed rollouts are filtered by the controller and sent as batches to the
+learner. The controller abstraction allows Rocket to switch between different controller implementations for
+on-policy and off-policy RL. In practice, we primarily use off-policy RL for large runs and reserve on-policy
+RL for smaller experiments and debugging.
+3.6.2 Problem Worker
+When a problem worker receives an RL task from the controller, it generates a set of rollouts, computes a
+normalized advantage for each rollout, and sends the results back to the controller. The problem worker does
+not handle rollout generation itself. Instead, it sends a set of requests to the rollout workers—one for each
+rollout. The problem worker implements fault tolerance for large scale asynchronous RL such as retrying
+rollouts for a task if a rollout worker fails.
+The typical flow for a single request to the problem worker is:
+1. Early-exit rollouts. Following the early-exit strategy described in Sec. 3.1.3, the problem worker re-
+ceives an RL task from the controller and sends out 16 requests to the rollout workers, retrying failed
+requests as needed. Each rollout is graded, and this information is aggregated into an overall pass rate
+for task. If the overall pass rate is within a predetermined interval, the problem worker proceeds to
+the full rollout stage. Otherwise, the RL task is aborted.
+50

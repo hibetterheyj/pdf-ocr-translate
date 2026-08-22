@@ -1,0 +1,45 @@
+process. In short, two training runs with the same hardware resources and configurations will produce
+bitwise identical models. Determinism requires careful attention at several levels of the training stack:
+• Data pipelines. The ordering of training micro-batches is fixed for a given configuration of data-parallel
+workers. While these workers asynchronously prefetch batches to hide I/O latencies, we ensure that the
+queue of pending batches is consistent across runs and restarts.
+• Training checkpoints. We store all stateful data including model weights, optimizer state, FP8 scaling
+history, dataloader progress, and random-number generators.
+• GPU kernels. Floating-point accumulation is non-associative, so reproducible reductions require control
+over the order in which values are combined. Our training stack performs deterministic accumulations in
+prescribed orders, rather than relying on unordered GPU atomics whose accumulation order is scheduler-
+dependent. For example, RMSNorm backpropagation accumulates gradients using a two-stage tiled re-
+duction: the first kernel materializes per-tile partial sums, and a finalization kernel reduces those partials
+in a fixed order. Another example is the top-k selection for MoE routing: our kernel uses a stable sort to
+avoid non-deterministic tie-breaking.
+• Network collective communications. Similar to floating-point reductions within GPU kernels, collectives
+such as all-reduce and reduce-scatter must be deterministic. We disable NVLink SHARP (Graham et al.,
+2020) to ensure that the collective operations are deterministic at the cost of reduced performance. We
+also enforce consistent NCCL topologies run-to-run so that intra-rack reductions always use the same ac-
+cumulation order.
+We also leverage determinism to build confidence in our numerical correctness as YOLO evolves. Our
+tests track “golden” model configurations and compare for exactness against all training metrics (e.g., loss,
+gradient norms, and weight tensor checksums). This does not mean that we disallow any changes to numerics
+that result in a different training result; changes are expected when we make changes that affect floating-
+point behavior (e.g., upgrade system software or GPU kernels). This gives us an explicit history of expected
+numerical changes in our software history.
+2.8.3 Fault Tolerance
+Large-scale training must tolerate frequent hardware failures with minimal effect on training efficiency.
+YOLO’s fault-tolerance approach combines distributed checkpointing and fast-failover to hot standbys to
+minimize lost training progress and downtime during failures.
+Distributed checkpoint format. We build on PyTorch’s distributed checkpointing library (DCP), which
+deduplicates replicated state across ranks and supports tensor resharding at load time. We rewrote DCP’s
+metadata creation and serialization paths to lower CPU memory overhead, reduce Python garbage collection
+pressure, and accelerate serialization/deserialization. Collectively, these optimizations reduced both CPU
+memory overhead and checkpoint save time by more than 10×. In our implementation, only the public
+APIs and the core logic for mapping tensor shards to storage – the save plan – remain from the original
+library. We also pre-compute DCP save plans and cache them in persistent storage, removing this expensive
+computation from the critical path.
+Asynchronous checkpointing. To minimize training downtime when saving checkpoints, we first copy
+checkpoint tensors from device to host directly in the training processes, then offload the remaining work to a
+separate checkpointing process while training proceeds. The checkpointing process writes data to persistent
+storage via the frontend network and handles cross-rank coordination to atomically commit the checkpoint.
+To support our scale, we replaced the standard CPU collective backend with a custom coordination layer
+built on a shared key-value store. We further employ an opportunistic admission-control mechanism that
+polls for completion of in-flight checkpoints and initiates the next one as soon as possible, while ensuring at
+27

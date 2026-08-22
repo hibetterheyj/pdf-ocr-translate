@@ -1,0 +1,47 @@
+\subsection{L 集群环境细节}\label{l-cluster-environment-details}
+
+本附录介绍使训练环境在前沿（frontier）规模下可用的基础设施机制。核心设计选择是将物理拓扑与硬件健康状态作为一等（first-class）调度状态暴露给调度系统。节点与 NVLink 机架域通过拓扑标签（topology labels）、预留（reservation）对象、机架级服务和认证门控（certification gates）来表示。一个 node 并非仅仅因为已被供应（provisioned）就视为可用；只有当它健康、拓扑有效、可观测且可恢复时，才算真正可用。
+
+\subsection{L.1 硬件与计算集群}\label{l.1-hardware-and-compute-clusters}
+
+MAI-Thinking-1 是在一个异构加速器机群上开发的，涵盖 NVIDIA H100、GB200 和 GB300 系统。不过，主预训练运行被放置在单个站点的单一 GB200 集群上。GB200 和 GB300 集群托管在 Microsoft 自营数据中心内，并通过与 Azure 团队联合开发的自定义镜像提供给 MAI。这些系统按机架级 NVL72 单元供应，每个机架提供 72-GPU NVLink 域，用于高带宽的 scale-up（纵向扩展）通信；机架间 RDMA 使用 InfiniBand。H100 系统也仍保留在实验室环境中，使用 8-GPU node，配备节点内 NVLink/NVSwitch 和 InfiniBand 用于 scale-out（横向扩展）通信。
+
+逻辑集群供应与管理。每个站点被划分为多个 Kubernetes 集群，通常每个数据中心楼栋一个。逻辑集群包含用于训练的 GPU node 和用于支撑服务的 CPU node。自定义控制器（custom controllers）将期望的逻辑集群状态与底层 Azure 资源调和（reconcile），维护节点拓扑标签，并将外部健康数据库集成到调度状态中。
+
+拓扑标签在 node 启动时根据物理主机身份分配。这些标签表示机架、主机和位置（locality）信息，供调度、预留和机架级服务使用。这使得物理放置对控制平面（control plane）可见，让作业能够落在不仅可用、而且拓扑上合适的容量上。
+
+大型作业在需要时被设计为跨越单个 Kubernetes 集群的边界。node 在整个计算环境中均可全局路由，工作负载 pod 使用 host networking，以避免不必要的 overlay 开销。
+
+\subsection{L.2 集群就绪与认证}\label{l.2-cluster-readiness-and-certification}
+
+在数千 GPU 规模下，故障是预期之中的。因此认证（certification）充当第一道可靠性边界。其目的是防止坏节点、退化链路、边缘存储和静默损坏（silent-corruption）风险进入生产训练池。认证框架是自动化的、Kubernetes 原生（Kubernetes-native）的且分层的。硬件必须先通过逐步更广范围的测试，然后才可调度：单节点诊断、机架级多节点集合通信（collectives）以及选定的跨机架 InfiniBand 验证。新节点和修复后的节点遵循相同的路径。从维修返回的 node 必须再次通过认证才能重新进入生产，防止重复出错的节点（repeat offenders）循环回到大型训练作业中。
+
+认证。我们的诊断套件对每个节点进行独立验证。与通用健康检查不同，这些测试会对单个组件进行长时间压力测试：GPU、CPU 核、HCA、NVLink 链路和主内存，从而在 node 被接纳进生产之前，隔离出高 ECC 率、异常节流行为、GPU 时钟违规、链路抖动（link flaps）及其他边缘状况。
+
+该套件还使用 NCCL 集合通信对每个机架的节点内和节点间通信路径进行压力测试，以识别异常的 NVLink 行为。这些自动化测试在稳定 GB200 和 GB300 机架方面发挥了关键作用：我们识别出多个健康节点少于 16 个的机架，这些机架被排除在大型训练运行之外。
+
+认证的最后阶段包括跨机架 InfiniBand 测试，覆盖单节点和机架级测试无法触及的 fabric 路径。这些测试将跨机架、rail 和 leaf 组的节点分组，以验证 spine 层行为、路径多样性和跨机架 RDMA 性能。由于它们的 blast radius（影响范围）更大，因此在 bring-up（启动）、事故调查和 fabric 验证期间按需运行。
+
+节点生命周期。认证是闭环节点生命周期中的一个阶段，如图 26 所示。新的或修复后的 node 进入 Init，在那里被打上 taint、完成初始化、标记 label 并配置。随后，认证控制器运行分层测试套件。通过的节点变为 Available，失败的节点变为 Impaired。当检测到 NPD 条件、XID 错误、ECC 阈值、NVLink 退化、InfiniBand 链路抖动或存储故障时，运行时监控也可将 Available 节点移至 Impaired。瞬态问题（如重启或 soft drain（软排空））进入 Auto Remediation（自动修复）。持续性或归因于硬件的问题通过 Guest Health Reporting 路由至厂商或数据中心维护。修复后的节点返回 Init 并重新进入认证流程。无法恢复的节点被退役（decommissioned）。
+
+\subsection{L.3 调度、编排与控制平面}\label{l.3-scheduling-orchestration-and-control-plane}
+
+调度问题是在异构容量上放置异构工作负载，同时不牺牲局部性（locality）、配额隔离或恢复能力。工作负载包括长时间预训练作业、后训练和强化学习运行、推理与评测作业，以及 CPU 密集型数据管线。因此技术栈是分层的：Kubernetes 维护集群状态，Kueue 做出 admission 和配额决策，MAI 控制器维护预留与拓扑就绪，Ray 执行分布式作业，而机群范围（fleet-wide）的控制平面统一了跨集群和调度后端的可见性。
+
+\pandocbounded{\includegraphics[keepaspectratio,alt={image}]{images/f2cd7e527ffef59be6a85867920a4cd64e7eda2c4b2527677bc9f80cbeebad98.jpg}}
+
+图 26. 节点生命周期：从初始化到认证、生产使用、修复、维护与退役。
+
+集群本地控制平面。集群本地的 MAI 控制平面管理预留、机架拓扑、配额一致性和调度就绪门控。它不替代调度器，而是维护调度器所需的状态。Kueue 处理优先级、配额、admission、preemption（抢占）和拓扑感知放置。当一个工作负载被接纳（admitted）时，Kueue 会尽量保持高带宽域内的局部性，使大型作业落在紧凑的拓扑区域，而不是零散的容量上。机架碎片化（rack fragmentation）是反复出现的调度风险。来自许多队列的小作业可能会填满机架，从而阻止后来的大型作业获取连续容量。集群本地控制平面通过软机架预留（soft rack reservations）解决这一问题。队列被分配优先机架，工作负载会优先落在这些机架上。当容量空闲时仍可借用（borrowing），但 reclaimWithinCohort 允许队列在需要时收回其预留机架。这提高了负载下的装箱（bin packing）效率，同时在低需求时保持利用率。
+
+Ray 运行时。Ray 在被接纳的作业内部提供分布式运行时。MAI 驱动程序将已接纳的拓扑转换为 actor 放置、通信组和 NCCL clique 配置。预训练作业要求严格的 learner 可用性，而 RL 作业管理多种 actor 类型，包括 learner、推理服务器、rollout worker 和路由器，每种都有不同的放置和容错需求。驱动程序监控 actor 存活状态、协调训练循环，并在异步组件之间保持 checkpoint 一致性。
+
+\subsection{L.4 可观测性、遥测与集群监控}\label{l.4-observability-telemetry-and-fleet-monitoring}
+
+我们将底层硬件遥测、调度器状态、作业元数据和机群效率（fleet-efficiency）信号整合到统一的运维视图中。GPU 健康状态通过 XID、ECC、热状态、功耗、时钟节流、NVLink 状态、NVLink 误码率、chip-to-chip 链路、InfiniBand 设备状态、本地 NVMe 健康、PCIe 错误和驱动状态进行跟踪。这些信号被转换为 Kubernetes node conditions（节点条件），再通过自定义 triage 和 drain 控制器转化为调度与修复动作。这使得健康状态不仅对运维人员可观测，对调度器也可观测。
+
+作业可观测性聚合自 Kueue、Kubernetes、Ray、训练日志和实验元数据。运维人员可以按 namespace、pod、job 和重启索引（restart index）检查队列、优先级、admission 状态、节点放置、worker 就绪状态、重启次数、训练配置、step 进度以及作用域日志（scoped logs）。这使得无需手动跨系统重建状态，即可区分调度延迟、运行时故障、节点故障、存储退化和应用级停滞（application-level stalls）。
+
+遥测数据存储并查询于针对不同时间尺度（time horizons）优化的系统上。Datadog 提供近实时指标和日志搜索。Azure Managed Prometheus 提供集群内和跨集群（cross-cluster）的时间序列采集。Azure Data Explorer 提供长期保留的分析存储，用于日志、指标、存储遥测和集群状态。告警同样采用分层模型：本地 Prometheus 规则用于低延迟组件故障，Datadog monitor 用于服务和日志衍生信号，基于 KQL 的检查用于长期保留分析，Azure Monitor 用于资源和 Prometheus 告警。关键告警被路由到事件管理（incident management），而较低严重程度的信号则流入仪表盘和运维评审。
+
+独特的设计之处在于，可观测性是控制回路的一部分。硬件遥测、fabric 健康、存储行为、调度状态和作业进度并不是被动的仪表盘；它们决定容量是被接纳、排空、修复，还是重新投入服务。这使得整个机群可以按可用训练容量和有效吞吐（goodput）来管理，而不仅仅是按已供应的 GPU 数量。

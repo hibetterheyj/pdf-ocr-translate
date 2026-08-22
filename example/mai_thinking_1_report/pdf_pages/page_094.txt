@@ -1,0 +1,42 @@
+- No direct references in tests. Let me look at how isAddBeanFor is defined in the API. Let me
+examine DBuilder and Builder interfaces.
+- I see isAddBeanFor in the API. But I need to understand the full picture. Let me look at
+Builder interface.
+- Now I understand the API side. But what about the generator side? Let me look at more
+examples of generated code to see the actual output pattern for isAddBeanFor. I need to see
+what TypeAppender produces. Let me look at test data or look at actual generated DI
+classes from test cases.
+- Those are generator classes. Let me look for actual generated DI files in test targets.
+- So the issue might be clearer if I understand when package-private types cause problems. Let
+me look at the issue more carefully. Let me search for any issues or more context about "
+package protected". Wait - let me look at the full TypeExtendsReader and understand better.
+Because when we collect types to register (for isAddBeanFor), we collect: 1. The ba...
+Strong model excerpt: ties behavior to the data source that feeds generation and trace from there.
+- I see the references. Let me look at how isAddBeanFor is generated. I need to understand the
+full picture.
+- I see they're checking Modifiers. So there is a pattern. Let me look at how it's done. Let me
+search more comprehensively.
+- I see isAddBeanFor is defined in Builder interface and implemented in DBuilder. Let me look
+at how it's used. Let me read DBuilder and understand the semantics. The isAddBeanFor
+determines if a bean should be added - I think it's used for "types" - as in, when
+registering, what types is this bean a candidate for? So only public types are relevant
+from con...
+- I see how isAddBeanFor works in the runtime - it decides whether to add/register a bean based
+on if parent scope already has it. But that doesn't help me understand the issue. The
+issue is about generated code. Let me look at how the generated code actually looks. Let me
+find examples of generated D classes with isAddBeanFor. Let me search for actual gene...
+- Those are runtime classes. Let me look at generated test code. Let me find generated code in
+test resources or build outputs. But this is source code - let me look at blackbox tests or
+inject-test. Let me search for generated code that has isAddBeanFor.
+- So no generated code in target (no build yet). Let me look in test resources or at existing
+test cases. Let me search for 'isAddBeanFor' in test sources - perhaps I can understand
+from tests what the expected behavior is.
+- I see MethodReader's buildAddFor also uses typeReader.getTypesRegister() when dealing with
+factory methods that return types. So the logic for determining what types go into
+isAddBeanFor comes from TypeReader. But back to the main issue - "Bug isAddBeanFor()
+generated code includes package protected class and interface. The fix is that only public
+classes...
+E SWE Agent Tool Schema
+We describe the tools used for our SWE agent RL in OpenAI-compatible function calling schema format
+in Figure 23 and Figure 24.
+94
