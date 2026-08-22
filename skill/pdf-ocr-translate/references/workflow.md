@@ -166,6 +166,10 @@ This compiles native LaTeX first, then wraps the result with `pdfpages` via pand
 - For large papers (2000+ lines), split into chunks and translate in parallel. For short papers (<300 lines), translate inline without splitting.
 - Feed each translator the section's per-page PDF text (`pdf_pages/page_NNN.txt`); every `�` reconstruction and number check reads from it.
 - Fix missing-glyph Unicode in prose with a stateful math-mode tracker; never mutate a string while iterating over positions collected from it.
+- Use `scripts/split_translation_chunks.py` for splitting (handles page markers, chunk budgeting, References slicing, page-range mapping) and `scripts/merge_translation_chunks.py` for merging (drops hand-built Contents, injects `\tableofcontents`, dedupes shared headings).
+- Never globally replace `\n` literals in the merged file — the preamble's macro names (`\newcommand`...) share the prefix. Restrict the fix to body chunks or restore commands afterwards (`\textbackslash{}n` + letter → `\n` + letter).
+- Expect MinerU's fi/ff ligature loss to hit reference author names too; translators must check names, not just prose.
+- After 0 compile errors, run the `Missing character` sweep from the log — the residual list is exactly the Unicode math left in prose.
 
 ## Deliverables
 
@@ -188,3 +192,11 @@ See [example/spatiotemporal_composability_report/](../../example/spatiotemporal_
 - ~900 `�` symbols reconstructed from the source PDF; systematic "efects"→"effects" fix
 - Final output: 80-page Chinese PDF, 0 compilation errors
 - Includes: chunks, `main_cn.tex`, patched normalizer, compiled PDF, README with lessons
+
+See [example/mai_thinking_1_report/](../../example/mai_thinking_1_report/) for the largest case:
+- Source: 7495-line technical report, 109 PDF pages, 67 images
+- 35 chunks translated by 27 parallel subagents (two waves); per-chunk PDF page bundles
+- ~170 fi/ff ligature losses fixed (including reference author names), a scrambled Table 12 rebuilt cell-by-cell, a missing Section-6 heading restored, a lost excerpt paragraph reconstructed from the PDF
+- The `\n`-literal trap: a global replace turned a clean file into 173 errors; the `\textbackslash{}n`+letter restore pattern recovered it
+- Final output: 120-page Chinese PDF, 0 errors, 0 missing glyphs
+- Includes: chunks, split/merge scripts, shared translation policy with document-specific defect list, README with lessons
