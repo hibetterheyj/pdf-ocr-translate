@@ -1,0 +1,89 @@
+% Preamble patches for a MinerU OCR project translated to Chinese
+% =============================================================
+%
+% MinerU's stock preamble already loads fontspec, polyglossia and ctex, and
+% picks a CJK font through an \IfFontExistsTF chain.  The edits below are the
+% ones that are easy to get wrong because *where* they go matters.
+%
+% Copy the relevant lines rather than adopting this file wholesale — several of
+% these only make sense in the context of MinerU's existing preamble.
+
+
+% --- 1. CJK fonts ---------------------------------------------------------
+% Put the platform's own font first in MinerU's chain so the document builds on
+% a machine without Source Han / Noto CJK installed.  On macOS "Songti SC" and
+% "Heiti SC" are present out of the box and look right for a technical report.
+%
+% \setCJKmainfont and \setCJKsansfont are *preamble-only*: placing them after
+% \begin{document} raises "Can be used only in preamble."  (The merged file
+% begins the body with the centred title block, so it is easy to slide these in
+% one line too late.)
+\IfFontExistsTF{Songti SC}
+{\newfontfamily\chinesefont{Songti SC}}
+{\IfFontExistsTF{Source Han Serif CN}
+{\newfontfamily\chinesefont{Source Han Serif CN}}
+{\IfFontExistsTF{Noto Serif CJK SC}
+  {\newfontfamily\chinesefont{Noto Serif CJK SC}}
+  {\IfFontExistsTF{SimSun}
+    {\newfontfamily\chinesefont{SimSun}}
+    {\newfontfamily\chinesefont{Arial Unicode MS}}
+}}}}
+\setCJKmainfont{Songti SC}
+\setCJKsansfont{Heiti SC}
+
+
+% --- 2. URL line breaking -------------------------------------------------
+% OCR often turns a wrapped URL into a URL with a space inside it.  Joining that
+% space back is correct, but it can leave a 150-180pt unbreakable token that
+% then shoots past the right margin.  Load xurl *before* hyperref so the URL
+% can break at any character.
+\usepackage{xurl}
+\usepackage{hyperref}
+
+
+% --- 3. Looser line breaking ---------------------------------------------
+% With long URLs and long technical identifiers, a little extra stretch removes
+% most residual overfull boxes.  Both belong in the preamble.
+\sloppy
+\setlength{\emergencystretch}{3em}
+
+
+% --- 4. Wrappable table columns ------------------------------------------
+% MinerU emits every table with `l` columns, and `l` never wraps.  Define a
+% ragged-right p-column so long benchmark names and model names can wrap.
+% Requires the array package (MinerU already loads it) and ragged2e.
+\usepackage{ragged2e}
+\newcolumntype{L}[1]{>{\RaggedRight\arraybackslash}p{#1}}
+
+
+% --- 5. Centred title block ----------------------------------------------
+% MinerU emits the paper title as \section{...}.  Replace it with a centred
+% block.  This one is *document body* content, not preamble, but it is grouped
+% here because it is part of the same frontmatter edit.
+%
+% \begin{center}
+% {\LARGE DeepSeek-V4.1-Flash\par}
+% \vspace{0.5em}
+% {\large 突破 KV 缓存压缩的极限\par}
+% \vspace{0.8em}
+% {\normalsize DeepSeek-AI\quad research@deepseek.com\par}
+% \end{center}
+
+
+% --- 6. Caption names and the table of contents ---------------------------
+% ctex does not relabel \caption prefixes; do it explicitly.  \figurename and
+% \tablename may sit in the preamble.
+\renewcommand{\figurename}{图}
+\renewcommand{\tablename}{表}
+
+% \contentsname is different: polyglossia re-activates the language after the
+% preamble and resets it, so a preamble-level \renewcommand is silently lost.
+% It must go in the body, immediately before \tableofcontents.
+%
+% \renewcommand{\contentsname}{目录}
+% \tableofcontents
+%
+% When merging chunks, insert the TOC *after* the centred title block, not
+% directly after \begin{document}: the preamble chunk in this pipeline carries
+% \begin{document} and the title block follows it, so inserting at
+% \begin{document} puts the contents pages ahead of the title page.

@@ -1,6 +1,6 @@
 ---
 name: pdf-ocr-translate
-description: Translate OCR-produced LaTeX/Markdown papers into high-quality Chinese PDFs with source-PDF cross-checking, multi-agent chunked translation, heading normalization, high-resolution figure extraction, and reliable XeLaTeX/pandoc packaging. Use when the input comes from MinerU, Nougat, Mathpix, OCR-to-LaTeX pipelines, or other noisy PDF-to-LaTeX conversions and the user wants a polished translated PDF rather than raw OCR output.
+description: Translate OCR-produced LaTeX/Markdown papers into high-quality Chinese PDFs with source-PDF cross-checking, multi-agent chunked translation, heading normalization, high-resolution figure extraction, and reliable XeLaTeX/pandoc packaging. Recovers math symbols OCR dropped, refits over-wide tables, and audits the compiled layout. Use when the input comes from MinerU, Nougat, Mathpix, OCR-to-LaTeX pipelines, or other noisy PDF-to-LaTeX conversions and the user wants a polished translated PDF rather than raw OCR output — especially when the OCR output is littered with U+FFFD placeholders, tables run off the page, or figures came out as low-resolution fragments.
 ---
 
 # PDF OCR Translate
@@ -49,6 +49,28 @@ python3 scripts/fix_ocr_artifacts.py <working_dir>/main.tex
 
 This fixes: escaped `\$ → $` (math mode), Unicode math chars (`ϕ→$\phi$`, `α→$\alpha$`), invisible control characters, and other common MinerU/Nougat artifacts. Read [references/tooling-and-gotchas.md](references/tooling-and-gotchas.md) for the full list of OCR failure patterns.
 
+### 2.5. Recover the Math Symbols Mining Tools Drop
+
+Do this before translating, because the translators will otherwise guess at holes
+they cannot see. When a paper sets variables in a math font, MinerU writes U+FFFD
+for each one — and **pymupdf's plain text layer loses them too**, so comparing
+against `page.get_text("text")` makes them look unrecoverable. They are not:
+`page.get_text("dict")` exposes a per-span `font` name, and a span whose font
+looks like a math font holds the real codepoint (`𝐿` U+1D43F is just
+"MATHEMATICAL ITALIC CAPITAL L"). Extract them and put them back:
+
+```bash
+scripts/recover_math_glyphs.py --pdf source.pdf --pages 4-51 \
+    --chunks parts/ --out worklist.txt
+```
+
+The output marks every symbol as `‹X›` inside its sentence, so you can read a
+proposed symbol against the surrounding words. **Do not skip that reading.** A
+wrong symbol compiles cleanly and renders plausibly — a real run shipped `λ`
+where the equation said `τ`, and nothing in LaTeX or the PDF complained. The
+worklist is a proposal; turn it into an exact-substring replacement table and
+apply it with a small script, so re-running the pipeline stays deterministic.
+
 ### 3. Split into Translation Chunks
 
 For papers longer than ~300 lines, split the document at major section boundaries. Use the bundled splitter — it handles page-marker removal, chunk size budgeting, and page-range mapping:
@@ -78,7 +100,10 @@ Launch subagents for each chunk with these instructions:
 - Translate table captions: `Table X: ...` → `表 X: ...`
 - Write each translated chunk back to its original file
 
-Read [references/translation-policy.md](references/translation-policy.md) for full rules, and [references/ocr-failure-patterns.md](references/ocr-failure-patterns.md) for the systematic corruption catalog (fi/ff ligature loss, scrambled tables, math transcription garbage) — translators should receive the relevant patterns for their document.
+Read [references/translation-policy.md](references/translation-policy.md) for full rules, [references/ocr-failure-patterns.md](references/ocr-failure-patterns.md) for the systematic corruption catalog (fi/ff ligature loss, scrambled tables, math transcription garbage), and [references/orchestration.md](references/orchestration.md) for how to brief and sequence the agents. Two things from that last file matter enough to repeat here:
+
+- **Give each agent its own page range, and state the mapping explicitly.** Printed page N is `pdf_pages/page_NNN.txt` — but PDF *file* page N+1, because the first page is usually an unnumbered title. Agents that are told the wrong mapping still tend to find the right text, but they burn turns discovering it.
+- **Separate checking from translating.** The agents that stall are the ones that keep re-reading the PDF to verify. Do the verification in its own pass, hand the translator a pre-verified list of corrections, and tell it not to re-investigate. Measured on a real run: the same chunk that exhausted an agent's context across 23 turns finished in 5 once scoped that way.
 
 ### 5. Merge and Fix Fonts
 
@@ -93,6 +118,16 @@ The merger drops `DROP_AT_MERGE` chunks (hand-built Contents), injects `\tableof
 - Add `Songti SC` and `Heiti SC` between `Noto Serif CJK SC` and `SimSun` in the CJK font chain
 - macOS system fonts: Songti SC (serif), Heiti SC (sans), PingFang SC (modern) are available without additional installs
 - Reference: [assets/font_preamble_snippet.tex](assets/font_preamble_snippet.tex)
+
+Several preamble edits are placement-sensitive, and getting the placement wrong
+produces errors that do not obviously point at the cause. [assets/preamble_patches_cn.tex](assets/preamble_patches_cn.tex)
+collects them with the reasoning:
+
+- `\setCJKmainfont` / `\setCJKsansfont` are **preamble-only** — after `\begin{document}` they raise "Can be used only in preamble".
+- `\renewcommand{\contentsname}{目录}` must go **in the body**, right before `\tableofcontents`: polyglossia re-activates the language and resets it, so a preamble-level setting is silently lost.
+- Insert the TOC **after the centred title block**, not right after `\begin{document}`. MinerU's preamble chunk contains `\begin{document}` and the title follows it, so inserting at `\begin{document}` puts the contents pages ahead of the title page.
+- ctex does not relabel caption prefixes; add `\renewcommand{\figurename}{图}` and `\renewcommand{\tablename}{表}` or every caption reads `Figure N:`.
+- Load `xurl` **before** `hyperref` so long URLs can break (see step 6.5).
 
 ### 5.5. Normalize Heading Levels
 
@@ -162,6 +197,57 @@ Focus verification on: numerical values, model sizes, benchmark scores, citation
 
 **The `\n` literal trap**: body text containing a literal `\n` breaks compilation, but never do a global `\n` → `\textbackslash{}n` replace — the preamble is full of macro names (`\newcommand`, ...) that start with backslash-n. Restrict the replace to body chunks, or restore afterwards with `\textbackslash{}n` + `[a-zA-Z]` → `\n` + letter.
 
+### 6.5. Make the Tables Fit, Then Audit the Layout
+
+Every MinerU table comes out with `l` columns, and `l` never wraps — so one long
+benchmark name (`Terminal-Bench v2.1 (Pass@1)`) or a row of model names pushes
+the table straight off the page. Fix this on the merged file, before compiling:
+
+1. **Convert the leading label column to a wrappable `L{}` column.** Define
+   `\newcolumntype{L}[1]{>{\RaggedRight\arraybackslash}p{#1}}` in the preamble,
+   and give each table's label column — and any other column holding prose, such
+   as a row of model names — an explicit width in `em` so it tracks the font size.
+2. **Wrap the whole table in `{\footnotesize ... }`.** The size command has to go
+   *outside* the `longtable`; putting it inside the alignment preamble (after
+   `\endlastfoot`) triggers `Misplaced \noalign`.
+3. **Check the header actually lines up with the data.** MinerU sometimes emits a
+   header as one `\multicolumn` of flowing text, e.g.
+   `\multicolumn{7}{c}{Opus-5 GPT-5.6 Sol K3 GLM-5.3 DS-V4-Pro DS-V4-Flash|...}`.
+   That text is spaced by the typesetter and bears no relation to the columns
+   below it — the table looks misaligned even though every number is right. Give
+   each header its own cell (a `\shortstack{...}` where a name needs two lines) so
+   each label sits over its own column, and keep the model order from the PDF.
+
+Then verify the result against the compiled PDF rather than the source:
+
+```bash
+scripts/audit_layout.py --pdf build/main_cn.pdf --margin 555
+scripts/check_tables.py --parts parts
+```
+
+`audit_layout.py` reports margin overflows, text overlaps, and stray list
+markers. `check_tables.py` catches a row with the wrong `&` count before LaTeX
+does.
+
+Set the margin from your own geometry and measure the worst case once before
+believing a report: pymupdf line boxes include italic correction and side
+bearings, so lines that visually end inside the margin can measure a few points
+past it. A document whose worst overhang is ~8pt is fine; a real defect is tens
+of points. Expect a few "overlaps" that are just inline math split across lines —
+read the reported text before acting on it.
+
+Two spills worth knowing about, both seen in practice:
+
+- **A joined URL becomes an unbreakable token.** OCR sometimes turns a wrapped
+  URL into a URL containing a space (`https://doi. org/...`,
+  `arXiv.2405.04 434`). Joining that space is right, but without `xurl` the
+  repaired URL is a ~180pt atom that shoots past the margin. Fix both together.
+- **Empty `enumerate` blocks print as `(a)` `(b)`.** MinerU emits subfigure
+  labels as `enumerate` blocks with no content; once the images are wrapped in
+  `figure` environments the empty lists remain and LaTeX still numbers them.
+  Delete the whole environment, and note that this legitimately changes your
+  `\begin`/`\end` counts in the structure check.
+
 ### 7. Compile
 
 Compile natively with XeLaTeX (required for CJK + ctex):
@@ -194,17 +280,33 @@ scripts/compile_pdf.sh path/to/main_cn.tex path/to/output_pandoc.pdf
 - Check that figure captions are translated and images are visible
 - Confirm citation keys are intact
 
+Then run the mechanical checks, which catch what a spot-check misses:
+
+```bash
+scripts/audit_layout.py --pdf build/main_cn.pdf --margin <textblock-right-edge>
+scripts/check_tables.py --parts parts
+scripts/check_structure.py --parts parts --compare baseline.json   # if you took one
+```
+
+Read the compile log for `Missing character` too — raw Unicode math left in
+prose shows up there and nowhere else. A clean finish looks like 0 errors,
+0 missing glyphs, all figures and tables present, and a layout audit whose only
+findings are inline-math fragments.
+
 ## Reference Files
 
 Read only when needed:
 
 - **[references/workflow.md](references/workflow.md)** — Full end-to-end flow with subagent chunking strategy and cross-validation
+- **[references/orchestration.md](references/orchestration.md)** — How to brief and sequence translation subagents: page mapping, scoping, why the verifying agents stall and how to stop it, and what to do when one does
 - **[references/translation-policy.md](references/translation-policy.md)** — What to translate, what to preserve, heading mapping rules
-- **[references/ocr-failure-patterns.md](references/ocr-failure-patterns.md)** — Systematic MinerU corruption catalog (ligature loss, scrambled tables, math junk, the `\n` trap) with fixes — give the relevant sections to translation subagents
+- **[references/ocr-failure-patterns.md](references/ocr-failure-patterns.md)** — Systematic MinerU corruption catalog (ligature loss, dropped math glyphs, scrambled tables, broken URLs, the `\n` trap) with fixes — give the relevant sections to translation subagents
 - **[references/tooling-and-gotchas.md](references/tooling-and-gotchas.md)** — Compilation troubleshooting, font pitfalls, OCR failure patterns, figure extraction
 - **[references/example-session.md](references/example-session.md)** — Concrete paths and commands from a successful DeepSeek V4 run
 
 ## Scripts
+
+Existing scripts:
 
 - **`scripts/fix_ocr_artifacts.py`** — Clean common OCR artifacts: escaped `\$`, Unicode math chars, control characters, and MinerU math transcription junk (`\textgreater`, `\^{}`, `\textasciitilde`) inside math spans
 - **`scripts/split_translation_chunks.py`** — Split at heading boundaries: removes page-marker lines, merges small sections, sub-splits oversized ones, slices References lists, writes `CHUNK_MAP.json` with page ranges
@@ -216,10 +318,19 @@ Read only when needed:
 - **`scripts/build_pandoc_wrapper.py`** — Create minimal pandoc wrapper using `pdfpages`
 - **`scripts/compile_pdf.sh`** — Compile native LaTeX, optionally emit pandoc PDF wrapper
 
+Added after a full DeepSeek-V4.1-Flash run; each one paid for itself on that job:
+
+- **`scripts/recover_math_glyphs.py`** — Recover the math symbols MinerU replaced with U+FFFD, using the PDF's span-level font data. Emits a worklist with each symbol shown in its sentence, so you can check it against the prose before trusting it. **Run this before translating** (step 2.5)
+- **`scripts/audit_layout.py`** — Post-compile layout audit: margin overflows, text overlaps, stray `(a)`/`(b)` list markers
+- **`scripts/check_tables.py`** — Verify every `longtable` row has the column count its preamble declares (catches merged/shifted cells before LaTeX does)
+- **`scripts/check_structure.py`** — Count `\label`/`\caption`/`\includegraphics`/`\tag`/… before and after translation to prove the pass was lossless
+- **`scripts/verify_corrections.py`** — Check a subagent's claimed correction really exists in the source PDF, tolerating the whitespace pymupdf inserts between math glyphs
+
 ## Assets
 
 - **[assets/pandoc_wrapper.template.md](assets/pandoc_wrapper.template.md)** — Minimal pandoc wrapper template
 - **[assets/font_preamble_snippet.tex](assets/font_preamble_snippet.tex)** — CJK-safe XeLaTeX font setup with macOS fallbacks
+- **[assets/preamble_patches_cn.tex](assets/preamble_patches_cn.tex)** — Placement-sensitive preamble edits for a MinerU project (CJK fonts, `xurl`, wrappable `L{}` column, centred title, caption names, `\contentsname`), with why each one goes where it goes
 - **[assets/heading_examples.tex](assets/heading_examples.tex)** — Heading normalization and inline-bold demotion examples
 - **[assets/deepseek_v4_paper_template/](assets/deepseek_v4_paper_template)** — Copyable modular starter project for OCR-LaTeX translation
 
@@ -230,3 +341,5 @@ See **[example/kimi_k3_report/](example/kimi_k3_report/)** for a complete worked
 See **[example/spatiotemporal_composability_report/](example/spatiotemporal_composability_report/)** for a formal-methods paper (6570 lines, heavy math): 17 chunks, ~900 OCR `�` symbols reconstructed from the source PDF, zero-error compilation. Demonstrates: repeated-letter OCR drops ("efects"→"effects"), per-page PDF text as cross-validation reference, hand-built TOC replacement, and the missing-glyph sweep.
 
 See **[example/mai_thinking_1_report/](example/mai_thinking_1_report/)** for the largest run (7495 lines, 109-page PDF): 35 chunks translated by 27 parallel agents in two waves, ~170 fi/ff ligature fixes, scrambled-table reconstruction, the `\n`-literal trap (global replace → 173 errors → targeted restore), and a 120-page Chinese PDF with 0 errors and 0 missing glyphs.
+
+See **[example/deepseek_v4_1_flash_report/](example/deepseek_v4_1_flash_report/)** for the run that produced the scripts in step 2.5 and 6.5 (3,313-line OCR, 51-page PDF, 15 chunks, 49-page output, 0 errors / 0 missing glyphs). It is the best example to read if you need to recover dropped math or fix table layout. It demonstrates: **80 U+FFFD symbols recovered from PDF span-font data** (including a wrong `λ`/`τ` that only the surrounding sentence exposed), 12 figures re-rendered at 400 DPI from vector PDF because the OCR cutouts were 41 fragments, a table header written as one `\multicolumn` of flowing text that had to be split into per-column cells, three URLs that OCR had split with a space, two empty `enumerate` blocks printing as stray `(a)` `(b)`, and a merge order bug that put the table of contents before the title page. `translate_latex/` keeps every pipeline script and `README.md` records the reasoning.
