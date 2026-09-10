@@ -1,0 +1,16 @@
+Z. Zhang, Y. Zhong, Y. Jiang, H. Hu, J. Sun, Z. Ge, Y. Zhu, D. Jiang, and X. Jin. Disttrain:
+Addressing model and data heterogeneity with disaggregated training for multimodal large
+language models. In Proceedings of the ACM SIGCOMM 2025 Conference, pages 24–38,
+2025b.
+C. Zhao, L. Zhao, J. Li, Z. Xu, and C. Xu. Deepgemm: clean and efficient fp8 gemm kernels with
+fine-grained scaling. https://github.com/deepseek-ai/DeepGEMM, 2025.
+W. Zhong, R. Cui, Y. Guo, Y. Liang, S. Lu, Y. Wang, A. Saied, W. Chen, and N. Duan. AGIEval: A
+human-centric benchmark for evaluating foundation models. CoRR, abs/2304.06364, 2023.
+doi: 10.48550/arXiv.2304.06364. URL https://doi.org/10.48550/arXiv.2304.06364.
+T. Y. Zhuo, M. C. Vu, J. Chim, H. Hu, W. Yu, R. Widyasari, I. N. B. Yusuf, H. Zhan, J. He, I. Paul,
+S. Brunner, C. Gong, J. Hoang, A. R. Zebaze, X. Hong, W. Li, J. Kaddour, M. Xu, Z. Zhang,
+P. Yadav, and et al. Bigcodebench: Benchmarking code generation with diverse function
+calls and complex instructions. In The Thirteenth International Conference on Learning
+Representations, ICLR 2025, Singapore, April 24-28, 2025. OpenReview.net, 2025. URL http
+s://openreview.net/forum?id=YrycTjllL0.
+45

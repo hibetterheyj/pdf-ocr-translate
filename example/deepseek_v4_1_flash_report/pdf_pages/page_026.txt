@@ -1,0 +1,46 @@
+the resulting trajectories provide fresh evidence for quality re-auditing. Under this general
+framework, we have built dedicated training environment production pipelines for two core
+scenarios: general agents and coding agents.
+General Agent. For general agents, we encourage internal employees and external partners
+to incorporate our latest model into their routine workflows and, on a voluntary basis, return
+interaction data and feedback. Based on the interfaces observed in the returned data, we
+construct a large set of mocked tools that reproduce the interfaces and behaviors of real-world
+tools and systems, including their input formats, output structures, API schemas, and behavioral
+constraints, covering both commonly used SaaS and enterprise applications as well as more
+specialized business back-end systems. In parallel, we collect negative feedback and model
+failure cases submitted by internal employees at scale, and incorporate them into the pipeline
+to generate both single-turn and multi-turn agent environments grounded in real workflows.
+By reconstructing the relevant tool context, user interaction patterns, and failure conditions,
+the pipeline enables systematic replay of failures and targeted reinforcement learning against
+observed model weaknesses.
+Coding Agent. Coding agent training environments are built from two sources: 1) coding-
+agent sessions from internal employees and external partners, filtered to retain highly complex
+tasks or tasks on which model performance is poor, then deduplicated by trajectory; and 2)
+public GitHub repositories that meet a star-count threshold. Environment construction is carried
+out collaboratively by multiple specialized agents. First, an agent determines whether the project
+can be built and fully run inside a container and whether it can be automatically verified; if so, it
+selects a specific turn or commit as the task starting point, designs several sufficiently complex
+implementation directions, and produces concrete evaluation points, including both fail-to-pass
+and pass-to-pass points, along with a construction report, fetching external resources from the
+web as needed. Next, a separate agent sets up dependencies, the initial working directory, test
+code, and task descriptions in an isolated container, performs self-testing, removes any traces
+that could leak the task solution, and packages the environment as a new image layer. Then,
+multiple distinct agents attempt the task, and an independent quality-inspection agent reviews
+the environment together with the solving agents’ trajectories, checking for environment issues,
+factual errors, mismatches between evaluation points and task descriptions, and hackability
+risks. If the inspection does not pass, a repair agent fixes all identified errors, adjusts evaluation
+points that are too easy or too difficult, and the task re-enters verification.
+Through these pipelines, we can automatically and batch-produce RL training data that is
+correct, discriminative, and controllable in length and difficulty. Whether through the faithful
+reconstruction of real workflows in general agent environments or the precise construction of
+coding tasks in coding agent environments, both ultimately feed into a unified training system,
+driving iterative improvement of model capabilities under continuous quality monitoring.
+5.1.2. RL in Synthesized Tasks
+We use large-scale asynchronous RL in synthesized tasks to improve model performance and
+shape its behavior in complicated scenarios. We scale RL runs in two dimensions, i.e., training
+compute and the number of scaffolds. As shown in Figure 7 and Figure 8, performance continues
+to improve as we increase compute with cumulative RL steps, whether scaling within a single
+scaffold, jointly across variants of the same scaffold, or across heterogeneous scaffolds.
+For RL training across diverse scaffolds, we decouple agent rollout execution into an agent
+sandbox and a worker container. The sandbox runs the scaffold and its tools, while the worker
+26

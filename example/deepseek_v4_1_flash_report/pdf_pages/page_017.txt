@@ -1,0 +1,51 @@
+features are gathered during the text forward pass and the text features during the text backward
+pass, so that both all-gathers are hidden entirely behind useful computation.
+End-to-End Parallelism.
+To handle the model and data heterogeneity between the vision
+encoder and the LLM (Zhang et al., 2025b), we adopt the disaggregated encoder design used in
+recent training systems (Team et al., 2025, 2026b). The vision encoder is replicated outside the
+LLM parameter tree, and each training step is divided into three phases: vision encoder forward,
+LLM forward/backward, and vision encoder backward. This separation prevents interference
+between vision encoder and LLM computation. Load-balanced vision processing is confined to
+the first and last phases, while the LLM phase remains free of vision computation and preserves
+the parallel strategy of text-only training.
+Long-Sequence Multimodal Training Optimization.
+DeepSeek-V4.1-Flash is trained on se-
+quences of up to one million tokens, with a substantial share of training occurring at ultra-long
+sequence lengths in both the pre-training and post-training stages. At these sequence lengths,
+multimodal samples create heavy I/O, CPU, and memory bottlenecks.
+• Balanced image sharding. During pre-training, a single ultra-long, image-dense sequence
+can exhaust one host’s I/O, CPU, and memory during loading, so the images of each
+sequence are sharded across the CP ranks with load balancing, and each image is loaded
+exactly once. With images read once, loading stays hidden behind compute whenever
+𝑁× 𝜌
+𝐵IO
+< 𝑁× 𝐶
+𝐵GPU
+⇐⇒
+𝜌<
+𝐵IO
+𝐵GPU
+𝐶,
+where 𝑁is the token count, 𝜌the raw bytes per token, 𝐶the per-token compute, and 𝐵IO,
+𝐵GPU the file-system and GPU bandwidths. Since 𝑁cancels, the criterion involves only per-
+token quantities (𝜌and 𝐶), independent of sequence length and cluster size; 𝜌is set by the
+vision-module configuration (e.g., the resolution cap or the spatial downsample). Storage
+throughput therefore becomes a bottleneck only for small models with low per-token
+compute, as in ablations, while production-scale models remain compute-bound.
+• Incremental image transfer. Besides the balanced sharding above, the reinforcement-
+learning rollout transfers images to the inference engine only incrementally, and caches
+the engine’s CPU-side decoding and preprocessing outputs on a distributed file system
+for reuse across rollouts and subsequent training.
+3.1.2. Attention Sharing Training for CSA2
+In Section 2.3, we introduce CSA2, an attention sharing method with three modes, some of which
+involve sharing one or more of the main KV, the indexer K, and the Top-K indices across multiple
+layers. Supporting CSA2 in large-scale distributed training requires additional coordination
+beyond the attention computation itself. In particular, layers that share attention components
+may be placed on different pipeline stages, making direct module reuse incompatible with
+conventional stage-local execution. Therefore, we adopt several designs to support CSA2
+training.
+Shadow indexers address this issue by placing a lightweight executable replica on each
+participating stage while retaining a single logical owner for the shared parameters. The owner
+remains responsible for optimization and checkpointing, whereas parameter synchronization
+17

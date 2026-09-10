@@ -1,0 +1,43 @@
+pre-training and autoregressive fine-tuning. During contrastive pretraining, we optimize the model
+using the sigmoid contrastive loss introduced by SigLIP (Zhai et al., 2023) on approximately 47B
+image-text pairs sourced from alt-text data. To efficiently learn visual representations from such
+massive datasets, we restrict the maximum input resolution to 224 × 224 pixels by downscaling
+larger images while preserving their aspect ratios. Although using higher resolutions in this
+phase yields notable gains, empirical results show that these benefits contribute little to the
+final model. Because the subsequent autoregressive stage specifically handles high-resolution
+extrapolation, scaling up resolutions during contrastive pretraining significantly increases
+computational overhead without much overall improvement. In the autoregressive fine-tuning
+stage, we connect the vision encoder to a 4B MoE LLM and train on 236B tokens across datasets
+including image captions, alt text, charts, and OCR, using a next-token prediction objective. This
+stage aims to enhance the encoder’s ability to model fine-grained visual features. We therefore
+constrain the input resolution between 544 × 544 and 1344 × 1344 pixels by proportionally scaling
+out-of-bound images. After this stage, we discard the LLM and retain only the optimized vision
+encoder for the subsequent pre-training pipeline, where the same input-resolution policy is
+maintained.
+4.3. Evaluations
+4.3.1. Evaluation Benchmarks
+We compare DeepSeek-V4.1-Flash-Base with its predecessor models DeepSeek-V4-Flash-Base
+and DeepSeek-V4-Pro-Base. We report benchmarks spanning five key dimensions: world
+knowledge, language understanding and reasoning, coding and mathematics, long context, and
+multimodal abilities.
+World knowledge benchmarks include AGIEval (Zhong et al., 2023), MMLU-Pro (Wang
+et al., 2024b), C-Eval (Huang et al., 2023), MultiLoKo (Hupkes and Bogoychev, 2025), SimpleQA-
+Verified (Haas et al., 2025) and SuperGPQA (Du et al., 2025)，
+Language understanding and reasoning benchmarks include BigBench Hard (BBH) (Suzgun
+et al., 2022), BigBench Extra Hard (BBEH) (Kazemi et al., 2025), DROP (Dua et al., 2019) and
+HellaSwag (Zellers et al., 2019),
+Coding and mathematical benchmarks include BigCodeBench (Zhuo et al., 2025), Hu-
+manEval (Chen et al., 2021), GSM8K (Cobbe et al., 2021), MATH (Hendrycks et al., 2021) and
+MGSM (Shi et al., 2023),
+Long context benchmark includes LongBench-V2 (Bai et al., 2025).
+Multimodal benchmarks include MMMU-Pro (Yue et al., 2025), DocVQA (Mathew et al.,
+2021), CVBench (Tong et al., 2024) and RefCOCO/RefCOCO+/RefCOCO-g (Kazemzadeh et al.,
+2014; Nagaraja et al., 2016; Mao et al., 2016; Yu et al., 2016).
+4.3.2. Evaluation Results
+In Table 1, we provide a detailed comparison of the base models for DeepSeek-V4-Flash,
+DeepSeek-V4-Pro and DeepSeek-V4.1-Flash, all evaluated under our internal evaluation frame-
+work using strictly controlled and reproducible settings. Compared with DeepSeek-V4-Flash-
+Base and DeepSeek-V4-Pro-Base, our latest base model reveals a compelling efficiency gain.
+DeepSeek-V4.1-Flash activates a substantially smaller number of parameters than DeepSeek-
+V4-Pro-Base and occupies a heavily-reduced KV cache, yet its performance is fully on par
+23

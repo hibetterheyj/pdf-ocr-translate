@@ -1,0 +1,53 @@
+Table 5 | Performance across Claude Code versions at Max reasoning effort.
+Benchmark (Metric)
+v2.1.105 v2.1.238 v2.1.251 v2.1.259 Average
+DeepSWE v1.1 (Resolved)
+68.4
+68.7
+69.8
+68.6
+68.9
+Terminal-Bench v2.1 (Pass@1)
+87.3
+88.4
+88.0
+87.6
+87.8
+Note. Average is computed from the unrounded Pass@1 scores of the four versions.
+• Claude Code (v2.1.105, v2.1.238, v2.1.251, v2.1.259). We use the Claude Agent SDK with each
+version’s native tool interface. Table 4 reports v2.1.251; Table 5 compares all four versions.
+• Codex (v0.147.0). We use standard app-server mode with adapted tool schemas.
+• OpenCode (v1.18.15). We use the build agent with shell and file tools, and native task
+delegation.
+• Pi (v0.84.2). We use RPC mode with file and shell tools plus a search extension exposing
+search, open_page, and find_in_page.
+• mini-SWE. We use the mini_swe_v2 port1 with a single bash tool, requiring a tool call each
+turn and a submission marker to finish.
+• DeepSeek Harness (DSH). We use Minimal with a single bash tool; Standard with the full
+sdk profile and 26 initial function tools, including web search and fetch; and PTC with
+run_code for TypeScript programs using 24 underlying tools. Standard and PTC use v0.1.1+
+custom.202609011522.
+B.2. Reasoning Efforts across Scaffolds
+Across all six panels in Figure 11, raising the reasoning-effort setting lengthens the trajectories:
+mean output tokens per trajectory grow monotonically with effort in every scaffold–benchmark
+pair. Pass@1 tracks this growth only loosely. It improves overall, but the response is not
+monotone, with plateaus and dips at intermediate settings in most panels. The three scaffolds
+are also calibrated differently: on DeepSWE v1.1, Claude Code is the flattest curve and spends
+comparatively few extra tokens, whereas DeepSeek Harness (Minimal) starts lowest and gains
+the most at the largest token cost, with mini-SWE in between. On Terminal-Bench v2.1 the
+three scaffolds are compressed into a narrow band, and the ordering at maximum effort favours
+DeepSeek Harness (Minimal), followed by mini-SWE and Claude Code: scaffold choice matters
+at least as much as the effort tier once the task is nearly saturated.
+B.3. Detailed Results of Reasoning Benchmarks across Reasoning Efforts
+Figure 12 shows that the reasoning-effort setting gives smooth, well-behaved control over both
+output length and accuracy, consistently across all eight benchmarks, which span competition
+mathematics, science QA, open-domain knowledge and code. On the length side, raising the
+effort from 25 to 100 scales the average response predictably on every benchmark – a uniform
+2.0–3.1× increase, from 4.6k to 11.4k tokens per response on AIME 2026 and from 29.1k to
+86.1k on MathArena Apex 2025 – with no runaway growth or anomalies, so the compute cost
+of any tier can be estimated in advance. Accuracy follows the same smooth trajectory and
+responds in the right direction on every benchmark, with no benchmark ever degrading as
+the effort increases: MathArena Apex 2025 gains +40.3 points (25.3%→65.6%) and Apex 2025
+Shortlist +11.5, while even the already-saturated benchmarks remain stable (GPQA Diamond
+1mini-swe-agent, commit 04d809ceab9d.
+48

@@ -1,0 +1,46 @@
+apply them responsibly, such as for defensive security research and vulnerability remediation.
+In the domain of visual agent tasks, DeepSeek-V4.1-Flash demonstrates robust capabilities,
+particularly in scenarios requiring visual reasoning and the analysis of complex professional
+charts. While it outperforms the leading open-source model Kimi-K3, we acknowledge that a
+measurable gap still remains when benchmarked against the leading closed-source alternatives.
+Beyond peak performance, DeepSeek-V4.1-Flash exposes a reasoning-effort setting that
+allows users to trade inference cost for accuracy in a controllable manner. As illustrated in
+Figure 9, both accuracy and output length increase steadily with the effort level across reasoning
+and agentic benchmarks alike. Raising the effort from 25 to 100 improves the average Pass@1 on
+eight reasoning-intensive benchmarks from 67.1% to 76.3%, on DeepSWE v1.1 from 66.0% to
+74.2%, and on Terminal-Bench 2.1 from 82.4% to 90.6%, at the cost of roughly 2.5× more output
+tokens. Notably, the effort control learned on single-response reasoning transfers faithfully
+to long-horizon agentic trajectories, where it governs the total amount of exploration and
+verification across turns. The gains are front-loaded: the 60–80 range already recovers most
+of the accuracy of the maximum setting at less than half of its token budget, whereas the final
+step to effort 100 lengthens agent trajectories by 1.6–1.8× for only marginal improvements. The
+maximum tier is thus best reserved for the most challenging tasks, while moderate effort levels
+offer a favorable cost–performance balance for everyday agentic use.
+5.3.3. Performance across reasoning efforts
+Figure 9 reports performance and average response length across a range of budget values. As
+the reasoning effort increases, the model produces progressively longer reasoning traces and
+accuracy improves monotonically on reasoning-intensive benchmarks and software engineering
+tasks, with the largest gains concentrated in the low-to-mid budget range and diminishing
+returns beyond. Although our RL involves only a limited number of effort levels, the use of
+scalar efforts achieves flexible, interpolated control of response length within a specific range.
+This allows practitioners to trade off quality against latency and token cost along a smooth
+continuum: latency-sensitive applications can operate at low effort with modest accuracy
+degradation, while difficult tasks can invoke high effort to recover the model’s full reasoning
+capability. In our public API service, we expose three preset effort levels that map onto this
+scale: low, high, and max correspond to effort values of 50, 75, and 100, respectively.
+5.3.4. Performance across agent scaffolds
+In practice, a model is rarely deployed within a single fixed agent framework; different scaffolds
+vary in their system prompts, tool definitions, context management strategies, and interaction
+protocols, and a model that overfits to one particular harness may degrade substantially when
+placed in another. To assess the robustness of our model to such variation, our comparison covers
+eight configurations from six scaffold families: Claude Code (Anthropic, 2026), Codex (Ope-
+nAI, 2026), OpenCode (Anomaly, 2026), Pi (Zechner, 2026), mini-SWE (Yang et al., 2024), and
+DeepSeek Harness (DSH) (DeepSeek-AI, 2026a) in Minimal, Standard, and PTC modes. For
+each scaffold, we keep the model checkpoint, decoding configuration, and task set identical, and
+only the surrounding harness, including its native system prompt, tool schema, and turn-taking
+logic, is changed. Table 4 reports performance at Max reasoning effort (100) on DeepSWE v1.1
+and Terminal-Bench v2.1.
+The model’s agentic capabilities transfer well across scaffold families with different prompts
+and tool interfaces, rather than depending on conventions specific to a particular harness.
+Its performance remains robust as the surrounding interaction protocol and tool abstractions
+34

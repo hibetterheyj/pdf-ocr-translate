@@ -1,0 +1,179 @@
+60
+80
+100
+120
+140
+Output tokens (k)
+0
+50
+100
+150
+200
+250
+Output tokens (k)
+75
+100
+125
+150
+175
+200
+225
+Output tokens (k)
+20
+30
+40
+50
+60
+Output tokens (k)
+0
+20
+40
+60
+80
+100
+Output tokens (k)
+30
+40
+50
+60
+70
+80
+90
+Output tokens (k)
+25
+40
+60
+80
+100
+Reasoning effort
+64
+65
+66
+67
+68
+69
+70
+71
+Pass@1 (%)
+DeepSWE v1.1
+Claude Code
+25
+40
+60
+80
+100
+Reasoning effort
+55
+60
+65
+70
+75
+Pass@1 (%)
+DeepSWE v1.1
+DeepSeek Harness
+(Minimal)
+25
+40
+60
+80
+100
+Reasoning effort
+64
+66
+68
+70
+72
+74
+76
+Pass@1 (%)
+DeepSWE v1.1
+mini-SWE
+25
+40
+60
+80
+100
+Reasoning effort
+78
+80
+82
+84
+86
+88
+90
+Pass@1 (%)
+Terminal-Bench v2.1
+Claude Code
+25
+40
+60
+80
+100
+Reasoning effort
+80
+82
+84
+86
+88
+90
+92
+94
+Pass@1 (%)
+Terminal-Bench v2.1
+DeepSeek Harness
+(Minimal)
+25
+40
+60
+80
+100
+Reasoning effort
+82
+84
+86
+88
+90
+92
+94
+Pass@1 (%)
+Terminal-Bench v2.1
+mini-SWE
+Avg Pass@1
+Avg output tokens
+Figure 11 | Reasoning effort drives trajectory length consistently but correlates only weakly with
+accuracy across coding scaffolds. Each panel plots Pass@1 (%, solid, left axis) and mean output
+tokens per trajectory (k, dashed, right axis) against the reasoning-effort setting, for DeepSWE
+v1.1 (top row) and Terminal-Bench v2.1 (bottom row) under three agent scaffolds: Claude Code,
+DeepSeek Harness (Minimal) and mini-SWE. All panels come from the same checkpoint.
++1.3, LiveCodeBench +2.6), and AIME 2026 reaches a full 100%. The model thus exposes a single,
+reliable knob that moves the cost–accuracy operating point in a controlled and predictable way,
+allowing each deployment to select the effort tier that matches its latency and compute budget
+without sacrificing accuracy.
+C. Exponential Token Penalty in Reasoning Effort Control
+The scalar effort variable provides a deployment-time control over the cost–quality trade-off
+without imposing a hard token budget. During reinforcement learning, lower effort levels apply
+a stronger token penalty, whereas higher effort levels permit more computation. This section
+gives a simplified motivation for the exponential penalty schedule.
+For a trajectory with ℓreasoning tokens generated at effort level 𝑏, the length deduction is
+𝑟len(ℓ, 𝑏) = −min
+
+𝐶max, 𝑘(𝑏)
+ℓ
+𝐿norm
+
+,
+(11)
+where 𝐿norm is a reference length and 𝐶max caps the deduction. The effort-dependent token-
+penalty coefficient is
+𝑘(𝑏) = 𝑘0 exp
+
+−𝑏−𝑏min
+𝜏
+
+,
+(12)
+where 𝑘0 is the penalty coefficient at the lowest effort level 𝑏min and 𝜏controls the rate of penalty
+decay.
+To motivate this choice, consider a fixed problem 𝑥. Let 𝑝𝑥(ℓ) denote its probability of being
+solved after ℓreasoning tokens. In the uncapped region, define the preferred reasoning length
+49

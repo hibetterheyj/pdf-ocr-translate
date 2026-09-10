@@ -1,0 +1,61 @@
+\subsection{3. General Infrastructures}\label{general-infrastructures}
+
+\subsection{3.1. Training Infrastructure}\label{training-infrastructure}
+
+\subsection{3.1.1. Multimodal Training Infrastructure}\label{multimodal-training-infrastructure}
+
+对比学习中的通信-计算重叠。视觉编码器首先以对比目标进行优化，随后再用生成式下一 token 预测损失进行微调。在对比阶段，损失是在一整批文本-视觉配对样本上计算的，因此两种模态的特征都必须跨数据并行 rank 做 all-gather，产生可观的通信量。由于文本特征的梯度只依赖于汇聚得到的视觉特征，并且对称地，视觉特征的梯度也只依赖于汇聚得到的文本特征，因此每个 all-gather 都可以与前向或反向传播重叠，而不是拖住整条流水线：
+
+\[
+\begin{array} { r l } { \mathrm { F o r w a r d } ( V ) ~ \to ~ \left( \mathrm { F o r w a r d } ( T ) ~ \lVert ~ \mathrm { A l l G a t h e r } ( V ) \right) ~ \to ~ \nabla _ { \mathrm { T e x t } } } & { } \\ { \to ~ \left( \mathrm { B a c k w a r d } ( T ) ~ \lVert ~ \mathrm { A l l G a t h e r } ( T ) \right) ~ \to ~ \nabla _ { \mathrm { V i s i o n } } ~ \to ~ \mathrm { B a c k w a r d } ( V ) , } \end{array}
+\]
+
+其中 $V$ 和 $T$ 分别表示视觉与文本特征，
+\(\left( A \parallel C \right)\) 表示计算 $A$ 与通信 \(C\) 的重叠，$\nabla$ 表示梯度计算。在这种调度下，视觉特征在文本前向传播期间被汇聚，文本特征在文本反向传播期间被汇聚，从而两个 all-gather 都完全隐藏在有效计算之后。
+
+
+
+端到端并行。为处理视觉编码器与 LLM 之间的模型和数据异构性（Zhang et al., 2025b），我们采用了近期训练系统中使用的解耦编码器设计（Team et al., 2025, 2026b）。视觉编码器在 LLM 参数树之外进行复制，每个训练步骤被划分为三个阶段：视觉编码器前向、LLM 前向/反向，以及视觉编码器反向。这种分离避免了视觉编码器与 LLM 计算之间的相互干扰。负载均衡的视觉处理被限制在第一和最后一个阶段，而 LLM 阶段不包含视觉计算，从而保留了纯文本训练的并行策略。
+
+长序列多模态训练优化。DeepSeek-V4.1-Flash 在最长包含一百万个 token 的序列上训练，其中相当一部分训练发生在预训练和后训练阶段的超长序列上。在这些序列长度下，多模态样本会带来严重的 I/O、CPU 和内存瓶颈。
+
+• 均衡图像分片。在预训练期间，一条超长的、图像密集的序列在加载时就可能耗尽单个主机的
+\(\mathrm { I } / \mathrm { O } ,\) CPU 和内存，因此每条序列中的图像都以负载均衡的方式分片到各 CP rank 上，并且每张图像只加载一次。由于图像只读取一次，只要满足以下条件，加载即可被计算完全掩盖：
+
+\[
+\frac { N \times \rho } { B _ { \mathrm { I O } } } < \frac { N \times C } { B _ { \mathrm { G P U } } } \quad \Longleftrightarrow \quad \rho < \frac { B _ { \mathrm { I O } } } { B _ { \mathrm { G P U } } } C ,
+\]
+
+其中 $N$ 是 token 数，$\rho$ 是每个 token 的原始字节数，$C$ 是每个 token 的计算量，而 \(B _ { \mathrm { I O } }\)
+\(B _ { \mathrm { G P U } }\) 分别是文件系统与 GPU 的带宽。由于 $N$ 会被约去，该判据只涉及每 token 的量（$\rho$ 和 $C$），
+与序列长度和集群规模无关；$\rho$ 由视觉模块的配置决定（例如分辨率上限或空间降采样）。因此，存储吞吐只在每 token 计算量较低的小模型上成为瓶颈，例如在消融实验中，而生产级模型仍保持计算受限。
+
+• 增量式图像传输。除上述均衡分片外，强化学习（reinforcement-learning）rollout 只将图像增量式地传输到推理引擎，并把引擎 CPU 侧的解码与预处理输出缓存在分布式文件系统上，以便在多次 rollout 以及后续训练中复用。
+
+\subsection{3.1.2. 面向 CSA2 的注意力共享训练}\label{attention-sharing-trainingfor-csa2}
+
+在第 2.3 节中，我们介绍了 CSA2——一种具有三种模式的注意力共享方法，其中某些模式涉及跨多个层共享主 KV、索引器 K 和 Top-K 索引中的一个或多个。在大规模分布式训练中支持 CSA2，除了注意力计算本身之外，还需要额外的协调。特别是，共享注意力组件的层可能被放置在不同的流水线阶段，这使得直接复用模块与常规的阶段局部执行不兼容。因此，我们采用了多种设计来支持 CSA2 训练。
+
+影子索引器通过在每个参与阶段放置一个轻量的可执行副本，同时为共享参数保留单一逻辑所有者，来解决上述问题。所有者仍负责优化和检查点保存，而参数同步与梯度聚合使各影子副本在整个训练过程中保持一致。这一设计保留了原始模型语义，同时无须让流水线调度器把共享层当作特殊的执行单元。
+
+
+
+流水线载荷扩展：当源层与消费层跨越流水线边界时，为其下游消费者提供所需的中间表示和稀疏路由信息。这些状态被并入现有的点对点通信路径，并与上下文并行保持一致地分区，从而在维持相应梯度流的同时避免不必要的复制。
+
+微批级共享状态管理跟踪与并发活跃的流水线微批相关联的状态，并协调这些状态在前向执行、激活重计算和反向传播中的生命周期。共享状态会一直保留到其最终消费者完成之后才被及时释放，以限制额外的内存开销。同一套运行时抽象还处理阶段放置与源-消费层关系，使注意力实现无须依赖物理流水线布局即可访问共享状态。
+
+结合对优化器、检查点保存、预热和计算图追踪流程的轻量适配，这些机制使 CSA2 能够在既有分布式训练接口和流水线调度下透明地运行。
+
+\subsection{3.1.3. Engram}\label{engram-1}
+
+Engram 嵌入表按行分区，分布到 engram 并行大小的专用进程组上。组大小控制着每设备内存占用与嵌入查找通信范围之间的权衡。优化器状态进一步被分片到每个表分区的副本上。Engram 查找索引仅取决于输入的 token 序列。因此，在每个流水线阶段开始为当前训练步骤处理微批之前，就会为整个本地批次发起嵌入预取，从而最大限度地减少对流水线执行的干扰。嵌入梯度在反向传播期间被缓冲，并在骨干网络反向传播之后返回给其所属的 rank。为了实现与多模态训练的高效集成，嵌入预取和梯度传输被调度为与视觉编码器的前向和反向计算重叠。嵌入以 FP8 格式存储和读取，取回的值和缩放因子直接传递给后续的 GEMM。对于 Engram 表更新，Sinkhorn 归一化会在各迭代之间维护行和列的缩放向量，以避免重复写入完整的归一化矩阵。行归一化与部分列统计的累加被融合到单个 kernel 中，以进一步减少内存访问量。在 RL rollout 期间，Engram 嵌入表常驻 GPU 内存。这种放置方式降低了主机内存压力，并有助于避免由主机内存碎片化导致的内存不足故障。
+
+\subsection{3.2. 推理系统}\label{inference-system}
+
+DeepSeek-V4.1-Flash 将推理效率作为首要考量来设计。尽管其架构在概念上较为复杂，但最终形成的推理 kernel 流程却异常简洁。通过合理的 kernel 融合，我们将这些复杂运算封装进少数几个融合 kernel 中，使硬件资源在这些 kernel 内部保持完全流水化——包括 FlashMLA（Li and Liu, 2025）中的 fused-RoPE-attention-RoPE-cast kernel、DeepGEMM（Zhao et al., 2025）中的 Mega-Gate、Mega-mHC 和 Mega-MoE kernel、TileKernels（Wang et al., 2026a）中的各 kernel，以及 DeepSelect（Qian et al., 2026）中的 TopK kernel。因此，绝大多数
+
+
+
+Transformer 层——即 CSA2 以 Reuse 模式运行的层——在预填充阶段只需 15 个 kernel、在解码阶段只需 11 个 kernel 即可执行，从而同时实现高吞吐与低延迟推理。
+
+在部署层面，我们采用编码器-预填充-解码（EPD）解耦架构，使视觉编码、预填充和解码能够独立扩展并重叠执行。

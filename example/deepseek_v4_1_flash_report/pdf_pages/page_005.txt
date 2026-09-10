@@ -1,0 +1,36 @@
+Figure 2 | Single-token Decode FLOPs versus context length across generations of DeepSeek
+models. We account for compute precision by weighting BF16, FP8, and FP4 operations by 1, 0.5,
+and 0.25, respectively. DeepSeek-V4.1-Flash maintains nearly constant Decode FLOPs as context
+length increases, substantially reducing the computational cost of long-context scenarios.
+caching reduce global KV cache storage to approximately 1/4 of that of DeepSeek-V4-Flash, as
+shown in Figure 1(b). At the deployment level, DeepSeek-V4.1-Flash, like DeepSeek-V4, uses
+Sliding-Window Attention (SWA) in every layer. In DeepSeek-V4, we use a hybrid strategy
+to balance the storage cost of persisting SWA KV caches against the computation required for
+exact reconstruction. Exact reconstruction requires replaying the most recent 𝐿× 𝑛win tokens,
+where 𝐿is the number of layers and 𝑛win is the SWA window size. In DeepSeek-V4.1-Flash,
+we introduce SWA Bounded Replay, which approximately reconstructs the required SWA KV
+states by replaying only the most recent 𝑛win tokens. Our experiments show that this incurs
+only negligible performance degradation. This finding establishes a new storage–computation
+trade-off, allowing us to avoid persisting SWA KV cache to SSD while incurring a small amount
+of prefill recomputation. With SWA Bounded Replay, the persistent KV cache footprint is further
+reduced to approximately 1/8 of that of DeepSeek-V4-Flash. Together, these optimizations
+greatly ease pressure on HBM and SSD capacity, reduce deployment costs, and pave the way for
+deployment at a larger scale.
+Complementing CED and CSA2, we further streamline the original DeepSeek-V4 architecture.
+Additionally, we upgrade the original mHC (Xie et al., 2026) design to Single-Pass mHC, with an
+accompanying Mega-mHC deployment kernel that halves activation memory traffic relative to
+the original four-kernel implementation. Furthermore, we integrate the Engram (Cheng et al.,
+2026b) conditional memory module to strengthen model capabilities. We also introduce the
+DSpark (Cheng et al., 2026a) speculative decoding architecture to improve decoding efficiency
+through semi-autoregressive draft generation and confidence-scheduled verification. With all
+the architectural improvements combined, the single-token Decode FLOPs of DeepSeek-V4.1-
+Flash remain nearly constant across context lengths. Figure 2 shows that extending the context
+length 256-fold, from 4K to 1M, increases its Decode FLOPs by only 1/4, significantly less than
+the growth observed for DeepSeek-V4-Flash.
+To fully realize the KV cache compression benefits of these architectural designs and further
+improve training and inference efficiency, we systematically co-optimize the training infrastruc-
+ture and inference system for DeepSeek-V4.1-Flash, ensuring efficient and scalable large-scale
+multimodal training and long-context deployment. Training infrastructure supports disaggre-
+gated vision-encoder execution, balanced image sharding for long sequences, and cross-stage
+shared-state management for attention reuse. The inference system implements Encoder and De-
+5

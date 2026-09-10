@@ -1,0 +1,6 @@
+effort instruction can directly change the reasoning strategy, generation is stochastic, agent
+trajectories contain different numbers of turns, and subgroup reward normalization changes
+optimization strength. The analysis also assumes an interior solution for which the penalty cap
+is inactive. Once the cap is reached, the marginal token penalty becomes zero and the capped
+region must be considered separately.
+51

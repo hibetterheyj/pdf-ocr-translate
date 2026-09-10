@@ -1,0 +1,92 @@
+Full Mode
+Main
+KV
+Main
+Q
+Indexer
+K
+Indexer
+Q
+SWA
+KV
+Attention
+Output
+Indexer
+Selection
+Selected
+Main KV
+Top-K
+Indices
+Concatenation
+Core Attention
+Reindex Mode
+Main
+KV
+Main
+Q
+Indexer
+K
+Indexer
+Q
+SWA
+KV
+Attention
+Output
+Indexer
+Selection
+Selected
+Main KV
+Top-K
+Indices
+Concatenation
+Core Attention
+Reuse Mode
+Main
+KV
+Main
+Q
+SWA
+KV
+Attention
+Output
+Selection
+Selected
+Main KV
+Concatenation
+Core Attention
+Top-K
+Indices
+Figure 4 | Three operating modes of CSA2. The modes differ in how they obtain main KV,
+indexer K, and Top-K indices. Green blocks indicate quantities computed in the current layer;
+yellow blocks indicate main KV and indexer K reused from the most recent Full Mode layer;
+while red blocks indicate Top-K indices reused from the most recent index-producing (Full or
+Reindex Mode) layer. All three modes compute main Q and SWA KV in the current layer.
+KV storage, network-wide routing sharing limits performance, and hybrid designs still retain
+full attention layers; more importantly, none of these methods covers all three multiplicative
+dimensions.
+CSA2 exploits the three dimensions jointly: it shares main KV and indexer K across layers
+and allows layers to reuse Top-K indices, with cache sharing and index reuse decoupled. It
+combines these reuse strategies with a simplified compressor and a Hierarchical Sparse Indexer
+that narrows the search domain of subsequent indexing layers in the Decoder.
+Similar to CSA, CSA2 includes a lightweight indexer that scores the main KV entries using
+indexer Q and indexer K and selects the Top-K entries for each query. Each Q attends to the
+selected entries together with the layer-local sliding-window KV (SWA KV). CSA2 also includes
+the uncompressed main KV setting as a special case with a compression ratio of 1. Meanwhile,
+CSA2 simplifies both the compressor and the indexer. In CSA, a compression ratio of 𝑚produces
+each main KV entry from 2𝑚original KV cache entries, with overlapping source entries for
+adjacent compressed entries. It also includes absolute positional embedding to encode the
+positions of these 2𝑚entries during compression. CSA2 removes this overlap and absolute
+positional embedding. In addition, CSA2 obtains indexer K by projecting main KV entries,
+replacing CSA’s separate compression path from hidden states. Both designs simplify the
+implementation and increase the training efficiency.
+Sections 2.3.1 and 2.3.2 describe the cross-layer reuse strategies and the Hierarchical Sparse
+Indexer, respectively.
+2.3.1. Cross-Layer KV and Index Reuse
+Each CSA2 layer is statically assigned one of three modes: Full, Reindex, or Reuse. In all three
+modes, the layer computes its own query and SWA KV and uses them together with the selected
+main KV entries to produce a new attention output. The modes differ in how they obtain main
+KV, indexer K, and Top-K indices. Figure 4 illustrates the three modes.
+Full Mode. The layer computes its own main KV and indexer Q, projects indexer K from
+that main KV, and runs the indexer to produce fresh Top-K indices. It therefore executes the
+complete CSA2 computation path and has the same component responsibilities as a complete
+10

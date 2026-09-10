@@ -1,0 +1,47 @@
+address complementary costs of long-context inference. CED constructs the decoder’s global
+key-value (KV) cache from encoder outputs, allowing most prompt tokens to bypass full decoder
+computation while retaining layer-local sliding-window attention. This nearly halves prefill
+computation, lowering the cost of processing new or uncached inputs in agentic workloads
+with growing contexts. CSA2 shares global KV across layers to reduce cache storage and reuses
+sparse selections to reduce indexing work. In the decoder, a Hierarchical Sparse Indexer restricts
+later indexers to a candidate pool selected by an earlier indexer, further reducing the number of
+entries scored per query.
+We retain the shared and fine-grained routed experts of DeepSeekMoE (Dai et al., 2024), and
+introduce modality-specific load balancing (Wang et al., 2024a) for image and text tokens. Single-
+Pass mHC (Xie et al., 2026) revises residual-stream mixing to enable more efficient kernel fusion,
+and Engram (Cheng et al., 2026b) adds sparsely accessed conditional memory. We omit the
+MTP module during backbone pre-training and use DSpark (Cheng et al., 2026a) for speculative
+decoding. We train DSpark separately after the backbone pre-training stage. Additionally, we
+compress the main KV cache to FP4 to further reduce storage overhead. The following sections
+describe these components and the corresponding optimization changes.
+2.1.1. Multimodal Architecture
+The multimodal input pathway comprises a vision encoder and an MLP projector. For each
+input image, the vision encoder produces a spatial grid of visual features. A 3 × 3 pixel-
+unshuffle operation then rearranges each local neighborhood along the channel dimension,
+reducing the spatial resolution before the MLP projector maps the features to the hidden
+dimension of the language backbone. Finally, the resulting visual embeddings are inserted at the
+corresponding image-token positions in the input embedding sequence and processed jointly
+with text embeddings by the language backbone.
+DeepSeek-ViT
+We train a vision encoder named DeepSeek-ViT from scratch to natively
+process images at varying resolutions. We build DeepSeek-ViT on the Vision Transformer (Doso-
+vitskiy et al., 2021) architecture with several modifications. To accommodate inputs of arbitrary
+resolutions, we replace standard absolute positional embeddings with 2D-RoPE. To align the
+ViT more closely with LLM design principles, we replace the patch embedding layer’s convolu-
+tion with a linear projection to ensure compatibility with the Muon optimizer. We also adopt
+RMSNorm (Zhang and Sennrich, 2019) for normalization and SwiGLU (Shazeer, 2020) as the
+activation function. Before feeding visual features into the LLM, we apply a pixel-unshuffle op-
+eration with 3 × 3 downsampling to reduce the visual token count by a factor of nine, effectively
+supporting input resolutions up to approximately 1344 × 1344 pixels.
+Multimodal Auxiliary-loss-free Load Balancing for MoEs
+Image and text tokens exhibit
+distinct representation distributions and may induce different expert-routing preferences in
+MoEs. Balancing their aggregate load may therefore obscure modality-specific imbalance.
+To address this issue, we extend auxiliary-loss-free load balancing (Wang et al., 2024a) by
+maintaining separate expert-wise correction biases for text and image tokens. During routing,
+each token uses the correction biases associated with its modality for expert selection, while
+the original routing scores are retained for weighting the selected expert outputs. After each
+training step, the two sets of biases are updated independently according to their respective
+expert loads. This design balances expert utilization within each modality and contributes to
+stable and efficient multimodal training.
+8

@@ -1,0 +1,64 @@
+Muon update. Here, we briefly discuss the motivation for such a design. By viewing Muon as a
+preconditioned gradient descent, vanilla Muon uses one preconditioner for all heads, whereas
+head-wise Muon provides different preconditioners for different heads. This design can better
+handle the heterogeneity across attention heads (Zhang et al., 2024; Zhang, 2026, Section 3). As a
+result, we observe that head-wise Muon outperforms vanilla Muon. The empirical advantage of
+head-wise Muon is also validated in GLM 5 (Zeng et al., 2026) and Kimi-K3 (Team et al., 2026a).
+Second, applying Adam to the newly introduced Engram parameters substantially increases
+the optimizer-state memory footprint. To reduce memory usage during training, we instead opti-
+mize the Engram embedding tables, token embedding, and prediction head using a momentum-
+based update followed by Sinkhorn balancing. Sinkhorn balancing has previously been applied
+to linear-layer weight matrices in SinkGD (Scetbon et al., 2025); here, we extend it to these
+large parameter matrices. Like Muon, this approach requires only a momentum buffer while
+empirically outperforming Adam.
+Basic Configurations.
+We retain AdamW (Loshchilov and Hutter, 2019) for normalization-
+layer weights and other non-matrix parameters, including biases and scaling factors. We use
+Muon (Jordan et al., 2024) for the weight matrices of linear transformations in the language-
+model backbone, the Engram projection layers, and the vision-language projector. We use
+head-wise Muon for Query and Key weights. We apply decoupled weight decay and Nesterov
+momentum to Muon (Nesterov, 1983; Liu et al., 2025); normalization-layer weights are also
+subject to weight decay, whereas biases and scaling factors are not. The Sinkhorn-balanced
+update also uses Nesterov momentum but does not apply weight decay. During pre-training, we
+keep the vision encoder frozen until the learning-rate decay stage, while its final normalization
+layer and the vision–language projector remain trainable. At the onset of learning-rate decay, we
+unfreeze the vision encoder and optimize it jointly with the LLM with a smaller learning rate.
+Sinkhorn-Balanced Updates for Engram / Embedding / Prediction Head.
+The complete
+procedure is summarized in Algorithm 1. At a high level, it follows the same workflow as Muon,
+with Sinkhorn balancing taking the place of Newton–Schulz orthogonalization. We denote the
+larger matrix dimension by 𝑚, which corresponds to the vocabulary size for embedding tables
+and prediction heads, and denote the hidden dimension by 𝑛.
+Given the Nesterov momentum update b
+𝐺𝑡, Sinkhorn balancing finds diagonal scaling matri-
+ces 𝐷𝑟and 𝐷𝑐such that
+Δ𝑡= √
+𝑛𝑈(𝐾) = √
+𝑛𝐷𝑟b
+𝐺𝑡𝐷𝑐,
+1
+𝑛
+𝑛
+∑︁
+𝑗=1
+(Δ𝑡)2
+𝑖𝑗≈1,
+1
+𝑚
+𝑚
+∑︁
+𝑖=1
+(Δ𝑡)2
+𝑖𝑗≈1,
+(7)
+Thus, the procedure approximately equalizes the row-wise and column-wise RMS of the update
+matrix. Here, one row corresponds to one token index or n-gram identity; and one column
+encodes one hidden feature. Sinkhorn balancing exploits this token–feature structure by nor-
+malizing along both rows and columns. For numerical stability, rows satisfying 𝜌𝑖⩽𝜏¯𝜌are
+masked. The factor √𝑛converts unit row ℓ2 norm into unit row-wise RMS. Separately, we adjust
+the effective learning rate as e𝜂𝑡= 𝛾𝜂𝑡to match the update magnitude of Adam. We set 𝛾= 0.18,
+which is close to the factor 0.2 used in Moonlight (Liu et al., 2025).
+More broadly, Sinkhorn balancing is closely related to optimizers that exploit matrix or
+tensor axis structure (Shazeer and Stern, 2018; Zhang et al., 2025a; Wen et al., 2025; Glentis et al.,
+2025; Deng et al., 2026; Yuan et al., 2026; Xu et al., 2026a). For example, Adafactor (Shazeer and
+15

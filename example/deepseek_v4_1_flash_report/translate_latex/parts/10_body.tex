@@ -1,0 +1,158 @@
+\subsection{5.2.3. 性能优化}\label{performance-optimization}
+
+在我们的异步强化学习(RL)框架中，rollout 阶段会周期性中断，以便切换到更新后的策略
+checkpoint。我们的目标是让这一过程尽可能无缝：中断应当近乎瞬时完成，被中断的 rollout
+应当像从未停止过一样继续。
+
+为了快速停止 rollout,我们支持 token 级中断：生成可以在任意 token 边界停止。一旦收集到
+足够的训练数据，所有在途样本几乎会立即停止，使系统能够毫无延迟地进入训练阶段。
+
+为了在切换 checkpoint 时保留 rollout 进度，在生成过程中，我们会将 KV 缓存、专家路由
+等 rollout 状态按 token 粒度持久化。用新 checkpoint 恢复时，直接复用已持久化的状态，省去
+重新预填充的开销，并让被中断的样本从断点处精确继续。由于这要求保留所有在途样本的状态，
+我们进行按样本粒度执行垃圾回收，一旦某个样本完成就释放其状态。
+
+除了切换 checkpoint 之外，同一套"快速中断、无缝恢复"机制还能让训练任务在收到集群调度
+抢占信号时及时响应而不丢失进度，从而提升整体集群利用率。
+
+\subsection{5.2.4. 大规模同策略蒸馏}\label{large-scale-on-policy-distillation}
+
+作为后训练的最后一个阶段，最终的全词表同策略蒸馏(OPD)任务使用 40 多个教师模型，在
+所有领域的数据集上进行训练，并同样采用异步生成来提升 rollout 效率。由于各领域的训练流程
+存在差异，每个领域的最佳教师可能来自模型开发的不同阶段。此外，教师模型彼此之间、以及
+教师与学生之间的架构也可能不同。我们的后训练基础设施能很好地适配这种设置，支持以几乎
+不受限数量的架构异构教师进行全词表同策略蒸馏(OPD),并能在它们之间以几乎为零的成本
+高效切换 (DeepSeek-AI, 2026b)。
+
+
+
+OPD 阶段还要求训练过程中能够动态重配置。我们会持续跟踪模型能力，并相应调整训练配方，
+包括数据集混合配比、每个数据集的并发上限以及当前启用的教师集合。在同步训练中，rollout
+批次提供了明确的配置边界，这类变更很容易实现。然而在异步场景下，不同配置下生成的样本
+可能同时在途。我们的基础设施支持在配置之间进行一致的切换，而不会中断 rollout 或训练。
+
+\subsection{5.3. 评测}\label{evaluation}
+
+\subsection{5.3.1. 评测设置}\label{evaluation-setup}
+
+我们的后训练评测主要聚焦于推理和智能体能力，而偏知识密集型的表现主要由预训练决定，
+已在表 1 中报告。在推理方面，我们在 GPQA Diamond (Rein et al., 2023)、Humanity's Last
+Exam (Phan et al., 2025)、Codeforces(内部基准)以及 MathArena Apex (Dekoninck et al.,
+2025) 上进行评测，采用温度为 1.0、top-$p$ 为 1.0。在智能体能力方面，我们从四个类别
+进行评估：
+
+• 代码智能体： Terminal-Bench 2.1 (Merrill et al., 2026), Terminal-Bench
+3.0 (Marten et al., 2026b), Terminal-Bench 4.0 (Marten et al., 2026a),
+DeepSWE v1.1 (DataCurve, 2026), ProgramBench (Yang et al., 2026),
+NL2Repo-Bench (Ding et al., 2025)。
+
+• 网络安全： SEC-Bench Pro version 260505 (Lee et al., 2026)、CyberGym
+(Wang et al., 2026c) 和 ExploitGym (Wang et al., 2026b)。
+
+• 通用智能体： AutomationBench v1.0.6 的公开评测集 (Shepard and
+Salimans, 2026)、Agents' Last Exam (Sun et al., 2026a) (ALE-CLI)。
+
+• 视觉智能体： Chartography (Garre et al., 2026)、BabyVision (Chen et
+al., 2026)、ZeroBench 主测试集 (Roberts et al., 2025)。
+
+对于代码智能体，我们使用 DeepSeek Harness 的 Minimal 模式评测 DeepSeek-V4.1-Flash,
+上下文窗口为 1M token,温度设为 1.0,top-p 设为 0.95。为与官方设置要求保持一致，
+DeepSWE v1.1 采用 mini-SWE 脚手架评测。对于 SEC-Bench Pro,我们使用 Claude Code
+脚手架，专门利用其会话精简(session compact)设计。对于视觉智能体任务，我们使用
+Claude Code 脚手架评测，上下文窗口为 512k token,温度设为 1.0,top-p 设为 0.95。
+Agents' Last Exam 和 AutomationBench 使用各自的官方脚手架评测。使用其他编码脚手架时
+的模型表现见表 4。
+
+为降低代码智能体评测中的奖励黑客(reward hacking)风险，我们限制环境的网络访问，并移除
+Git 历史。此外，我们会在各种环境中自动清除临时的构建与包缓存，包括 Go 模块缓存
+(go/mod)、node modules 依赖产物、编译后的 .jar 文件以及 Python pycache 目录。尽管
+采取了这些预防措施，我们仍然观察到测试中出现钻框架漏洞的行为——例如反编译 Ubuntu
+Linux 核心软件包以寻找 CyberGym 中的漏洞。随着模型能力不断增强，标准评测基础设施
+(如 Docker 容器和验证脚本)更容易被模型钻空子。我们呼吁更广泛的研究社区在设计下一代
+基准时，优先关注对这些行为的检测与缓解。
+
+
+
+\subsection{5.3.2. 评测结果}\label{evaluation-results-1}
+
+表 3 \textbar{} DeepSeek-V4.1-Flash 与闭源/开源模型的对比。† 表示 HLE 的纯文本子集。
+最佳结果用粗体标注；次佳结果用下划线标注。
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}llllllll@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+ & \shortstack{Opus-5} & \shortstack{GPT-5.6\\Sol} & \shortstack{K3} & \shortstack{GLM-5.3} & \shortstack{DS-V4-\\Pro} & \shortstack{DS-V4-Flash} & \shortstack{DS-V4.1-\\Flash} \\
+ & Max & Max & Max & Max & Max & Max & Max \\
+\multicolumn{8}{l}{Reasoning} \\
+GPQA Diamond (Pass@1) & \underline{93.4} & \textbf{94.1} & 92.9 & 88.1 & 92.4 & 89.9
+& 90.9 \\
+HLE (Pass@1) & \textbf{56.3} & \underline{44.5} & 43.5 & 42.0† & 42.7† & 37.8† & 36.8
+(39.1†) \\
+Codeforces (Rating) & - & - & - & - & \underline{3348} & 3289 & \textbf{3471} \\
+MathArena Apex (Pass@1) & - & - & \textbf{65.6} & - & \underline{65.3} & 58.6 &
+\textbf{65.6} \\
+\multicolumn{8}{l}{Agentic} \\
+Terminal-Bench 2.1 (Pass@1) & \underline{89.1} & 88.8 & 88.3 & 88.2 & 87.9 & 82.7 &
+\textbf{90.6} \\
+Terminal-Bench 3.0 (Pass@1) & \textbf{43.3} & \underline{34.4} & 17.7 & 28.3 & 11.8 & 7.6 &
+30.0 \\
+Terminal-Bench 4.0 (Pass@1) & \textbf{51.8} & \underline{39.9} & 12.6 & 37.9 & 12.4 & 7.0 &
+31.2 \\
+DeepSWE v1.1 (Resolved) & \underline{74.0} & 73.0 & 67.5 & 66.9 & 62.7 & 54.4 &
+\textbf{74.2} \\
+ProgramBench (Almost@1) & \textbf{37.0} & \underline{23.0} & 17.5 & 19.0 & 15.5 & - & 20.3 \\
+NL2Repo-Bench (Score) & \textbf{75.3} & 56.8 & 58.0 & 58.0 & 61.5 & 54.2 &
+\underline{65.4} \\
+CyberGym (Pass@1) & - & \underline{84.5} & 80.0 & \underline{84.5} & 83.3 & 76.7 & \textbf{88.1} \\
+SEC-Bench Pro (Pass@1) & - & \textbf{74.3} & - & - & 56.4 & 30.9 & \underline{62.8} \\
+ExploitGym (Pass@1) & \underline{22.1} & \textbf{33.7} & - & 15.0 & 5.4 & 1.8 &
+15.3 \\
+HLE w/ tools (Pass@1) & \underline{63.6} & - & 59.8 & 62.5 & 60.0 & 51.5 & \textbf{63.9} \\
+Automation-Bench (Pass@1) & \underline{50.3} & 45.8 & 46.7 & 48.8 & 43.2 & 37.7 &
+\textbf{54.8} \\
+Agents\textquotesingle{} Last Exam(Pass@1) & \underline{28.6} & 26.7 & 27.6 & 28.5 &
+25.7 & 25.2 & \textbf{31.8} \\
+Chartography w/ tools (Pass@1) & \textbf{84.0} & \underline{79.9} & 68.1 & - & - & - & 78.9 \\
+BabyVision w/ tools (Pass@1) & \textbf{94.1} & 88.9 & 85.7 & - & - & - & \underline{89.6} \\
+ZeroBench-main w/ tools (Pass@5) & \underline{52.0} & \textbf{53.0} & 41.0 & - & - & - & 49.0 \\
+\end{longtable}
+}
+
+如表 3 所示，DeepSeek-V4.1-Flash 与其前代 DeepSeek-V4-Flash 相比，在推理和智能体
+基准上均有显著提升，同时达到或超越顶级开源与闭源模型。
+
+在核心推理任务上，DeepSeek-V4.1-Flash 的 Codeforces 评级达到 3471,超越
+DeepSeek-V4-Flash (3289) 和 DeepSeek-V4-Pro (3348)。在 MathArena Apex 上，它取得
+65.6\% 的 Pass@1 准确率，与表现最佳的开源基线 Kimi-K3 (65.6\%) 和
+DeepSeek-V4-Pro (65.3\%) 完全持平。此外，其 GPQA Diamond 得分达到 90.9\%,较
+DeepSeek-V4-Flash (89.9\%) 稳步提升。
+
+在智能体任务上，性能提升更为显著。值得注意的是，在 DeepSWE v1.1 上，DeepSeek-V4.1-Flash
+达到 74.2\% 的通过率，较 DeepSeek-V4-Flash (54.4\%) 有大幅跃升，并超越
+Opus-5 (74.0\%)、GPT-5.6 Sol (73.0\%) 等领先闭源模型。在 Terminal-Bench 2.1 上，它
+取得 90.6\%,优于 Opus-5 (89.1\%) 和 GLM-5.3 (88.2\%)。同样，在 Automation-Bench
+(54.8\%) 和 Agents' Last Exam (31.8\%) 上，DeepSeek-V4.1-Flash 取得了领先开源同类与
+顶级闭源系统的成绩。尽管体量紧凑，DeepSeek-V4.1-Flash 仍展现出业界先进的智能体能力，
+大幅缩小了与前沿闭源模型的差距，并在开源方案中建立起明显优势。
+
+在网络安全任务上，DeepSeek-V4.1-Flash 在开源模型中树立了新的最优标杆。考虑到这些
+能力的双重用途属性，我们鼓励社区以负责任的方式使用这些能力，例如用于防守型安全研究和
+漏洞修复。在视觉智能体任务领域，DeepSeek-V4.1-Flash 展现出稳健的能力，尤其是在需要
+视觉推理和复杂专业图表分析的场景中。虽然它超越了领先的开源模型 Kimi-K3,但我们承认，
+与领先闭源方案相比仍有可量化的差距。
+
+
+
+除了峰值性能，DeepSeek-V4.1-Flash 还提供思考强度（effort）控制，让用户可以通过可控的
+方式权衡推理成本与准确率。如图 9 所示，在推理与智能体基准上，准确率和输出长度都随
+effort 等级的提升而稳步增加。将 effort 从 25 提高到 100,可使八个推理密集型基准的平均
+Pass@1 从 67.1\% 提升到 76.3\%,DeepSWE v1.1 从 66.0\% 提升到 74.2\%,Terminal-Bench
+2.1 从 82.4\% 提升到 90.6\%,代价是大约多消耗 2.5$\times$ 的输出 token。值得注意的是，
+在单轮响应推理中学到的 effort 控制能够忠实地迁移到长程智能体轨迹中，在那里它控制着各
+轮次中的整体探索与验证量。收益主要集中在前段：60--80 区间以不到最大档位一半的 token
+预算，就已恢复其大部分准确率；而最后把 effort 提升到 100,只会把智能体轨迹拉长
+1.6--1.8$\times$,收益却很有限。因此，最高档最适合留给最具挑战性的任务，而适中的
+effort 等级能为日常智能体使用提供良好的性价比平衡。

@@ -1,0 +1,42 @@
+D. Dua, Y. Wang, P. Dasigi, G. Stanovsky, S. Singh, and M. Gardner. DROP: A reading compre-
+hension benchmark requiring discrete reasoning over paragraphs. In J. Burstein, C. Doran, and
+T. Solorio, editors, Proceedings of the 2019 Conference of the North American Chapter of the
+Association for Computational Linguistics: Human Language Technologies, NAACL-HLT
+2019, Minneapolis, MN, USA, June 2-7, 2019, Volume 1 (Long and Short Papers), pages 2368–
+2378. Association for Computational Linguistics, 2019. doi: 10.18653/V1/N19-1246. URL
+https://doi.org/10.18653/v1/n19-1246.
+Y. Gao, J. Wei, Q. Zhang, Y. Cheng, S. Chen, Z. Tang, Z. Jiang, Y. Song, H. Zhang, L. Zhao,
+B. Yang, G. Wang, S. Cao, and F. Luo. Hysparse: A hybrid sparse attention architecture with
+oracle token selection and kv cache sharing. arXiv preprint arXiv:2602.03560, 2026.
+S. Garre, C. Mutty, S. Mehta, and E. Chen. Chartography: A benchmark for professional chart
+understanding. arXiv preprint arXiv:2608.10677, 2026.
+A. Glentis, J. Li, A. Han, and M. Hong. Memory-efficient llm pretraining via minimalist optimizer
+design. arXiv preprint arXiv:2506.16659, 2025.
+Y. Gu, L. Dong, F. Wei, and M. Huang. Minillm: Knowledge distillation of large language
+models. In The Twelfth International Conference on Learning Representations, 2024.
+L. Haas, G. Yona, G. D’Antonio, S. Goldshtein, and D. Das. Simpleqa verified: A reliable
+factuality benchmark to measure parametric knowledge. arXiv preprint arXiv:2509.07968,
+2025.
+D. Hendrycks, C. Burns, S. Kadavath, A. Arora, S. Basart, E. Tang, D. Song, and J. Steinhardt. Mea-
+suring mathematical problem solving with the math dataset. arXiv preprint arXiv:2103.03874,
+2021.
+Y. Huang, Y. Bai, Z. Zhu, J. Zhang, J. Zhang, T. Su, J. Liu, C. Lv, Y. Zhang, J. Lei, et al. C-Eval: A
+multi-level multi-discipline chinese evaluation suite for foundation models. arXiv preprint
+arXiv:2305.08322, 2023.
+D. Hupkes and N. Bogoychev. Multiloko: a multilingual local knowledge benchmark for llms
+spanning 31 languages. CoRR, abs/2504.10356, 2025. doi: 10.48550/ARXIV.2504.10356. URL
+https://doi.org/10.48550/arXiv.2504.10356.
+B. Jacob, S. Kligys, B. Chen, M. Zhu, M. Tang, A. Howard, H. Adam, and D. Kalenichenko.
+Quantization and training of neural networks for efficient integer-arithmetic-only inference.
+In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR),
+June 2018.
+K. Jordan, Y. Jin, V. Boza, J. You, F. Cesista, L. Newhouse, and J. Bernstein. Muon: An optimizer
+for hidden layers in neural networks. Cited on, page 10, 2024.
+M. Kazemi, B. Fatemi, H. Bansal, J. Palowitch, C. Anastasiou, S. V. Mehta, L. K. Jain, V. Aglietti,
+D. Jindal, Y. P. Chen, et al. Big-bench extra hard. In Proceedings of the 63rd Annual Meeting of
+the Association for Computational Linguistics (Volume 1: Long Papers), pages 26473–26501,
+2025.
+S. Kazemzadeh, V. Ordonez, M. Matten, and T. Berg. Referitgame: Referring to objects in
+photographs of natural scenes. In Proceedings of the 2014 conference on empirical methods
+in natural language processing (EMNLP), pages 787–798, 2014.
+40

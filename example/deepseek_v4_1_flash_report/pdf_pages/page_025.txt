@@ -1,0 +1,33 @@
+Figure 6 | Bits-per-bytes (BPB) comparison of DeepSeek-V4-Flash-Base, DeepSeek-V4-Pro-Base
+and DeepSeek-V4.1-Flash-Base on our held-out evaluation sets. DeepSeek-V4.1-Flash-Base
+achieves lowest BPB on all tasks and demonstrates greater potential to serve as a strong base-
+model.
+5. Post-Training
+5.1. Post-Training Pipeline
+In this release, we refrain from introducing novel post-training algorithms. The overall recipe
+follows the standard paradigm of supervised fine-tuning (SFT) followed by reinforcement learn-
+ing (RL) and on-policy distillation (OPD; Gu et al., 2024; Lu and Lab, 2025), without algorithmic
+modifications beyond well-established practices. Instead, our efforts are concentrated almost
+entirely on what the model is trained on rather than how it is optimized: we invest in large-
+scale, automated pipelines for data synthesis and environment construction. Concretely, the
+pipeline (i) synthesizes diverse, verifiable training tasks together with their reference solutions
+and reward signals, (ii) procedurally constructs and scales interactive agent environments in
+which trajectories can be collected and evaluated at low cost, and (iii) applies rigorous filtering,
+deduplication, and difficulty calibration to ensure data quality and curriculum balance. We find
+that, under a fixed and unremarkable optimization procedure, systematic improvements in the
+scale, diversity, and verifiability of synthesized data and environments account for essentially
+all of the observed gains. This observation echoes a broader lesson: at the current stage, the
+marginal return of engineering the data and environment pipeline substantially exceeds that of
+algorithmic novelty in post-training.
+5.1.1. Large-Scale Agent Task Synthesis
+Tasks serve as the fundamental fuel for agent learning. However, constructing high-quality
+training tasks has traditionally required substantial manual effort. We observe that the model is
+already beginning to exhibit the ability to construct its own training tasks, though this capability
+remains far from perfect. Recognizing this potential, we have invested considerable effort in
+strengthening the model’s task-construction and quality-verification abilities.
+We formalize each task as a triplet (problem, environment, verification system) and evaluate
+its quality along two dimensions: difficulty—ensuring the task is non-trivial—and correct-
+ness—guaranteeing that no critical flaws exist among the three components. Using difficulty
+and correctness as reward signals, we iteratively train the model to construct better tasks. We
+also monitor RL tasks across their full lifecycle. Whenever a task is used in a new RL run,
+25

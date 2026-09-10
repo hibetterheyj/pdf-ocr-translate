@@ -1,0 +1,103 @@
+Contents
+1
+Introduction
+4
+2
+Architecture
+7
+2.1
+Overview . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+7
+2.1.1
+Multimodal Architecture
+. . . . . . . . . . . . . . . . . . . . . . . . . . . .
+8
+2.2
+Causal Encoder-Decoder (CED) . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+9
+2.3
+Compressed Sparse Attention 2 (CSA2)
+. . . . . . . . . . . . . . . . . . . . . . . .
+9
+2.3.1
+Cross-Layer KV and Index Reuse . . . . . . . . . . . . . . . . . . . . . . . .
+10
+2.3.2
+Hierarchical Sparse Indexer . . . . . . . . . . . . . . . . . . . . . . . . . . .
+11
+2.4
+Efficient Architectural Extensions . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+12
+2.4.1
+Single-Pass mHC . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+12
+2.4.2
+Engram
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+13
+2.4.3
+DSpark . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+13
+2.4.4
+FP4 Main KV Cache
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+14
+2.5
+Optimization . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+14
+3
+General Infrastructures
+16
+3.1
+Training Infrastructure . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+16
+3.1.1
+Multimodal Training Infrastructure
+. . . . . . . . . . . . . . . . . . . . . .
+16
+3.1.2
+Attention Sharing Training for CSA2 . . . . . . . . . . . . . . . . . . . . . .
+17
+3.1.3
+Engram
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+18
+3.2
+Inference System
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+18
+3.2.1
+Persistent KV Cache Management . . . . . . . . . . . . . . . . . . . . . . .
+19
+3.2.2
+SWA Bounded Replay . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+20
+4
+Pre-Training
+20
+4.1
+Data Construction . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+20
+4.2
+Pre-Training Setups . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+21
+4.2.1
+Model Setups . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+21
+4.2.2
+Training Setups . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+22
+4.3
+Evaluations
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+23
+4.3.1
+Evaluation Benchmarks . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+23
+4.3.2
+Evaluation Results . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+23
+5
+Post-Training
+25
+2

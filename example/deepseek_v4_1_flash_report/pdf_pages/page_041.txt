@@ -1,0 +1,45 @@
+R. Kondra, S. Mhatre, A. Kumar, E. Chu, B. B. Ahmad, A. Nangia, R. Agarwal, A. Dasgupta,
+A. Sinha, B. Sridharan, K. Dave, B. Graham, G. Song, A. Rahul, W. H. Lim, A. Thangamuthu,
+R. Singh, D. Liu, N. Pour, C. Chen, and J. Mattern. Frontierswe v2. Proximal Blog, 2026.
+https://frontierswe.com/blog/v2.
+H. Lee, J. Liu, D. Kim, W. Xia, Z. Zhang, C. S. Xia, and L. Zhang. Sec-bench pro: Can language
+models solve long-horizon software security tasks? arXiv preprint arXiv:2605.26548, 2026.
+J. Li and S. Liu. Flashmla: Efficient multi-head latent attention kernels. https://github.com
+/deepseek-ai/FlashMLA, 2025.
+J. Liu, J. Su, X. Yao, Z. Jiang, G. Lai, Y. Du, Y. Qin, W. Xu, E. Lu, J. Yan, Y. Chen, H. Zheng,
+Y. Liu, S. Liu, B. Yin, W. He, H. Zhu, Y. Wang, J. Wang, M. Dong, Z. Zhang, Y. Kang, H. Zhang,
+X. Xu, Y. Zhang, Y. Wu, X. Zhou, and Z. Yang. Muon is scalable for LLM training. CoRR,
+abs/2502.16982, 2025. URL https://doi.org/10.48550/arXiv.2502.16982.
+I. Loshchilov and F. Hutter. Decoupled weight decay regularization. In International Conference
+on Learning Representations, 2019. URL https://openreview.net/forum?id=Bkg6Ri
+CqY7.
+K. Lu and T. M. Lab. On-policy distillation. Thinking Machines Lab: Connectionism, 2025. doi:
+10.64434/tml.20251026. https://thinkingmachines.ai/blog/on-policy-distillation.
+J. Mao, J. Huang, A. Toshev, O. Camburu, A. L. Yuille, and K. Murphy.
+Generation and
+comprehension of unambiguous object descriptions. In Proceedings of the IEEE conference
+on computer vision and pattern recognition, pages 11–20, 2016.
+A. Marafioti, O. Zohar, M. Farré, M. Noyan, E. Bakouch, P. Cuenca, C. Zakka, L. B. Allal,
+A. Lozhkov, N. Tazi, V. Srivastav, J. Lochner, H. Larcher, M. Morlon, L. Tunstall, L. von Werra,
+and T. Wolf. Smolvlm: Redefining small and efficient multimodal models. arXiv preprint
+arXiv:2504.05299, 2025.
+R. Marten, A. Shaw, I. Bercovich, B. Droste, T. Cerruti, S. Dillmann, R. Wang, D. Wahdany,
+A. Hart, K. Krauth, ScaleAI, Snorkel AI, Turing, gNucleus AI, Boolean AI, N. Carlini, S. Lyu,
+A. Wei, A. Khatua, B. Plüster, C. Dwivedi, C. Sutcliffe, Yuming, D. Tivris, D. Wang, H. W.
+Goh, H. Xing, H. Lin, I. Salia, J. Seol, J. Bao, J. Ouyang, J. Park, L. Walsh, L. Kong, M. Ivanov,
+M. Ubl, M. Liamets, O. Menis, P. Migdal, Q. Bao, R. Movva, R. Ben Chaim, N. Srinath,
+S. Bogdanik, S. Yadav, S. Benjamin, T. Kung, W. Hughes, X. Lan, H. Gupta, S. Mishra, C. Wang,
+H. He, J. Tu, K. Montgomery, Z. Tu, A. Naik, D. Mortensen, I. Zhang, Y. Mathur, E. Liu,
+K. Singh, M. Yu, S. Feng, V. Gangal, Z. Tao, S. Ruan, J. Mueller, J. Cabezas, J. Bauer, K. X.
+Li, R. Zhang, A. Feller, A. Madayan, L. Chen, B. Feuer, X. Li, B. Li, H. Raj, S. Galler, L. Shi,
+I. Segal, K. Buchanan, S. P., R. Desai, A. Schneider, C. Settles, X. Lin, M. Nezhurina, A. Wang,
+M. Kowalczyk, J.-X. Zhao, S. Satia, J. Hu, S. Atef, K. Chen, S. Vance, G. Segato, J. Jitsev,
+A. Dimakis, M. Merrill, A. Konwinski, and L. Schmidt. Terminal-Bench, Aug. 2026a. URL
+https://github.com/harbor-framework/terminal-bench.
+R. Marten, A. Shaw, A. Konwinski, and Terminal-Bench Contributors. Terminal-bench 3.0:
+Harder tasks for better agents. https://www.tbench.ai/news/terminal-bench-3-0,
+2026b. An Open Benchmark for Agent Work in Terminal Environments.
+M. Mathew, D. Karatzas, and C. Jawahar. Docvqa: A dataset for vqa on document images. In
+2021 IEEE Winter Conference on Applications of Computer Vision (WACV), pages 2199–2208.
+IEEE, 2021.
+41

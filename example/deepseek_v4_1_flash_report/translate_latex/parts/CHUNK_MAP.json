@@ -1,0 +1,91 @@
+[
+  {
+    "chunk": "chunk_00_preamble.tex",
+    "lines": 107,
+    "pages": "-"
+  },
+  {
+    "chunk": "01_body.tex",
+    "lines": 272,
+    "pages": "4-6",
+    "note": ""
+  },
+  {
+    "chunk": "02_2__architecture.tex",
+    "lines": 205,
+    "pages": "7-9",
+    "note": ""
+  },
+  {
+    "chunk": "03_body.tex",
+    "lines": 198,
+    "pages": "10-12",
+    "note": ""
+  },
+  {
+    "chunk": "04_2_4_2__engram.tex",
+    "lines": 208,
+    "pages": "13-15",
+    "note": ""
+  },
+  {
+    "chunk": "05_3__general_infrastructures.tex",
+    "lines": 170,
+    "pages": "16-18",
+    "note": ""
+  },
+  {
+    "chunk": "06_body.tex",
+    "lines": 188,
+    "pages": "19-20",
+    "note": ""
+  },
+  {
+    "chunk": "07_4_2__pre-training_setups.tex",
+    "lines": 218,
+    "pages": "21-24",
+    "note": ""
+  },
+  {
+    "chunk": "08_5__post-training.tex",
+    "lines": 230,
+    "pages": "25-28",
+    "note": ""
+  },
+  {
+    "chunk": "09_body.tex",
+    "lines": 171,
+    "pages": "29-30",
+    "note": ""
+  },
+  {
+    "chunk": "10_body.tex",
+    "lines": 214,
+    "pages": "31-33",
+    "note": ""
+  },
+  {
+    "chunk": "11_body.tex",
+    "lines": 176,
+    "pages": "34-36",
+    "note": ""
+  },
+  {
+    "chunk": "12_body.tex",
+    "lines": 558,
+    "pages": "37-45",
+    "note": ""
+  },
+  {
+    "chunk": "13_appendix.tex",
+    "lines": 174,
+    "pages": "46-47",
+    "note": ""
+  },
+  {
+    "chunk": "14_body.tex",
+    "lines": 160,
+    "pages": "48-51",
+    "note": ""
+  }
+]

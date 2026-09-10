@@ -1,0 +1,45 @@
+and gradient aggregation keep the shadow replicas consistent throughout training. This design
+preserves the original model semantics without requiring the pipeline scheduler to treat shared
+layers as a special execution unit.
+Pipeline payload extensions provide the intermediate representations and sparse routing
+information required by downstream consumers when the source and consumer layers cross a
+pipeline boundary. These states are incorporated into the existing point-to-point communication
+path and partitioned consistently with context parallelism, avoiding unnecessary replication
+while maintaining the corresponding gradient flow.
+Micro-batch-level shared-state management tracks the states associated with concurrently
+active pipeline micro-batches and coordinates their lifetimes across forward execution, activation
+recomputation, and backward propagation. Shared states are retained until their final consumer
+has completed and are then released promptly to limit additional memory overhead. The same
+runtime abstraction also handles stage placement and source–consumer relationships, allowing
+the attention implementation to access shared states without depending on the physical pipeline
+layout.
+Together with lightweight adaptations to the optimizer, checkpointing, warm-up, and
+computation-graph tracing workflows, these mechanisms enable CSA2 to operate transparently
+under the existing distributed training interface and pipeline schedules.
+3.1.3. Engram
+Engram embedding tables are partitioned by row across dedicated process groups of engram
+parallel size. The group size controls the trade-off between per-device memory usage and
+the communication scope of embedding lookups. Optimizer states are further sharded across
+replicas of each table partition. Engram lookup indices depend solely on the input token
+sequence. Embedding prefetch is therefore initiated for the entire local batch before each pipeline
+stage begins processing microbatches for the current training step, minimizing interference with
+pipeline execution. Embedding gradients are buffered during backward and returned to their
+owning ranks after the backbone backward pass. For efficient integration with multimodal
+training, embedding prefetch and gradient transfers are scheduled to overlap with the vision
+encoder’s forward and backward computation. Embeddings are stored and fetched in FP8,
+with the retrieved values and scaling factors passed directly to the following GEMM. For
+Engram table updates, Sinkhorn normalization maintains row and column scaling vectors across
+iterations to avoid repeated writes of the full normalized matrix. Row normalization and the
+accumulation of partial column statistics are fused into a single kernel to further reduce memory
+traffic. During RL rollouts, Engram embedding tables remain resident in GPU memory. This
+placement reduces host memory pressure and helps avoid out-of-memory failures caused by
+host memory fragmentation.
+3.2. Inference System
+DeepSeek-V4.1-Flash is designed with inference efficiency as a first-class concern. Although its
+architecture is conceptually complex, the resulting inference kernel flow is remarkably concise.
+Through reasonable kernel fusion, we encapsulate the intricate operations and keep hardware
+resources fully pipelined inside a small number of fused kernels—including the fused-RoPE-
+attention-RoPE-cast kernel in FlashMLA (Li and Liu, 2025), the Mega-Gate, Mega-mHC, and
+Mega-MoE kernels in DeepGEMM (Zhao et al., 2025), the kernels in TileKernels (Wang et al.,
+2026a), and the TopK kernel in DeepSelect (Qian et al., 2026). As a result, the vast majority of
+18

@@ -1,0 +1,50 @@
+constant. The mechanism is training-aware and introduced in post-training: the candidate
+restriction is applied identically during training and inference, so deeper indexers are optimized
+under the same search domain they use at inference. Figure 5 illustrates this process.
+This first Full Mode layer scores all causally visible main KV positions and produces the
+Top-K indices for its own attention. It also performs blockwise candidate selection: each block
+is assigned the maximum index score among its positions, and the blocks with the highest
+scores are selected. It then collects the positions covered by the selected blocks into a candidate
+pool larger than the final Top-K set. For example, selecting 2,048 blocks with 8 positions each
+yields 16,384 candidate positions. This pool defines where later indexers search; the final Top-K
+selection determines which main KV entries each layer reads.
+Subsequent layers in Reindex Mode score only the candidate positions for the corresponding
+query and select their own Top-K entries within that pool. Layers in Reuse Mode perform no
+new indexing and use the latest Top-K indices computed against the main KV they reuse. Thus,
+the candidate pool is shared across indexing layers, while their final selections can differ.
+For a fixed candidate-pool size, the number of positions scored per query by each subsequent
+indexer is bounded independently of context length. The first Full Mode layer still scans the
+entire causally visible range. Hierarchical indexing therefore reduces the cost of later indexer
+evaluations while retaining the initial full-range pass.
+2.4. Efficient Architectural Extensions
+2.4.1. Single-Pass mHC
+In DeepSeek-V4, we introduced mHC (Xie et al., 2026), which maintains 𝑛residual streams
+between adjacent Transformer blocks. For each token, we denote these streams by 𝑋𝑙∈R𝑛×𝑑,
+where 𝑙is the block index and 𝑑is the hidden dimension. The streams are updated as follows:
+𝑋𝑙+1 = 𝐵𝑙𝑋𝑙+ 𝐶𝑙F𝑙(𝐴𝑙𝑋𝑙),
+(𝐴𝑙, 𝐵𝑙, 𝐶𝑙) = H (𝑋𝑙),
+(2)
+where 𝐴𝑙∈R1×𝑛, 𝐶𝑙∈R𝑛×1 and 𝐵𝑙∈R𝑛×𝑛are token-wise coefficients predicted from 𝑋𝑙. The
+coefficient predictor H includes normalization and projection.
+Ideally, the residual transformation between two blocks is a single map from (𝑋𝑙−1,𝑌𝑙−1) to
+(𝑋𝑙, ˆ𝑋𝑙), where ˆ𝑋𝑙= 𝐴𝑙𝑋𝑙is the current block input and 𝑌𝑙−1 = F𝑙−1( ˆ𝑋𝑙−1) is the previous block
+output. Such a map requires (𝑛+ 1)𝑑reads and (𝑛+ 1)𝑑writes, giving a lower bound of (2𝑛+ 2)𝑑
+on activation memory traffic. In practice, DeepSeek-V4 uses a multi-pass implementation of (2),
+with three kernels that execute sequentially due to data dependencies:
+𝑋𝑙= 𝐵𝑙−1𝑋𝑙−1 + 𝐶𝑙−1𝑌𝑙−1
+Residual update, contraction over 𝑛
+(3)
+(𝐴𝑙, 𝐵𝑙, 𝐶𝑙) = H (𝑋𝑙)
+Coefficients, contraction over 𝑛𝑑
+(4)
+ˆ𝑋𝑙= 𝐴𝑙𝑋𝑙
+Input mixing, contraction over 𝑛
+(5)
+The three kernels read (𝑛+ 1)𝑑, 𝑛𝑑and 𝑛𝑑values respectively and write (𝑛+ 1)𝑑in total. In-
+cluding the pre-norm in F𝑙, the total activation memory traffic is (4𝑛+ 4)𝑑, twice the lower
+bound.
+In H, the normalization weights are folded into the projection weights offline, and the RMS
+division is applied after the projection. Two of the three stages can therefore share one traversal
+of the residual: the residual update does not require a reduction across the hidden dimension,
+so each tile of 𝑋𝑙can be computed and immediately used to accumulate the projection outputs
+12

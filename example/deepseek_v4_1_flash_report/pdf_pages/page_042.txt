@@ -1,0 +1,41 @@
+M. A. Merrill, A. G. Shaw, N. Carlini, B. Li, H. Raj, I. Bercovich, L. Shi, J. Y. Shin, T. Walshe, E. K.
+Buchanan, et al. Terminal-bench: Benchmarking agents on hard, realistic tasks in command
+line interfaces. arXiv preprint arXiv:2601.11868, 2026.
+V. K. Nagaraja, V. I. Morariu, and L. S. Davis. Modeling context between objects for refer-
+ring expression understanding. In European conference on computer vision, pages 792–807.
+Springer, 2016.
+Y. Nesterov. A method of solving a convex programming problem with convergence rate 𝑂(1/𝑘2).
+Soviet Mathematics Doklady, 27:372–376, 1983.
+OpenAI. gpt-oss-120b & gpt-oss-20b model card. CoRR, abs/2508.10925, 2025. doi: 10.48550/A
+RXIV.2508.10925. URL https://doi.org/10.48550/arXiv.2508.10925.
+OpenAI. Codex. https://github.com/openai/codex, 2026.
+L. Phan, A. Gatti, Z. Han, N. Li, J. Hu, H. Zhang, C. B. C. Zhang, M. Shaaban, J. Ling, S. Shi, et al.
+Humanity’s last exam. arXiv preprint arXiv:2501.14249, 2025.
+Y. Qian, S. Liu, and Y. Li. Deepselect: High-performance topk kernels for deepseek sparse
+attention and sampling. https://github.com/deepseek-ai/DeepSelect, 2026.
+D. Rein, B. L. Hou, A. C. Stickland, J. Petty, R. Y. Pang, J. Dirani, J. Michael, and S. R. Bowman.
+GPQA: A graduate-level google-proof q&a benchmark. arXiv preprint arXiv:2311.12022, 2023.
+J. Roberts, M. R. Taesiri, A. Sharma, A. Gupta, S. Roberts, I. Croitoru, S.-V. Bogolin, J. Tang,
+F. Langer, V. Raina, et al. Zerobench: An impossible visual benchmark for contemporary large
+multimodal models. arXiv preprint arXiv:2502.09696, 2025.
+B. D. Rouhani, R. Zhao, A. More, M. Hall, A. Khodamoradi, S. Deng, D. Choudhary, M. Cornea,
+E. Dellinger, K. Denolf, S. Dusan, V. Elango, M. Golub, A. Heinecke, P. James-Roxby, D. Jani,
+G. Kolhe, M. Langhammer, A. Li, L. Melnick, M. Mesmakhosroshahi, A. Rodriguez, M. Schulte,
+R. Shafipour, L. Shao, M. Siu, P. Dubey, P. Micikevicius, M. Naumov, C. Verrilli, R. Wittig,
+D. Burger, and E. Chung. Microscaling data formats for deep learning, 2023.
+M. Scetbon, C. Ma, W. Gong, and E. Meeds. Gradient multi-normalization for efficient LLM
+training. In The Thirty-ninth Annual Conference on Neural Information Processing Systems,
+2025. URL https://openreview.net/forum?id=oanhUGY6un.
+N. Shazeer. Glu variants improve transformer. arXiv preprint arXiv:2002.05202, 2020.
+N. Shazeer and M. Stern. Adafactor: Adaptive learning rates with sublinear memory cost. In
+International conference on machine learning, pages 4596–4604. PMLR, 2018.
+D. Shepard and R. Salimans. Automationbench. arXiv preprint arXiv:2604.18934, 2026.
+F. Shi, M. Suzgun, M. Freitag, X. Wang, S. Srivats, S. Vosoughi, H. W. Chung, Y. Tay, S. Ruder,
+D. Zhou, D. Das, and J. Wei. Language models are multilingual chain-of-thought reasoners.
+In The Eleventh International Conference on Learning Representations, ICLR 2023, Kigali,
+Rwanda, May 1-5, 2023. OpenReview.net, 2023. URL https://openreview.net/forum?i
+d=fR3wGCk-IXp.
+Y. Sun, L. Dong, Y. Zhu, S. Huang, W. Wang, S. Ma, Q. Zhang, J. Wang, and F. Wei. You only cache
+once: Decoder-decoder architectures for language models. Advances in Neural Information
+Processing Systems, 37:7339–7361, 2024.
+42

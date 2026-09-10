@@ -1,0 +1,67 @@
+Causal Encoder
+CSA2(2, Reuse)
+MoE
+CSA2(2, Full)
+MoE
+×5
+SWA
+MoE
+×2
+×3
+CSA2(1, Reuse)
+MoE
+CSA2(1, Reindex)
+MoE
+×3
+×4
+CSA2(1, Reuse)
+MoE
+CSA2(1, Full)
+MoE
+×3
+Vision Encoder
+Vision Embedding
+Text Embedding
+Embedding
+Embedding
+Embedding
+Embedding
+Engram
+Embedding
+Embedding
+Embedding
+Enc. Hidden States
+Candidate Pool
+Decoder
+Single-Pass 𝑚HC
+Hierarchical
+Sparse Indexer
+CED
+DSpark
+Figure 3 | Overall architecture of DeepSeek-V4.1-Flash. The 40-layer network is divided into
+a causal encoder and a decoder, each with 20 layers. All feed-forward layers use standard
+DeepSeekMoE. The first two encoder layers use sliding window attention (SWA); the rest use
+Compressed Sparse Attention 2 (CSA2), with CSA2(ratio, mode) specifying the compression
+ratio and mode. The model also uses Single-Pass mHC, Engram, DSpark, and a Hierarchical
+Sparse Indexer.
+broad population of users. In summary, DeepSeek-V4.1-Flash simultaneously improves model
+intelligence and inference efficiency while reducing deployment costs. It substantially lowers
+the cost barrier to deploying long-horizon agents at scale and creates new opportunities for their
+adoption across a broader range of scenarios. DeepSeek-V4.1-Flash also serves as a new starting
+point for our continued scaling efforts. Building on this foundation, we will pursue the joint
+scaling of model architecture, pre-training, and post-training to further explore the frontier of
+model intelligence.
+2. Architecture
+2.1. Overview
+DeepSeek-V4.1-Flash is a multimodal mixture-of-experts (MoE) Transformer that takes images
+and text as input and generates text autoregressively. Its language backbone comprises 40 causal
+Transformer layers, organized into a 20-layer causal encoder followed by a 20-layer decoder.
+Each layer incorporates both global attention and sliding window attention (SWA), except for
+the first two layers, which use SWA only. A vision encoder and an MLP projector convert images
+into visual embeddings that are processed jointly with text embeddings, with multimodal data
+incorporated from the start of language-model pre-training. Overall, DeepSeek-V4.1-Flash
+has 552B backbone parameters and 196B Engram parameters, activating 8B parameters per
+token during prefill and 16B during decode. Figure 3 illustrates the overall architecture of
+DeepSeek-V4.1-Flash.
+The Causal Encoder–Decoder (CED) architecture and Compressed Sparse Attention 2 (CSA2)
+7

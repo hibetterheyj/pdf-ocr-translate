@@ -1,0 +1,131 @@
+10
+15
+20
+25
+30
+35
+Output tokens (k)
+75
+100
+125
+150
+175
+200
+225
+Output tokens (k)
+20
+40
+60
+80
+100
+Output tokens (k)
+25
+40
+60
+80
+100
+Reasoning effort
+64
+66
+68
+70
+72
+74
+76
+78
+Pass@1 (%)
+Reasoning-intensive
+Benchmarks
+25
+40
+60
+80
+100
+Reasoning effort
+64
+66
+68
+70
+72
+74
+76
+Pass@1 (%)
+DeepSWE v1.1
+25
+40
+60
+80
+100
+Reasoning effort
+80
+82
+84
+86
+88
+90
+92
+94
+Pass@1 (%)
+Terminal-Bench v2.1
+Avg Pass@1
+Avg output tokens
+Figure 9 | Performance and output length as a function of reasoning effort. Each panel plots
+Pass@1 (solid, left axis) and mean output tokens per response (dashed, right axis) as the
+reasoning-effort value is varied from 25 to 100; The results of reasoning-intensive benchmarks
+are averaged over eight benchmarks (AIME 2026, Apex 2025 Shortlist, GPQA Diamond, HLE,
+IMO-AnswerBench, LiveCodeBench, MathArena-Apex, SimpleQA-Verified). DeepSWE v1.1
+is evaluated based on mini-SWE and Terminal-Bench v2.1 is evaluated based on DeepSeek
+Harness (Minimal).
+Table 4 | Performance across agent scaffolds at Max reasoning effort.
+Benchmark (Metric)
+Claude Code
+Codex
+OpenCode
+Pi
+mini-SWE
+DeepSeek Harness
+Minimal
+Standard
+PTC
+DeepSWE v1.1 (Resolved)
+69.8
+65.6
+65.5
+66.2
+74.2
+72.6
+70.5
+67.6
+Terminal-Bench v2.1 (Pass@1)
+88.0
+84.1
+85.0
+86.1
+90.3
+90.6
+85.8
+85.8
+Note. All scaffolds use 𝑁= 8 samples per task on DeepSWE v1.1 and 𝑁= 3 on Terminal-Bench v2.1. Runs use Linux containers,
+temperature 1.0, top-p 0.95, a 1M-token context window, and max_steps=500 model-generation rounds per agent on both
+benchmarks. Terminal-Bench v2.1 is evaluated without network access. We evaluate four Claude Code versions, with per-version
+results and their average reported in Appendix Table 5; this table reports v2.1.251. More scaffold-specific configurations are detailed
+in Appendix B.1.
+change, indicating that its agentic behavior is not tightly coupled to a single scaffold design. This
+robustness is consistent with the diversity of environments, tool schemas, and interaction formats
+in our synthesized training data (Section 5), which is designed to encourage generalization
+across agent scaffolds.
+5.3.5. Multi-Agent
+To explore multi-agent collaboration on complex tasks, we conduct preliminary experiments
+with DeepSeek-V4.1-Flash using DeepSeek Harness’s Agent Team mode.
+Multi-Agent Harnesses. We use DeepSeek Harness in Agent Team mode, where a lead agent
+can asynchronously create named, persistent teammates by default through spawn_teammate.
+Each receives a delegated task and starts in either fresh mode without lead history or fork
+mode with a one-time snapshot of the lead’s completed turns. All agents share one repository
+checkout, making edits immediately visible to one another.
+Agents communicate through a durable peer mailbox. A message sent through send_message
+reaches a running teammate at its next step boundary, starts a new turn for an idle teammate,
+or resumes an inactive teammate. Across each teammate’s task lifecycle, the lead monitors
+runtime status with list_agents and waits for status, mailbox, or shared-task changes with
+wait_agent. Task ownership, dependencies, and advisory write scopes are maintained on
+a shared task board (using the four team_task_* tools with revision checks on updates).
+35

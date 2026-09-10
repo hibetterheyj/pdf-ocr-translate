@@ -1,0 +1,45 @@
+rollout efficiency. Due to differences in training procedures across domains, the best teacher for
+each domain may come from a different stage of model development. Moreover, the teacher
+models may differ architecturally from one another and from the student. Our post-training
+infrastructure readily accommodates this setting, supporting full-vocabulary OPD with an
+effectively unbounded number of architecturally heterogeneous teachers, and efficient switching
+among them at negligible cost (DeepSeek-AI, 2026b).
+The OPD stage also requires dynamic reconfiguration during training. We continuously
+track model capabilities and may adjust the training recipe accordingly, including the dataset
+mixture, per-dataset concurrency limits, and active teachers. Such changes are straightforward
+in synchronous training where rollout batches provide explicit configuration boundaries. In the
+asynchronous setting, however, samples generated under different configurations may coexist
+in flight. Our infrastructure supports consistent transitions between configurations without
+disrupting rollout or training.
+5.3. Evaluation
+5.3.1. Evaluation Setup
+Our post-training evaluation focuses primarily on reasoning and agentic capabilities, while
+knowledge-intensive performance is largely determined by pretraining and reported in Table 1.
+For reasoning, we evaluate on GPQA Diamond (Rein et al., 2023), Humanity’s Last Exam (Phan
+et al., 2025), Codeforces (internal benchmark), and MathArena Apex (Dekoninck et al., 2025),
+using temperature and top-𝑝of 1.0. For agentic capabilities, we evaluate across four categories:
+• Code agent: Terminal-Bench 2.1 (Merrill et al., 2026), Terminal-Bench 3.0 (Marten et al.,
+2026b), Terminal-Bench 4.0 (Marten et al., 2026a), DeepSWE v1.1 (DataCurve, 2026), Pro-
+gramBench (Yang et al., 2026), NL2Repo-Bench (Ding et al., 2025).
+• Cyber security: SEC-Bench Pro version 260505 (Lee et al., 2026), CyberGym (Wang et al.,
+2026c), and ExploitGym (Wang et al., 2026b).
+• General agent: the public evaluation set of AutomationBench v1.0.6 (Shepard and Sali-
+mans, 2026), Agents’ Last Exam (Sun et al., 2026a) (ALE-CLI).
+• Visual agent: Chartography (Garre et al., 2026), BabyVision (Chen et al., 2026), main set of
+ZeroBench (Roberts et al., 2025).
+For code agents, we evaluate DeepSeek-V4.1-Flash using the Minimal mode of DeepSeek
+Harness with a 1M-token context window, temperature set to 1.0, and top-p set to 0.95. To align
+with official setup requirements, we employ the mini-SWE harness for DeepSWE v1.1. For
+SEC-Bench Pro, we utilize the Claude Code harness specifically for its session compact design.
+For visual agent tasks, we evaluate using the Claude Code harness with a 512k-token context
+window, temperature set to 1.0, and top-p set to 0.95. Agents’ Last Exam and AutomationBench
+are evaluated with their official scaffolds. Model performance with other coding scaffolds is
+reported in Table 4.
+To mitigate reward hacking in coding agent evaluations, we restrict internet access and strip
+Git histories from the environment. Additionally, we automatically purge transient build and
+package caches across diverse environments, including Go module caches (go/mod), node
+modules dependency artifacts, compiled .jar files, and Python pycache directories. Despite
+these precautions, we still observe instances of exploit-seeking behavior during testing—such
+as decompiling core Ubuntu Linux packages to uncover vulnerabilities in CyberGym. As
+models grow increasingly capable, standard evaluation infrastructure (e.g., Docker containers
+32

@@ -1,0 +1,40 @@
+Y. Sun, X. Han, W. Zhang, Y. Pang, T. Wang, Y. Cao, Y. Huang, C. Duroiu, H. Zhang, J. Lin, et al.
+Agents’ last exam. arXiv preprint arXiv:2606.05405, 2026a.
+Y. Sun, Y. Zhang, L. Dong, J. Wang, and F. Wei. You only index once: Cross-layer sparse attention
+with shared routing. arXiv preprint arXiv:2606.06467, 2026b.
+M. Suzgun, N. Scales, N. Schärli, S. Gehrmann, Y. Tay, H. W. Chung, A. Chowdhery, Q. V. Le,
+E. H. Chi, D. Zhou, et al. Challenging big-bench tasks and whether chain-of-thought can solve
+them. arXiv preprint arXiv:2210.09261, 2022.
+K. Team, T. Bai, Y. Bai, Y. Bao, J. Cai, X. Cai, P. Cao, Y. Cao, Z. Chai, Y. Charles, et al. Kimi k3:
+Open frontier intelligence. arXiv preprint arXiv:2607.24653, 2026a.
+K. Team, T. Bai, Y. Bai, Y. Bao, S. Cai, Y. Cao, Z. Chai, Y. Charles, H. Che, C. Chen, et al. Kimi
+k2.5: Visual agentic intelligence. arXiv preprint arXiv:2602.02276, 2026b.
+M. L. Team, B. Wang, B. Xiao, B. Zhang, B. Rong, B. Chen, C. Wan, C. Zhang, C. Huang, C. Chen,
+et al. Longcat-flash-omni technical report. arXiv preprint arXiv:2511.00279, 2025.
+S. Tong, E. Brown, P. Wu, S. Woo, M. Middepogu, S. C. Akula, J. Yang, S. Yang, A. Iyer, X. Pan,
+A. Wang, R. Fergus, Y. LeCun, and S. Xie. Cambrian-1: A fully open, vision-centric exploration
+of multimodal llms, 2024.
+L. Wang, H. Gao, C. Zhao, X. Sun, and D. Dai. Auxiliary-loss-free load balancing strategy for
+mixture-of-experts. CoRR, abs/2408.15664, 2024a. URL https://doi.org/10.48550/arX
+iv.2408.15664.
+X. Wang, C. Xu, H. Cao, R. Tian, W. Zhao, K. Yu, and C. Zhao. Tilekernels. https://github.c
+om/deepseek-ai/TileKernels, 2026a.
+Y. Wang, X. Ma, G. Zhang, Y. Ni, A. Chandra, S. Guo, W. Ren, A. Arulraj, X. He, Z. Jiang, T. Li,
+M. Ku, K. Wang, A. Zhuang, R. Fan, X. Yue, and W. Chen. Mmlu-pro: A more robust and
+challenging multi-task language understanding benchmark. CoRR, abs/2406.01574, 2024b.
+URL https://doi.org/10.48550/arXiv.2406.01574.
+Z. Wang, N. Schiller, H. Li, S. S. Narayana, M. Nasr, N. Carlini, X. Qi, E. Wallace, E. Bursztein,
+L. Invernizzi, et al. Exploitgym: Can ai agents turn security vulnerabilities into real attacks?
+arXiv preprint arXiv:2605.11086, 2026b.
+Z. Wang, T. Shi, J. He, M. Cai, J. Zhang, and D. Song. Cybergym: Evaluating ai agents’ real-world
+cybersecurity capabilities at scale. In International Conference on Learning Representations,
+volume 2026, pages 123341–123386, 2026c.
+Z. Wen, Y. Shi, J. Wang, P. Luo, L. Qiao, D. Li, and T. Sun. Sron: State-free llm training via
+row-wise gradient normalization. 2025.
+Z. Xie, Y. Wei, H. Cao, C. Zhao, C. Deng, J. Li, D. Dai, H. Gao, J. Chang, K. Yu, L. Zhao, S. Zhou,
+Z. Xu, Z. Zhang, W. Zeng, S. Hu, Y. Wang, J. Yuan, L. Wang, and W. Liang. mhc: Manifold-
+constrained hyper-connections, 2026. URL https://arxiv.org/abs/2512.24880.
+R. Xu, J. Li, and Y. Lu. On the width scaling of neural optimizers under matrix operator norms i:
+Row/column normalization and hyperparameter transfer. arXiv preprint arXiv:2603.09952,
+2026a.
+43

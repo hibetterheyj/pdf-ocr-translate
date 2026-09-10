@@ -1,0 +1,63 @@
+···
+···
+Top-512
+Score on Full Positions
+Indexer
+K
+Indexer
+Q
+Full Mode
+Indexer
+···
+Shared Candidate Pool
+···
+Top-512
+Indexer
+K
+Indexer
+Q
+Reindex Mode
+Indexer
+···
+Score on Candidate Pos.
+···
+···
+Top-512
+Indexer
+K
+Indexer
+Q
+Reindex Mode
+Indexer
+···
+Score on Candidate Pos.
+Figure 5 | Hierarchical Sparse Indexer. Each square represents a position; green squares mark
+selected indices, and blue rectangles mark blocks selected based on their maximum indexer
+scores. The decoder’s first CSA2 layer in Full mode selects its own Top-512 indices and builds a
+shared candidate pool from the selected blocks for subsequent layers. CSA2 layers in Reindex
+mode then select their Top-512 indices from this pool.
+CSA layer in DeepSeek-V4.
+Reindex Mode. The layer reuses the most recent available main KV from a preceding layer
+together with its corresponding indexer K. The indexer computes its own query, rescores the
+reused keys, and produces fresh Top-K indices. This allows the sparse selection to change across
+layers while main KV and indexer K remain shared.
+Reuse Mode. The layer reuses the most recent available main KV and the latest Top-K
+indices computed against that main KV by a preceding layer in Full or Reindex Mode. It
+performs attention using this selection without computing indexer Q or evaluating index scores.
+Sharing main KV and indexer K reduces cache storage, while reusing Top-K indices avoids
+additional indexer computation. Reindex Mode preserves cache sharing while allowing the
+selected entries to change across layers. When CSA2 is combined with CED, the decoder layer
+assigned to Full Mode computes its own global KV from the hidden state of the (𝐿/2)-th layer,
+i.e. the last layer of the causal encoder. The Reindex and Reuse Modes are unchanged.
+2.3.2. Hierarchical Sparse Indexer
+Cross-layer index reuse reduces the number of indexer evaluations, but the remaining indexers
+still score the full causally visible context. For extremely long contexts, this cost remains a
+major computational bottleneck. Prior work introduced indexer sparsity by scoring and pruning
+pooled block representations before token-level indexing (Xu et al., 2026b). We find that in the
+decoder, information from shallower indexers can naturally be used to restrict the candidates
+considered by deeper indexers without adding any extra state. We therefore introduce the
+Hierarchical Sparse Indexer, which is used only in the decoder of CED to reduce this repeated
+scoring during decode. For each query, the first layer assigned to Full Mode constructs a
+candidate pool that later re-indexing layers use as their search domain. For a fixed candidate-
+pool size, this changes the per-query cost of deeper indexers from linear in context length to
+11

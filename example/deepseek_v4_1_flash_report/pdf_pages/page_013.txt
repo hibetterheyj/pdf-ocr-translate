@@ -1,0 +1,45 @@
+and the sum of squares needed to compute the RMS. Input mixing cannot be fused into this
+pass because 𝐴𝑙is not available until the reduction over all hidden tiles is complete. It therefore
+requires a second read of 𝑋𝑙. This second pass can also incorporate input pre-norm. This two-
+pass implementation would require (3𝑛+ 2)𝑑activation reads and writes in total, one additional
+read of 𝑋𝑙compared with the lower bound.
+We therefore introduce Single-Pass mHC, which shifts the input-mixing coefficients by one
+block, i.e. every block consumes the mixing coefficients produced by the previous one, so that
+the above dependency disappears:
+𝑋𝑙+1 = 𝐵𝑙𝑋𝑙+ 𝐶𝑙F𝑙(𝐴𝑙−1𝑋𝑙),
+(𝐴𝑙, 𝐵𝑙, 𝐶𝑙) = H (𝑋𝑙).
+(6)
+Input mixing now uses 𝐴𝑙−1 instead of 𝐴𝑙, so it no longer depends on the coefficients com-
+puted from 𝑋𝑙. Each tile of 𝑋𝑙can therefore be used immediately for both input mixing and
+coefficient prediction, without waiting for the full reduction. Empirically, this shift incurs
+negligible performance degradation.
+For pre-training, we keep the existing multi-kernel implementation, since the shift only
+changes which mixing coefficients each block applies. For deployment, we fuse residual update,
+input mixing, and coefficient prediction into a single kernel, Mega-mHC. The kernel implements
+mHC with (3𝑛+ 2)𝑑activation reads and writes and Single-Pass mHC with (2𝑛+ 2)𝑑activation
+reads and writes. Mega-mHC processes 𝑋𝑙in tiles along the hidden dimension. Each tile is used
+to compute the mixed input and to accumulate the quantities needed to predict (𝐴𝑙, 𝐵𝑙, 𝐶𝑙) for
+the next block. The kernel also incorporates input pre-norm and FP8 conversion. The residual is
+thereby read once and written once, attaining the (𝑛+ 1)𝑑reads and (𝑛+ 1)𝑑writes of the ideal
+map and halving the activation memory traffic of our original implementation.
+2.4.2. Engram
+We augment DeepSeek-V4.1-Flash with Engram (Cheng et al., 2026c), the conditional memory
+module introduced in our previous work to decouple memorization from computation. We
+follow the original Engram design—tokenizer compression, multi-head hashing, context-aware
+gating, and multi-branch integration—with two modifications. First, we omit the short causal
+convolution because its performance gains do not justify the added complexity in our inference
+stack. Second, we optimize the Engram embedding with momentum-based update followed by
+Sinkhorn balancing, as detailed in Section 2.5.
+We allocate 196B Engram parameters evenly across two modules. Each module uses 𝑁-gram
+orders {2, 3, 4}, with 8 hash heads and a total embedding dimension of 2048 per order. Each
+head indexes a table of approximately 16M entries, with table sizes chosen to be distinct primes.
+Both the embedding tables and the key/value projections use FP8 precision. The modules are
+placed at layers 1 and 14 (zero-indexed) to balance memory usage across training pipeline stages.
+During inference, deterministic addressing enables embeddings to be prefetched from host
+memory via background RDMA transfers, with prefetching for the first module overlapping
+computation in the first Transformer block. Further implementation details for Engram training
+and inference are discussed in Section 3.1.3.
+2.4.3. DSpark
+We equip DeepSeek-V4.1-Flash with DSpark (Cheng et al., 2026a), a speculative decoding
+module that combines semi-autoregressive drafting with confidence-scheduled verification.
+13

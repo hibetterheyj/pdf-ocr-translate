@@ -1,0 +1,67 @@
+\subsection{2.4.2. Engram}\label{engram}
+
+我们为 DeepSeek-V4.1-Flash 引入 Engram（Cheng et al., 2026c）——这是我们在前期工作中提出的条件记忆模块，用于将记忆与计算解耦。我们沿用原始 Engram 设计——tokenizer 压缩、多哈希头、上下文感知门控与多分支集成——并做了两处修改。第一，我们去掉短因果卷积，因为其性能收益不足以支撑它给推理栈带来的额外复杂度。第二，我们用基于动量的更新配合 Sinkhorn 平衡来优化 Engram embedding，详见第 2.5 节。
+
+我们将 196B Engram 参数均匀分配到两个模块。每个模块使用 \(N\)-gram 阶数 \{2, 3, 4\}，配备 8 个哈希头，每阶的总 embedding 维度为 2048。每个头索引一张约 16M 条目的表，各表大小取互不相同的素数。embedding 表与键/值投影均采用 FP8 精度。两个模块分别置于第 1 层与第 14 层（从 0 开始计数），以平衡各训练流水线阶段的内存占用。推理时，确定性寻址使 embedding 可以通过后台 RDMA 传输从主机内存预取，其中第一个模块的预取与第一个 Transformer 块的计算重叠。Engram 训练与推理的更多实现细节见第 3.1.3 节。
+
+\subsection{2.4.3. DSpark}\label{dspark}
+
+我们为 DeepSeek-V4.1-Flash 引入 DSpark（Cheng et al., 2026a），一个将半自回归草稿生成与置信度调度验证相结合的推测解码模块。
+
+草稿模型由三个 Transformer 块组成，滑动注意力窗口为 128 个 token。对其做一次前向即可并行计算五个草稿位置的基础 logits，同时一个轻量级的 Markov 头对草稿 token 之间的依赖关系建模。一个置信度头预测各位置的条件接受概率，用于估计前缀存活概率。调度器将这些估计与实测的引擎吞吐曲线结合，为每个请求动态选择验证长度，目标是在当前系统负载下最大化系统整体的期望 token 吞吐。
+
+与 DeepSeek-V3（DeepSeek-AI, 2024）中在整个预训练期间与主干联合训练的 MTP 模块不同，DSpark 在预训练之后的专门阶段引入。该阶段只训练 DSpark，主干保持冻结。在后训练阶段，我们继续让 DSpark 与主干一同训练，但不将 DSpark 目标的梯度回传到主干。这使 DSpark 与不断演化的策略保持对齐，从而能同时加速在线服务以及 RL 与 OPD 的 rollout 生成。
+
+\subsection{2.4.4. FP4 Main KV Cache}\label{fp4-main-kv-cache}
+
+长上下文智能体工作负载需要每请求占用大量 KV 缓存，推高了服务成本。DeepSeek-V4 已对 FP4 索引器查询与键采用量化感知训练（QAT）（Jacob et al., 2018），以加速索引计算并缩减索引器缓存规模。我们采用 OCP 标准的 MXFP4 格式（Rouhani et al., 2023），以尽可能多地支持硬件平台，尽管在我们的实验中其他格式精度更高。现在我们进一步将 QAT 扩展到主 KV 缓存，此时 FP4 的作用是压缩存储而非加速矩阵乘法。在注意力计算前对缓存值做反量化，使我们能够使用精度更高的格式，而无需该格式具备原生矩阵乘法支持，从而保持跨硬件平台的兼容性。
+
+在评估过的约 4-bit 格式中，我们选择 E2M1，每 16 个通道配一个 E4M3 scale，沿用 NVFP4（Alvarez et al., 2025）但省略其第二级全局 scale，以在精度与简洁性之间取得平衡。省略该 scale 后，主 KV 缓存仍有充足的动态范围：该格式可表示的最大幅值为 448 \(\times\) 6 = 2688，远高于缓存的幅值上界。在 DeepSeek-V4.1-Flash 中，训练得到的 RMSNorm 权重幅值最大约为 1。经过 RMS 归一化后，512 通道 KV latent 的 L2 范数最多约为 512。RoPE 保持该范数不变，因此旋转后各通道绝对值的最大值同样被限制在约 512 \(\approx\) 22.6 以内。此外，训练期间观测到的最大幅值约为 10。因此，省略全局 scale 不会带来可测量的精度下降，并简化了缓存布局。
+
+为在 DeepSeek-V4.1-Flash 中启用 FP4 主 KV 缓存存储，我们在后训练阶段引入 QAT。非 RoPE 分量与 RoPE 分量使用相同的量化格式。我们在 RoPE 之后对缓存做量化：实验表明在 RoPE 之前量化只能带来微弱的精度提升，却会在解码时引入额外开销。由于 SWA KV 缓存对量化较为敏感，我们对其保留 FP8。与 DeepSeek-V4 的 FP8 主 KV 缓存相比，该格式使存储占用近乎减半，无论是在 HBM 中还是卸载到 SSD 时。
+\subsection{2.5. Optimization}\label{optimization}
+
+在 DeepSeek-V4 所用优化配置的基础上，我们做了一些新的修改，以更好地契合架构设计。
+
+第一，我们采用逐头 Muon（head-wise Muon），即在应用 Muon 更新前按头切分 Query 权重。这里我们简要讨论该设计的动机。把 Muon 视为一种预条件梯度下降，原始 Muon 对所有头使用同一个预条件子，而逐头 Muon 为不同头提供不同的预条件子。该设计能更好地处理注意力头之间的异质性（Zhang et al., 2024; Zhang, 2026, Section 3）。因此我们观察到逐头 Muon 优于原始 Muon。逐头 Muon 的经验优势也在 GLM 5（Zeng et al., 2026）和 Kimi-K3（Team et al., 2026a）中得到验证。
+
+第二，将 Adam 用于新引入的 Engram 参数会大幅增加优化器状态的内存占用。为降低训练内存开销，我们改为用基于动量的更新配合 Sinkhorn 平衡来优化 Engram embedding 表、token embedding 与预测头。Sinkhorn 平衡此前已被用于 SinkGD（Scetbon et al., 2025）中线性层的权重矩阵；这里我们将其推广到这些大型参数矩阵。与 Muon 类似，该方法只需一个动量缓冲区，同时在经验上优于 Adam。
+
+基础配置。我们对归一化层权重以及其他非矩阵参数（包括偏置与缩放因子）保留 AdamW（Loshchilov and Hutter, 2019）。我们对语言模型主干中线性变换的权重矩阵、Engram 投影层以及视觉-语言投影器使用 Muon（Jordan et al., 2024）。对 Query 与 Key 权重使用逐头 Muon。我们对 Muon 应用解耦权重衰减与 Nesterov 动量（Nesterov, 1983; Liu et al., 2025）；归一化层权重同样受权重衰减作用，而偏置与缩放因子不受。Sinkhorn 平衡更新也使用 Nesterov 动量，但不应用权重衰减。预训练期间，我们保持视觉编码器冻结直至学习率衰减阶段，而其最后的归一化层与视觉-语言投影器始终可训练。在学习率衰减开始时，我们解冻视觉编码器，并以更小的学习率与 LLM 联合优化。
+
+Engram / Embedding / 预测头的 Sinkhorn 平衡更新。完整流程见算法 1。整体上它沿用与 Muon 相同的工作流，只是用 Sinkhorn 平衡替代 Newton--Schulz 正交化。我们用 \(m ,\) 表示较大的矩阵维度，对应 embedding 表与预测头的词表规模，并用 \(n\) 表示隐藏维度。
+
+给定 Nesterov 动量更新 \(\widehat { G } _ { t } ,\) ，Sinkhorn 平衡寻找对角缩放矩阵 \(D _ { r }\) 与 \(D _ { c }\) 使得
+
+\[
+\Delta _ { t } = \sqrt { n } U ^ { ( K ) } = \sqrt { n } D _ { r } \widehat { G } _ { t } D _ { c } , \qquad \frac { 1 } { n } \sum _ { j = 1 } ^ { n } ( \Delta _ { t } ) _ { i j } ^ { 2 } \approx 1 , \qquad \frac { 1 } { m } \sum _ { i = 1 } ^ { m } ( \Delta _ { t } ) _ { i j } ^ { 2 } \approx 1 ,\tag{7}
+\]
+
+由此，该过程近似地使更新矩阵的行向与列向 RMS 相等。这里一行对应一个 token 索引或 n-gram 标识，一列编码一个隐藏特征。Sinkhorn 平衡利用这种 token--特征结构，同时沿行与列做归一化。为保证数值稳定性，满足 \(\rho _ { i } \leqslant \tau \bar { \rho }\) 的行会被掩蔽。因子 \(\sqrt { n }\) 将单位行 \(\ell _ { 2 }\) 范数转换为单位行向 RMS。另外，我们按 \(\widetilde { \eta _ { t } } = \gamma \eta _ { t }\) 调整有效学习率，以匹配 Adam 的更新幅度。我们取 \(\gamma = 0 . 1 8 ,\) 接近 Moonlight（Liu et al., 2025）中使用的 0.2。
+
+更广泛地说，Sinkhorn 平衡与那些利用矩阵或张量轴结构的优化器密切相关（Shazeer and Stern, 2018; Zhang et al., 2025a; Wen et al., 2025; Glentis et al., 2025; Deng et al., 2026; Yuan et al., 2026; Xu et al., 2026a）。例如，Adafactor（Shazeer and
+算法 1 带 Sinkhorn 平衡的动量更新 输入：权重
+\(W _ { t } \ \in \ \mathbb { R } ^ { m \times n }\) , 梯度
+\(G _ { t } ,\) 动量 \(M _ { t - 1 } ,\) ，动量系数
+\(\beta ,\) 基础学习率 \(\eta _ { t } ,\) 学习率修正 $\gamma$，数值常数 $\epsilon$ 与 \(\tau ,\) 以及奇数次的
+归一化步数 \(K\) 1:
+\(M _ { t } \gets \beta M _ { t - 1 } + ( 1 - \beta ) G _ { t }\) 2:
+\(\widehat { G } _ { t } \gets \beta M _ { t } + ( 1 - \beta ) G _ { t }\)
+$\triangleleft$ Nesterov 动量 3:
+\(\rho _ { i } \gets \| \widehat { G } _ { t , i , : } \| _ { 2 }\) and
+\(\textstyle { \bar { \rho } } \gets { \frac { 1 } { m } } \sum _ { i = 1 } ^ { m } \rho _ { i }\)
+4: \(U ^ { ( 0 ) } \gets \widehat { G } _ { t }\) 5: 置
+\(U _ { i , : } ^ { ( 0 ) } \gets 0\) 若
+\(\rho _ { i } \leqslant \tau \bar { \rho }\) $\triangleleft$ 掩蔽近零行 6:
+对 \(k ^ { \stackrel { \prime } { = } 1 , \ldots , K }\) 执行 7: 若 $k$ 为奇数则 8: 对所有 \(i = 1 , \ldots , m\) 执行 9:
+\(U _ { i , : } ^ { ( k ) } \gets \dot { U } _ { i , : } ^ { ( k - 1 ) } / ( \| U _ { i , : } ^ { ( k - 1 ) } \| _ { 2 } + \varepsilon )\)
+10: end for 11: 否则 12: 对所有 \(j = 1 , \dotsc , n\) do 13:
+\(U _ { : , j } ^ { ( k ) ^ { \prime } } \gets \dot { U } _ { : , j } ^ { ( k - 1 ) } / ( \lVert U _ { : , j } ^ { ( k - 1 ) } \rVert _ { 2 } + \varepsilon )\)
+14: end for 15: end if 16: end for 17:
+\(\Delta _ { t } \gets \sqrt { n } U ^ { ( K ) }\) $\triangleleft$ 将单位行
+\(\ell _ { 2 }\) 范数转换为单位行 RMS 18:
+\(\widetilde { \eta _ { t } }  \gamma \eta _ { t }\) $\triangleleft$ 匹配
+的更新幅度 19:
+\(W _ { t + 1 } \gets W _ { t } - \widetilde { \eta _ { t } } \Delta _ { t }\)
+
+Stern, 2018）以另一种方式做行向与列向归一化，而 Adammini（Zhang et al., 2025a）对 embedding 表与预测头采用另一种行向归一化。这些归一化策略可能在优化性能与通信开销上存在差异。更细致的研究我们留作未来方向。

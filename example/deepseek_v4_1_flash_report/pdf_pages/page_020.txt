@@ -1,0 +1,50 @@
+3.2.2. SWA Bounded Replay
+Since SWA dependencies accumulate across layers, exactly reconstructing the SWA KV of 𝐿layers
+would require replaying 𝐿× 𝑛win tokens. SWA Bounded Replay instead replays only the most
+recent 𝑛win tokens and truncates SWA to the replay segment, accepting approximate states: for a
+replay starting at position 𝑠, a query at position 𝑖attends to SWA keys in
+
+max(𝑠, 𝑖−𝑊+ 1), 𝑖
+
+.
+Encoder SWA Bounded Replay.
+Encoder SWA Bounded Replay makes prefix caching depend
+only on global KV, allowing SWA KV to be removed from the persistent KV cache.
+When the encoder SWA KV is missing, we replay the last 𝑛win tokens of the cached prefix
+and process them together with the uncached suffix. The replayed tokens regenerate only SWA
+KV, reusing the cached global KV without recomputation or overwriting, while the uncached
+suffix generates both global KV and SWA KV.
+By design, the replayed prefix state is approximate, so the global KV and SWA KV computed
+for the uncached suffix depend on the cache-hit position and are not mathematically identical
+across positions. Encouragingly, our experimental evidence confirms that this bounded replay
+strategy barely compromises response quality.
+Decoder SWA Bounded Replay.
+Decoder SWA Bounded Replay bounds the decoder forward
+pass to 𝑛win tokens, nearly halving total prefill computation.
+Under CED, decoder global KV is projected from the final encoder hidden states. The only
+obstacle to ending prefill at the encoder is decoder SWA KV, which is generated from each
+decoder layer’s own hidden states and is needed by the first decode steps. Since we never cache
+decoder SWA KV, exactly reconstructing it requires running the 𝐿
+2 decoder layers over the last
+𝐿
+2 × 𝑛win prompt tokens, which is expensive when a short uncached suffix follows a long cached
+prefix. Therefore, we also apply the bounded replay strategy to this scenario: at every prefill, we
+replay the last 𝑛win tokens of the prompt, feed their encoder outputs through the decoder layers
+under the same SWA truncation, and use the resulting decoder SWA KV only for decoding, not
+for prefix caching.
+By design, the reconstructed decoder SWA KV is not mathematically equivalent to that
+from a full decoder forward pass. Also, we find that this strategy has only a negligible impact
+on response quality. For added safety, we additionally simulate the same replay during post-
+training for train-aware adaptation.
+4. Pre-Training
+4.1. Data Construction
+Text Data Curation
+In pursuit of higher intelligence, we go beyond the general, sample-level
+quality reflected by small-scale data experiments and focus more on the holistic interactions
+among diverse corpora that offer unique information gains. We adopt a more systematic and
+standardized data construction pipeline to improve data quality and optimize the data mixture.
+Specifically, based on more comprehensive evaluations, a scaling ladder over model parameters
+and training data is carefully designed to guide large-scale training runs. We filter out model-
+generated content with limited information gain, including outputs from less capable models
+and low-quality machine-translated text. We regard such content as implicit duplication, as
+20

@@ -1,0 +1,46 @@
+At deployment time, the scalar 𝑏provides a flexible control interface over the model’s
+reasoning strength. By varying 𝑏, a single model checkpoint can move between different
+operating regimes along the learned cost–quality frontier, adapting to different latency, token-
+budget, and solution-quality requirements. Although training uses only a finite set of effort
+levels, intermediate values can be used at deployment to elicit interpolated reasoning behaviors,
+providing a fine-grained and efficient mechanism for test-time resource allocation.
+In our production deployment launched in September 2026, the public API exposes three
+preset reasoning-effort tiers—max, high, and low—which map directly onto this scalar interface.
+As summarized in Table 2, the three tiers correspond to effort values of 𝑏= 100, 𝑏= 75, and
+𝑏= 50, respectively, so that API users select an operating point on the learned cost–quality
+frontier without any change to the model weights or decoding configuration.
+Table 2 | Mapping between the public API reasoning-effort tiers and the underlying scalar effort
+values 𝑏.
+API tier
+Effort value 𝑏
+max
+100
+high
+75
+low
+50
+5.2. Asynchronous Post-training Infrastructure
+The long-tail problem during the rollout phase of RL for LLMs has consistently been a major
+bottleneck for training efficiency. To address this, we extend our post-training infrastructure
+to allow asynchronous generation of samples (Zeng et al., 2026; Team et al., 2026b), which
+significantly mitigates the long-tail issue in the rollout phase by maintaining a sufficiently high
+level of concurrency. Asynchronous training is now enabled for nearly all our RL and OPD
+tasks, and rollout efficiency has improved substantially.
+5.2.1. Overall Workflow
+We colocate rollout and training on the same physical devices and time-share their execution,
+eliminating the need to manually tune resource allocation between the two phases. Each task
+specifies an upper bound on the number of in-flight samples, and the system maintains this
+bound throughout the rollout phase.
+We evaluated three dispatch granularities for maintaining the target rollout concurrency.
+Our final approach is sample-level dispatch: once the number of newly completed samples
+reaches the GRPO group size assigned to the next prompt, we dispatch that prompt regardless
+of which groups produced those completions. This helps maintain a steady rollout concurrency
+throughout training. Before settling on this dispatch strategy, we experimented with two
+alternative dispatch granularities. In the first attempt, we dispatched several extra batches at
+the beginning and supplemented a full batch after each training iteration; however, this caused
+severe oscillations in training metrics, indicating that batch-level granularity was too coarse. In
+the second attempt, we switched to prompt-level dispatch, where a new prompt was dispatched
+after one GRPO group finishes, but found that it stalled easily on long-tail samples within a
+GRPO group, making it difficult to smoothly maintain the target rollout concurrency.
+Once enough training samples have accumulated, training preempts ongoing rollouts. Dur-
+30

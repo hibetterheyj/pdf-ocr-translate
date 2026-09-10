@@ -1,0 +1,47 @@
+it largely reformulates existing information and may become detrimental over long training
+horizons. We also explore model-in-the-loop data iteration approaches as a foundation for
+future large-scale synthetic data. In addition, we involve more domain experts to construct
+fine-grained data quality evaluation dimensions. Compared with the previous version, the new
+corpus incorporates more recent code from newly released open-source repositories, commits,
+libraries, and emerging frameworks to cover a broader range of programming languages and
+better reflects contemporary real-world software engineering scenarios.
+Multimodal Data Curation
+Our multimodal pre-training dataset primarily comprises three
+types of data: image-text pairs, interleaved image-text data, and domain-specific data. Operating
+on the premise that raw web data naturally provides rich multimodal knowledge, we refrained
+from large-scale data synthesis; instead, we prioritized cleaning and utilizing the data in its
+native form to achieve the most direct and scalable visual knowledge compression during
+pre-training. During the initial data collection, we found that our crawling system was overly
+biased toward text-centric web content; we therefore re-bootstrapped it from Common Crawl to
+improve its coverage of multimodal sources. For image-text data, we extract images together
+with their associated alt text from webpages, filter them by applying an image-text relevance
+threshold, and deduplicate them based on image semantics. For interleaved data, we build this
+subset predominantly from webpages and PDFs. Processing large-scale multimodal corpora
+usually incurs higher CPU and disk storage costs than processing text-only corpora, which
+motivated us to organize the interleaved-data construction into progressively more expensive
+stages. Before image retrieval, we apply heuristic and statistical filtering, deduplication, and
+quality models to select high-value documents. The surviving documents are then assembled
+into interleaved image–text sequences, where filtering and deduplication are applied again
+in an image-aware manner. Finally, we employ SmolVLM (Marafioti et al., 2025) to conduct
+strict quality scoring on the image-text content, thereby extracting high-quality interleaved data.
+Documents filtered out during this process are partly recycled into additional image-text pairs
+via screening and recombination. To compensate for the inherent limitations of web-gathered
+data, we also incorporate domain-specific datasets to boost the model’s capabilities in fine-
+grained visual perception (e.g., visual grounding and pointing), optical character recognition
+(OCR), and the acquisition of long-tail knowledge. We also collect extensive image-code pairs
+and computer-use trajectories to improve multimodal agentic understanding.
+Data Integration and Deduplication
+As our text-only and multimodal data were processed
+through distinct pipelines, we constructed the final training corpus as the union of both data
+sources. For overlapping samples, we replace the text-only versions with their multimodal
+counterparts and use the larger epoch count of the two configurations. After this substitution,
+the resulting corpus uses a 7:1 token ratio of text-only to multimodal data. We minimize sample
+overlap during pre-training and context extension by jointly prefetching and assigning training
+samples. Ultra-long documents are deterministically pre-split before mixing to ensure a uniform
+distribution of training tokens across data shards and training steps. We further enhance our
+best-fit packing algorithm, achieving a padding rate of at most 10−4.
+4.2. Pre-Training Setups
+4.2.1. Model Setups
+We set the number of Transformer layers to 40 and the hidden dimension 𝑑to 5120. We adopt
+a Causal Encoder-Decoder architecture, with 20 layers in the encoder and 20 layers in the
+21

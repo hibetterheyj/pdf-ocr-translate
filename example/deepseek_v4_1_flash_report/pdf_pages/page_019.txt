@@ -1,0 +1,42 @@
+Transformer layers—those whose CSA2 operates in Reuse Mode—execute with only 15 kernels
+during prefill and 11 during decode, thereby achieving both high-throughput and low-latency
+inference.
+At the deployment level, we adopt Encoder–Prefill–Decode (EPD) disaggregation, enabling
+vision encoding, prefill, and decoding to scale independently and overlap in execution.
+3.2.1. Persistent KV Cache Management
+Under identical workloads, V4.1 reduces the persistent KV cache footprint to 1/8 of that of V4.
+Two multiplicative factors account for this reduction: the persistent KV cache no longer stores
+SWA KV, which almost halves its size, and the global KV retained in it is further compressed to
+1/4 of V4’s footprint through architectural and precision optimizations.
+In the V4 deployment, SWA KV accounts for nearly half of the persistent KV cache capacity.
+Within this cache, global KV and SWA KV are managed independently, governed by an LRU
+eviction policy. Global KV is stored in its entirety, and upon a hit, the complete prefix is reused.
+In contrast, SWA KV is cached at two specific points—the end of the prompt and the end of
+the output—to facilitate regeneration and multi-turn sessions; a hit allows computation to
+resume from that cached position. To maintain a high hit rate, we configured a sufficiently
+large persistent KV cache on SSD such that, under typical workloads, both types of KV remain
+resident for over 72 hours. Despite retaining only 𝑛win KV entries at designated positions, the
+uncompressed SWA KV cache still incurs a substantial storage overhead, especially in multi-turn
+conversations with short turns.
+Persistently storing SWA KV is both costly and ineffective, because its access pattern does
+not match the persistent KV cache’s long retention policy. Unlike global KV, which exhibits
+long-tail reuse, SWA KV is reused only within a narrow, minute-scale window inside an active
+session and becomes dead once the session ends or the next turn begins. The V4 technical
+report proposed Zero SWA Caching, which avoids the storage overhead by recomputing missing
+SWA KV. Exact recovery, however, requires a full forward pass over 𝐿× 𝑛win tokens, whose cost
+proved prohibitive in production deployments.
+V4.1 therefore revises persistent KV cache management as follows:
+1. SWA KV is no longer cached in the persistent KV cache and instead stored in a distributed
+memory pool provisioned from 10% of the host DRAM on each machine. Although this
+pool is far smaller in aggregate capacity, its short TTL (only minutes) allows expired
+entries to be recycled immediately for new sessions; under real-world workloads, this
+high turnover suffices to serve the vast majority of concurrent active sessions. Global KV
+remains in the persistent KV cache with a guaranteed lifetime of at least 72 hours.
+2. Evicting SWA KV inevitably causes misses, which stay affordable thanks to a lightweight
+fallback, Encoder SWA Bounded Replay (detailed in Section 3.2.2). For the inevitable but
+infrequent requests that hit global KV but miss SWA KV, it recovers the missing state
+by recomputing only 𝑛win tokens instead of a full 𝐿× 𝑛win-token forward pass. This
+bounded replay is the cornerstone of the design: it turns a catastrophic miss into a graceful,
+inexpensive degradation, thereby justifying the removal of SWA KV from the persistent
+KV cache.
+19

@@ -1,0 +1,40 @@
+sparsity for large language models. CoRR, abs/2601.07372, 2026b. doi: 10.48550/ARXIV.2601.
+07372. URL https://doi.org/10.48550/arXiv.2601.07372.
+X. Cheng, W. Zeng, D. Dai, Q. Chen, B. Wang, Z. Xie, K. Huang, X. Yu, Z. Hao, H. Zhang, et al.
+Conditional memory via scalable lookup: A new axis of sparsity for large language models.
+In Proceedings of the 64th Annual Meeting of the Association for Computational Linguistics
+(Volume 1: Long Papers), pages 4968–4990, 2026c.
+K. Cobbe, V. Kosaraju, M. Bavarian, M. Chen, H. Jun, L. Kaiser, M. Plappert, J. Tworek,
+J. Hilton, R. Nakano, et al. Training verifiers to solve math word problems. arXiv preprint
+arXiv:2110.14168, 2021.
+D. Dai, C. Deng, C. Zhao, R. X. Xu, H. Gao, D. Chen, J. Li, W. Zeng, X. Yu, Y. Wu, Z. Xie, Y. K.
+Li, P. Huang, F. Luo, C. Ruan, Z. Sui, and W. Liang. Deepseekmoe: Towards ultimate expert
+specialization in mixture-of-experts language models. CoRR, abs/2401.06066, 2024. URL
+https://doi.org/10.48550/arXiv.2401.06066.
+DataCurve. Deepswe v1.1, 2026. URL https://deepswe.datacurve.ai/.
+DeepSeek-AI. Deepseek-v3 technical report. CoRR, abs/2412.19437, 2024. URL https://doi.
+org/10.48550/arXiv.2412.19437.
+DeepSeek-AI. Deepseek-v2: A strong, economical, and efficient mixture-of-experts language
+model. CoRR, abs/2405.04434, 2024. URL https://doi.org/10.48550/arXiv.2405.04
+434.
+DeepSeek-AI. Deepseek-v3.2: Pushing the frontier of open large language models, 2025. URL
+https://arxiv.org/abs/2512.02556.
+DeepSeek-AI. Deepseek harness: Everything is a plugin. https://github.com/deepseek-a
+i/deepseek-harness, 2026a.
+DeepSeek-AI. Deepseek-v4: Towards highly efficient million-token context intelligence. CoRR,
+abs/2606.19348, 2026b. URL https://doi.org/10.48550/arXiv.2606.19348.
+J. Dekoninck, N. Jovanovi´c, I. Petrov, and M. Vechev. Matharena apex: Unconquered final-answer
+problems, 2025. URL https://matharena.ai/apex/.
+S. Deng, Z. Ouyang, T. Pang, Z. Liu, R. Jin, S. Yu, and Y. Yang. Rmnp: Row-momentum normal-
+ized preconditioning for scalable matrix-based optimization. arXiv preprint arXiv:2603.20527,
+2026.
+J. Ding, S. Long, C. Pu, H. Zhou, H. Gao, X. Gao, C. He, Y. Hou, F. Hu, Z. Li, et al. Nl2repo-bench:
+Towards long-horizon repository generation evaluation of coding agents. arXiv preprint
+arXiv:2512.12730, 2025.
+A. Dosovitskiy, L. Beyer, A. Kolesnikov, D. Weissenborn, X. Zhai, T. Unterthiner, M. Dehghani,
+M. Minderer, G. Heigold, S. Gelly, J. Uszkoreit, and N. Houlsby. An image is worth 16x16
+words: Transformers for image recognition at scale. In International Conference on Learning
+Representations, 2021. URL https://openreview.net/forum?id=YicbFdNTTy.
+X. Du, Y. Yao, K. Ma, B. Wang, T. Zheng, K. Zhu, M. Liu, Y. Liang, X. Jin, Z. Wei, et al. Supergpqa:
+Scaling llm evaluation across 285 graduate disciplines. arXiv preprint arXiv:2502.14739, 2025.
+39

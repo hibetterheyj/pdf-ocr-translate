@@ -1,0 +1,59 @@
+and use core scheduling to ensure only tasks of the same priority class execute simultaneously
+on sibling hyperthreads to eliminate interference.
+Mitigation of Misbehaving Agents. During RL training, we frequently observe agents
+attempting to perform reward hacking or unintentionally crashing the environment. In certain
+attempts, our agents exploited recently disclosed vulnerabilities, including permission issues
+from the XFS driver, illegal memory access in AppArmor, leaking answers from package mirror
+services, and so on. Agents have also been notorious for deleting critical binaries, breaking
+system files, or even removing the filesystem. We use per-sandbox AppArmor profiles and
+fine-grained eBPF-based network policies to prevent such attempts. If an agent crashes its
+environment, we treat the crash as a failed trajectory and report a "repercussion" signal to the
+RL framework.
+5.1.4. Controllable Reasoning Effort in RL
+Alongside advances in model architecture and hardware, the number of output tokens is another
+key determinant of serving cost and, consequently, of the cost–quality trade-off in real-world
+applications. We therefore introduce a scalar effort level 𝑏as an explicit conditioning signal
+during reinforcement-learning. This mechanism is applied to both single-turn reasoning and
+multi-turn agentic tasks. Specifically, we prepend the following instruction to the system prompt:
+Reasoning Effort:
+{effort} (range 1–100; higher values request more
+thorough reasoning)
+Here, 𝑏∈{1, . . . , 100} denotes the requested effort level.
+For each training prompt 𝑥, we sample 𝑀𝑏responses at each effort level 𝑏∈B:
+𝑧𝑏,𝑗∼𝜋𝜃(· | 𝑥, 𝑏),
+𝑏∈B,
+𝑗= 1, . . . , 𝑀𝑏.
+(8)
+Here, 𝑗indexes the responses sampled at effort level 𝑏. Responses sharing the same (𝑥, 𝑏) form
+a subgroup, within which rewards are mean-centered to compute group-relative advantages.
+Thus, responses from different effort levels are not directly compared. Instead, effort-dependent
+behavior is induced within each subgroup by making the length component of the reward
+depend on 𝑏. Specifically, we add the length-penalty term 𝑟len
+𝑏,𝑗to the reward of response 𝑧𝑏,𝑗:
+𝑟len
+𝑏,𝑗= −min
+
+𝐶max, 𝑘(𝑏)
+ℓ𝑏,𝑗
+𝐿norm
+
+,
+(9)
+where ℓ𝑏,𝑗is the number of reasoning tokens, 𝐿norm is a reference length, and 𝐶max caps the maxi-
+mum deduction applied to a trajectory. The token-penalty coefficient decreases exponentially
+with the requested effort:
+𝑘(𝑏) = 𝑘0 exp
+
+−𝑏−𝑏min
+𝜏
+
+,
+𝜏= 𝜆Δ𝑏,
+(10)
+where 𝑘0 is the basic penalty coefficient at different effort levels, 𝑏𝑚𝑖𝑛is the minimum value of
+B, Δ𝑏is the average spacing between training effort levels, and 𝜆controls the rate of penalty
+decay. Increasing 𝑏by 𝜏multiplies the penalty coefficient by 𝑒−1. The parameter 𝑘0 controls the
+overall pressure toward shorter reasoning, whereas a smaller 𝜏causes the penalty to decay more
+rapidly and tends to produce greater behavioral separation between effort levels. Appendix C
+provides a marginal-utility motivation for the exponential parameterization of 𝑘(𝑏).
+29

@@ -1,0 +1,501 @@
+\subsection{6. 结论、局限与未来方向}\label{conclusion-limitations-and-future-directions}
+
+在本工作中，我们提出了 DeepSeek-V4.1-Flash，一个支持最长一百万 token 上下文的多模态混合专家（Mixture-of-Experts，MoE）模型。通过对模型架构、缓存精度与部署策略的联合优化，DeepSeek-V4.1-Flash 把 KV 缓存压缩推向了极限。其因果编码器-解码器（CED）架构使模型在预填充阶段每 token 仅激活 8B 参数，而解码阶段为 16B，从而提升了输入密集型智能体工作负载的成本效率。在相同序列长度下，压缩稀疏注意力 2（CSA2）中的跨层 KV 缓存复用与 FP4 KV 缓存将其全局 KV 缓存占用（始终位于 HBM）降至每 token 890 字节，约为 DeepSeek-V4-Flash 对应占用的 1/4。SWA 有界回放进一步将其持久化 KV 缓存占用（始终位于 SSD 或主机内存）降至 DeepSeek-V4-Flash 的大约 1/8。这些缩减缓解了 HBM 与 SSD 的容量压力，同时模型整体性能显著优于 DeepSeek-V4-Flash。尽管参数规模明显小于 GLM-5.3 和 Kimi-K3 等当代开源模型，DeepSeek-V4.1 在关键基准上仍取得了相当的——在若干任务上甚至更优的——表现。
+
+尽管 DeepSeek-V4.1-Flash 相对 DeepSeek-V4-Flash 大幅简化了若干架构组件，新引入的架构改动也带来了尚未被充分刻画的鲁棒性边界。我们的内部评测覆盖了多样化的测试用例与边界条件，在所评测的设置中未观察到模型能力的系统性退化。然而，任何有限的测试集都无法覆盖所有极端输入与部署条件。CSA2 中潜在的选择误差以及 SWA 有界回放中的近似状态重建，仍可能在未测试的边界情形下导致能力退化。未来我们将继续扩展压力测试与评测体系，尤其关注长上下文上的稀疏检索以及缓存恢复边界处的 SWA 状态重建。我们也将持续监控真实工作负载，系统性地刻画潜在失效模式与鲁棒性边界，并进一步改善极端条件下的模型鲁棒性。
+
+随着 AI 模型的性能表现日益出色，标准评测基准正逐渐趋于饱和。DeepSeek-V4.1-Flash 的表现已十分接近 Fable-5 与 GPT-6 Astra 等顶尖模型——在日常应用中提供了高度可比的用户体验——但在最具挑战性的任务上仍存在性能差距。尽管基准分数差距不大，这种接近并不意味着模型在复杂、高难度的推理与边缘情形上已达到领先闭源系统的前沿能力。
+
+因此，我们将持续更新评测协议，以确保对最先进推理边界的严格评估。在继续降低模型成本的同时，我们相信模型智能的进一步提升有赖于数据、模型容量与 RL 的协同扩展。以 DeepSeek-V4.1-Flash 作为新的起点，我们将继续探索模型能力的极限，并系统性地应对大规模数据合成与 RL 扩展中的关键挑战。我们也将积极推动模型与运行框架的协同设计，使整个系统能够共同演进与优化。通过在降低成本与扩展能力两方面齐头并进，我们希望让能力强大的智能体更易获得、更易部署，从而进一步降低各行业与场景采用 AI 技术的门槛。
+
+
+
+\subsection{References}\label{references}
+
+J. Ainslie, J. Lee-Thorp, M. de Jong, Y. Zemlyanskiy, F. Lebrón, and S.
+Sanghai. Gqa: Training generalized multi-query transformer models from
+multi-head checkpoints. arXiv preprint arXiv:2305.13245, 2023.
+
+E. Alvarez, O. Almog, E. Chung, S. Layton, D. Stosic, R. Krashinsky, and
+K. Aubrey. Introducing nvfp4 for efficient and accurate low-precision
+inference, 2025. URL https://developer.
+nvidia.com/blog/introducing-nvfp4-for-efficient-and-accurate-low-pre
+cision-inference/.
+
+Anomaly. Opencode. https://github.com/anomalyco/opencode, 2026.
+
+Anthropic. Claude code. https://code.claude.com/docs/en/overview, 2026.
+
+Y. Bai, S. Tu, J. Zhang, H. Peng, X. Wang, X. Lv, S. Cao, J. Xu, L. Hou,
+Y. Dong, et al.~Longbench v2: Towards deeper understanding and reasoning
+on realistic long-context multitasks. In Proceedings of the 63rd Annual
+Meeting of the Association for Computational Linguistics (Volume 1: Long
+Papers), pages 3639--3664, 2025.
+
+Y. Bai, Q. Dong, T. Jiang, X. Lv, Z. Du, A. Zeng, J. Tang, and J. Li.
+Indexcache: Accelerating sparse attention via cross-layer index reuse.
+arXiv preprint arXiv:2603.12201, 2026.
+
+W. Brandon, M. Mishra, A. Nrusimha, R. Panda, and J. Ragan-Kelley.
+Reducing transformer keyvalue cache size with cross-layer attention. In
+A. Globerson, L. Mackey, D. Belgrave, A. Fan, U. Paquet, J. Tomczak, and
+C. Zhang, editors, Advances in Neural Information Processing Systems,
+volume 37, pages 86927--86957. Curran Associates, Inc., 2024. doi:
+10.52202/07901 7-2758. URL
+https://proceedings.neurips.cc/paper\_files/paper/2024/file/9
+e23d020c18e4c40d81c6a0fc7a46f68-Paper-Conference.pdf.
+
+L. Chen, D. Xu, C. An, X. Wang, Y. Zhang, J. Chen, Z. Liang, F. Wei, J.
+Liang, Y. Xiao, et al.~Powerattention: exponentially scaling of
+receptive fields for effective sparse attention. arXiv preprint
+arXiv:2503.03588, 2025.
+
+L. Chen, W. Xie, Y. Liang, H. He, H. Zhao, Z. Yang, Z. Huang, H. Wu, H.
+Lu, Y. Bao, et al.~Babyvision: Visual reasoning beyond language. arXiv
+preprint arXiv:2601.06521, 2026.
+
+M. Chen, J. Tworek, H. Jun, Q. Yuan, H. P. de Oliveira Pinto, J. Kaplan,
+H. Edwards, Y. Burda, N. Joseph, G. Brockman, A. Ray, R. Puri, G.
+Krueger, M. Petrov, H. Khlaaf, G. Sastry, P. Mishkin, B. Chan, S. Gray,
+N. Ryder, M. Pavlov, A. Power, L. Kaiser, M. Bavarian, C. Winter, P.
+Tillet, F. P. Such, D. Cummings, M. Plappert, F. Chantzis, E. Barnes, A.
+Herbert-Voss, W. H. Guss, A. Nichol, A. Paino, N. Tezak, J. Tang, I.
+Babuschkin, S. Balaji, S. Jain, W. Saunders, C. Hesse, A. N. Carr, J.
+Leike, J. Achiam, V. Misra, E. Morikawa, A. Radford, M. Knight, M.
+Brundage, M. Murati, K. Mayer, P. Welinder, B. McGrew, D. Amodei, S.
+McCandlish, I. Sutskever, and W. Zaremba. Evaluating large language
+models trained on code. CoRR, abs/2107.03374, 2021. URL
+https://arxiv.org/abs/2107.03374.
+
+X. Cheng, X. Yu, C. Shao, J. Li, Y. Xiong, Y. Qian, J. Zhu, S. Ma, X.
+Zhang, J. Ye, et al.~Dspark: Confidence-scheduled speculative decoding
+with semi-autoregressive generation. arXiv preprint arXiv:2607.05147,
+2026a.
+
+X. Cheng, W. Zeng, D. Dai, Q. Chen, B. Wang, Z. Xie, K. Huang, X. Yu, Z.
+Hao, Y. Li, H. Zhang, H. Zhang, D. Zhao, and W. Liang. Conditional
+memory via scalable lookup: A new axis of
+
+
+
+sparsity for large language models. CoRR, abs/2601.07372, 2026b. doi:
+10.48550/ARXIV.2601. 07372. URL
+https://doi.org/10.48550/arXiv.2601.07372.
+
+X. Cheng, W. Zeng, D. Dai, Q. Chen, B. Wang, Z. Xie, K. Huang, X. Yu, Z.
+Hao, H. Zhang, et al.~Conditional memory via scalable lookup: A new axis
+of sparsity for large language models. In Proceedings of the 64th Annual
+Meeting of the Association for Computational Linguistics (Volume 1: Long
+Papers), pages 4968--4990, 2026c.
+
+K. Cobbe, V. Kosaraju, M. Bavarian, M. Chen, H. Jun, L. Kaiser, M.
+Plappert, J. Tworek, J. Hilton, R. Nakano, et al.~Training verifiers to
+solve math word problems. arXiv preprint arXiv:2110.14168, 2021.
+
+D. Dai, C. Deng, C. Zhao, R. X. Xu, H. Gao, D. Chen, J. Li, W. Zeng, X.
+Yu, Y. Wu, Z. Xie, Y. K. Li, P. Huang, F. Luo, C. Ruan, Z. Sui, and W.
+Liang. Deepseekmoe: Towards ultimate expert specialization in
+mixture-of-experts language models. CoRR, abs/2401.06066, 2024. URL
+https://doi.org/10.48550/arXiv.2401.06066.
+
+DataCurve. Deepswe v1.1, 2026. URL https://deepswe.datacurve.ai/.
+
+DeepSeek-AI. Deepseek-v3 technical report. CoRR, abs/2412.19437, 2024.
+URL https://doi.org/10.48550/arXiv.2412.19437.
+
+DeepSeek-AI. Deepseek-v2: A strong, economical, and efficient
+mixture-of-experts language model. CoRR, abs/2405.04434, 2024. URL
+https://doi.org/10.48550/arXiv.2405.04434.
+
+DeepSeek-AI. Deepseek-v3.2: Pushing the frontier of open large language
+models, 2025. URL https://arxiv.org/abs/2512.02556.
+
+DeepSeek-AI. Deepseek harness: Everything is a plugin.
+https://github.com/deepseek-ai/deepseek-harness, 2026a.
+
+DeepSeek-AI. Deepseek-v4: Towards highly efficient million-token context
+intelligence. CoRR, abs/2606.19348, 2026b. URL
+https://doi.org/10.48550/arXiv.2606.19348.
+
+J. Dekoninck, N. Jovanovi´c, I. Petrov, and M. Vechev. Matharena apex:
+Unconquered final-answer problems, 2025. URL https://matharena.ai/apex/.
+
+S. Deng, Z. Ouyang, T. Pang, Z. Liu, R. Jin, S. Yu, and Y. Yang. Rmnp:
+Row-momentum normalized preconditioning for scalable matrix-based
+optimization. arXiv preprint arXiv:2603.20527, 2026.
+
+J. Ding, S. Long, C. Pu, H. Zhou, H. Gao, X. Gao, C. He, Y. Hou, F. Hu,
+Z. Li, et al.~Nl2repo-bench: Towards long-horizon repository generation
+evaluation of coding agents. arXiv preprint arXiv:2512.12730, 2025.
+
+A. Dosovitskiy, L. Beyer, A. Kolesnikov, D. Weissenborn, X. Zhai, T.
+Unterthiner, M. Dehghani, M. Minderer, G. Heigold, S. Gelly, J.
+Uszkoreit, and N. Houlsby. An image is worth 16x16 words: Transformers
+for image recognition at scale. In International Conference on Learning
+Representations, 2021. URL https://openreview.net/forum?id=YicbFdNTTy.
+
+X. Du, Y. Yao, K. Ma, B. Wang, T. Zheng, K. Zhu, M. Liu, Y. Liang, X.
+Jin, Z. Wei, et al.~Supergpqa: Scaling llm evaluation across 285
+graduate disciplines. arXiv preprint arXiv:2502.14739, 2025.
+
+
+
+D. Dua, Y. Wang, P. Dasigi, G. Stanovsky, S. Singh, and M. Gardner.
+DROP: A reading comprehension benchmark requiring discrete reasoning
+over paragraphs. In J. Burstein, C. Doran, and T. Solorio, editors,
+Proceedings of the 2019 Conference of the North American Chapter of the
+Association for Computational Linguistics: Human Language Technologies,
+NAACL-HLT 2019, Minneapolis, MN, USA, June 2-7, 2019, Volume 1 (Long and
+Short Papers), pages 2368-- 2378. Association for Computational
+Linguistics, 2019. doi: 10.18653/V1/N19-1246. URL
+https://doi.org/10.18653/v1/n19-1246.
+
+Y. Gao, J. Wei, Q. Zhang, Y. Cheng, S. Chen, Z. Tang, Z. Jiang, Y. Song,
+H. Zhang, L. Zhao, B. Yang, G. Wang, S. Cao, and F. Luo. Hysparse: A
+hybrid sparse attention architecture with oracle token selection and kv
+cache sharing. arXiv preprint arXiv:2602.03560, 2026.
+
+S. Garre, C. Mutty, S. Mehta, and E. Chen. Chartography: A benchmark for
+professional chart understanding. arXiv preprint arXiv:2608.10677, 2026.
+
+A. Glentis, J. Li, A. Han, and M. Hong. Memory-efficient llm pretraining
+via minimalist optimizer design. arXiv preprint arXiv:2506.16659, 2025.
+
+Y. Gu, L. Dong, F. Wei, and M. Huang. Minillm: Knowledge distillation of
+large language models. In The Twelfth International Conference on
+Learning Representations, 2024.
+
+L. Haas, G. Yona, G. D'Antonio, S. Goldshtein, and D. Das. Simpleqa
+verified: A reliable factuality benchmark to measure parametric
+knowledge. arXiv preprint arXiv:2509.07968, 2025.
+
+D. Hendrycks, C. Burns, S. Kadavath, A. Arora, S. Basart, E. Tang, D.
+Song, and J. Steinhardt. Measuring mathematical problem solving with the
+math dataset. arXiv preprint arXiv:2103.03874, 2021.
+
+Y. Huang, Y. Bai, Z. Zhu, J. Zhang, J. Zhang, T. Su, J. Liu, C. Lv, Y.
+Zhang, J. Lei, et al.~C-Eval: A multi-level multi-discipline chinese
+evaluation suite for foundation models. arXiv preprint arXiv:2305.08322,
+2023.
+
+D. Hupkes and N. Bogoychev. Multiloko: a multilingual local knowledge
+benchmark for llms spanning 31 languages. CoRR, abs/2504.10356, 2025.
+doi: 10.48550/ARXIV.2504.10356. URL
+https://doi.org/10.48550/arXiv.2504.10356.
+
+B. Jacob, S. Kligys, B. Chen, M. Zhu, M. Tang, A. Howard, H. Adam, and
+D. Kalenichenko. Quantization and training of neural networks for
+efficient integer-arithmetic-only inference. In Proceedings of the IEEE
+Conference on Computer Vision and Pattern Recognition (CVPR), June 2018.
+
+K. Jordan, Y. Jin, V. Boza, J. You, F. Cesista, L. Newhouse, and J.
+Bernstein. Muon: An optimizer for hidden layers in neural networks.
+Cited on, page 10, 2024.
+
+M. Kazemi, B. Fatemi, H. Bansal, J. Palowitch, C. Anastasiou, S. V.
+Mehta, L. K. Jain, V. Aglietti, D. Jindal, Y. P. Chen, et al.~Big-bench
+extra hard. In Proceedings of the 63rd Annual Meeting of the Association
+for Computational Linguistics (Volume 1: Long Papers), pages
+26473--26501, 2025.
+
+S. Kazemzadeh, V. Ordonez, M. Matten, and T. Berg. Referitgame:
+Referring to objects in photographs of natural scenes. In Proceedings of
+the 2014 conference on empirical methods in natural language processing
+(EMNLP), pages 787--798, 2014.
+
+
+
+R. Kondra, S. Mhatre, A. Kumar, E. Chu, B. B. Ahmad, A. Nangia, R.
+Agarwal, A. Dasgupta, A. Sinha, B. Sridharan, K. Dave, B. Graham, G.
+Song, A. Rahul, W. H. Lim, A. Thangamuthu, R. Singh, D. Liu, N. Pour, C.
+Chen, and J. Mattern. Frontierswe v2. Proximal Blog, 2026.
+https://frontierswe.com/blog/v2.
+
+H. Lee, J. Liu, D. Kim, W. Xia, Z. Zhang, C. S. Xia, and L. Zhang.
+Sec-bench pro: Can language models solve long-horizon software security
+tasks? arXiv preprint arXiv:2605.26548, 2026.
+
+J. Li and S. Liu. Flashmla: Efficient multi-head latent attention
+kernels. https://github.com /deepseek-ai/FlashMLA, 2025.
+
+J. Liu, J. Su, X. Yao, Z. Jiang, G. Lai, Y. Du, Y. Qin, W. Xu, E. Lu, J.
+Yan, Y. Chen, H. Zheng, Y. Liu, S. Liu, B. Yin, W. He, H. Zhu, Y. Wang,
+J. Wang, M. Dong, Z. Zhang, Y. Kang, H. Zhang, X. Xu, Y. Zhang, Y. Wu,
+X. Zhou, and Z. Yang. Muon is scalable for LLM training. CoRR,
+abs/2502.16982, 2025. URL https://doi.org/10.48550/arXiv.2502.16982.
+
+I. Loshchilov and F. Hutter. Decoupled weight decay regularization. In
+International Conference on Learning Representations, 2019. URL
+https://openreview.net/forum?id=Bkg6Ri CqY7.
+
+K. Lu and T. M. Lab. On-policy distillation. Thinking Machines Lab:
+Connectionism, 2025. doi: 10.64434/tml.20251026.
+https://thinkingmachines.ai/blog/on-policy-distillation.
+
+J. Mao, J. Huang, A. Toshev, O. Camburu, A. L. Yuille, and K. Murphy.
+Generation and comprehension of unambiguous object descriptions. In
+Proceedings of the IEEE conference on computer vision and pattern
+recognition, pages 11--20, 2016.
+
+A. Marafioti, O. Zohar, M. Farré, M. Noyan, E. Bakouch, P. Cuenca, C.
+Zakka, L. B. Allal, A. Lozhkov, N. Tazi, V. Srivastav, J. Lochner, H.
+Larcher, M. Morlon, L. Tunstall, L. von Werra, and T. Wolf. Smolvlm:
+Redefining small and efficient multimodal models. arXiv preprint
+arXiv:2504.05299, 2025.
+
+R. Marten, A. Shaw, I. Bercovich, B. Droste, T. Cerruti, S. Dillmann, R.
+Wang, D. Wahdany, A. Hart, K. Krauth, ScaleAI, Snorkel AI, Turing,
+gNucleus AI, Boolean AI, N. Carlini, S. Lyu, A. Wei, A. Khatua, B.
+Plüster, C. Dwivedi, C. Sutcliffe, Yuming, D. Tivris, D. Wang, H. W.
+Goh, H. Xing, H. Lin, I. Salia, J. Seol, J. Bao, J. Ouyang, J. Park, L.
+Walsh, L. Kong, M. Ivanov, M. Ubl, M. Liamets, O. Menis, P. Migdal, Q.
+Bao, R. Movva, R. Ben Chaim, N. Srinath, S. Bogdanik, S. Yadav, S.
+Benjamin, T. Kung, W. Hughes, X. Lan, H. Gupta, S. Mishra, C. Wang, H.
+He, J. Tu, K. Montgomery, Z. Tu, A. Naik, D. Mortensen, I. Zhang, Y.
+Mathur, E. Liu, K. Singh, M. Yu, S. Feng, V. Gangal, Z. Tao, S. Ruan, J.
+Mueller, J. Cabezas, J. Bauer, K. X. Li, R. Zhang, A. Feller, A.
+Madayan, L. Chen, B. Feuer, X. Li, B. Li, H. Raj, S. Galler, L. Shi, I.
+Segal, K. Buchanan, S. P., R. Desai, A. Schneider, C. Settles, X. Lin,
+M. Nezhurina, A. Wang, M. Kowalczyk, J.-X. Zhao, S. Satia, J. Hu, S.
+Atef, K. Chen, S. Vance, G. Segato, J. Jitsev, A. Dimakis, M. Merrill,
+A. Konwinski, and L. Schmidt. Terminal-Bench, Aug.~2026a. URL
+https://github.com/harbor-framework/terminal-bench.
+
+R. Marten, A. Shaw, A. Konwinski, and Terminal-Bench Contributors.
+Terminal-bench 3.0: Harder tasks for better agents.
+https://www.tbench.ai/news/terminal-bench-3-0, 2026b. An Open Benchmark
+for Agent Work in Terminal Environments.
+
+M. Mathew, D. Karatzas, and C. Jawahar. Docvqa: A dataset for vqa on
+document images. In 2021 IEEE Winter Conference on Applications of
+Computer Vision (WACV), pages 2199--2208. IEEE, 2021.
+
+
+
+M. A. Merrill, A. G. Shaw, N. Carlini, B. Li, H. Raj, I. Bercovich, L.
+Shi, J. Y. Shin, T. Walshe, E. K. Buchanan, et al.~Terminal-bench:
+Benchmarking agents on hard, realistic tasks in command line interfaces.
+arXiv preprint arXiv:2601.11868, 2026.
+
+V. K. Nagaraja, V. I. Morariu, and L. S. Davis. Modeling context between
+objects for referring expression understanding. In European conference
+on computer vision, pages 792--807. Springer, 2016.
+
+Y. Nesterov. A method of solving a convex programming problem with
+convergence rate $O(1/k^2)$. Soviet Mathematics Doklady, 27:372--376, 1983.
+
+OpenAI. gpt-oss-120b \& gpt-oss-20b model card. CoRR, abs/2508.10925,
+2025. doi: 10.48550/A RXIV.2508.10925. URL
+https://doi.org/10.48550/arXiv.2508.10925.
+
+OpenAI. Codex. https://github.com/openai/codex, 2026.
+
+L. Phan, A. Gatti, Z. Han, N. Li, J. Hu, H. Zhang, C. B. C. Zhang, M.
+Shaaban, J. Ling, S. Shi, et al.~Humanity's last exam. arXiv preprint
+arXiv:2501.14249, 2025.
+
+Y. Qian, S. Liu, and Y. Li. Deepselect: High-performance topk kernels
+for deepseek sparse attention and sampling.
+https://github.com/deepseek-ai/DeepSelect, 2026.
+
+D. Rein, B. L. Hou, A. C. Stickland, J. Petty, R. Y. Pang, J. Dirani, J.
+Michael, and S. R. Bowman. GPQA: A graduate-level google-proof q\&a
+benchmark. arXiv preprint arXiv:2311.12022, 2023.
+
+J. Roberts, M. R. Taesiri, A. Sharma, A. Gupta, S. Roberts, I. Croitoru,
+S.-V. Bogolin, J. Tang, F. Langer, V. Raina, et al.~Zerobench: An
+impossible visual benchmark for contemporary large multimodal models.
+arXiv preprint arXiv:2502.09696, 2025.
+
+B. D. Rouhani, R. Zhao, A. More, M. Hall, A. Khodamoradi, S. Deng, D.
+Choudhary, M. Cornea, E. Dellinger, K. Denolf, S. Dusan, V. Elango, M.
+Golub, A. Heinecke, P. James-Roxby, D. Jani, G. Kolhe, M. Langhammer, A.
+Li, L. Melnick, M. Mesmakhosroshahi, A. Rodriguez, M. Schulte, R.
+Shafipour, L. Shao, M. Siu, P. Dubey, P. Micikevicius, M. Naumov, C.
+Verrilli, R. Wittig, D. Burger, and E. Chung. Microscaling data formats
+for deep learning, 2023.
+
+M. Scetbon, C. Ma, W. Gong, and E. Meeds. Gradient multi-normalization
+for efficient LLM training. In The Thirty-ninth Annual Conference on
+Neural Information Processing Systems, 2025. URL
+https://openreview.net/forum?id=oanhUGY6un.
+
+N. Shazeer. Glu variants improve transformer. arXiv preprint
+arXiv:2002.05202, 2020.
+
+N. Shazeer and M. Stern. Adafactor: Adaptive learning rates with
+sublinear memory cost. In International conference on machine learning,
+pages 4596--4604. PMLR, 2018.
+
+D. Shepard and R. Salimans. Automationbench. arXiv preprint
+arXiv:2604.18934, 2026.
+
+F. Shi, M. Suzgun, M. Freitag, X. Wang, S. Srivats, S. Vosoughi, H. W.
+Chung, Y. Tay, S. Ruder, D. Zhou, D. Das, and J. Wei. Language models
+are multilingual chain-of-thought reasoners. In The Eleventh
+International Conference on Learning Representations, ICLR 2023, Kigali,
+Rwanda, May 1-5, 2023. OpenReview.net, 2023. URL
+https://openreview.net/forum?i d=fR3wGCk-IXp.
+
+Y. Sun, L. Dong, Y. Zhu, S. Huang, W. Wang, S. Ma, Q. Zhang, J. Wang,
+and F. Wei. You only cache once: Decoder-decoder architectures for
+language models. Advances in Neural Information Processing Systems,
+37:7339--7361, 2024.
+
+
+
+Y. Sun, X. Han, W. Zhang, Y. Pang, T. Wang, Y. Cao, Y. Huang, C. Duroiu,
+H. Zhang, J. Lin, et al.~Agents' last exam. arXiv preprint
+arXiv:2606.05405, 2026a.
+
+Y. Sun, Y. Zhang, L. Dong, J. Wang, and F. Wei. You only index once:
+Cross-layer sparse attention with shared routing. arXiv preprint
+arXiv:2606.06467, 2026b.
+
+M. Suzgun, N. Scales, N. Schärli, S. Gehrmann, Y. Tay, H. W. Chung, A.
+Chowdhery, Q. V. Le, E. H. Chi, D. Zhou, et al.~Challenging big-bench
+tasks and whether chain-of-thought can solve them. arXiv preprint
+arXiv:2210.09261, 2022.
+
+K. Team, T. Bai, Y. Bai, Y. Bao, J. Cai, X. Cai, P. Cao, Y. Cao, Z.
+Chai, Y. Charles, et al.~Kimi k3: Open frontier intelligence. arXiv
+preprint arXiv:2607.24653, 2026a.
+
+K. Team, T. Bai, Y. Bai, Y. Bao, S. Cai, Y. Cao, Z. Chai, Y. Charles, H.
+Che, C. Chen, et al.~Kimi k2.5: Visual agentic intelligence. arXiv
+preprint arXiv:2602.02276, 2026b.
+
+M. L. Team, B. Wang, B. Xiao, B. Zhang, B. Rong, B. Chen, C. Wan, C.
+Zhang, C. Huang, C. Chen, et al.~Longcat-flash-omni technical report.
+arXiv preprint arXiv:2511.00279, 2025.
+
+S. Tong, E. Brown, P. Wu, S. Woo, M. Middepogu, S. C. Akula, J. Yang, S.
+Yang, A. Iyer, X. Pan, A. Wang, R. Fergus, Y. LeCun, and S. Xie.
+Cambrian-1: A fully open, vision-centric exploration of multimodal llms,
+2024.
+
+L. Wang, H. Gao, C. Zhao, X. Sun, and D. Dai. Auxiliary-loss-free load
+balancing strategy for mixture-of-experts. CoRR, abs/2408.15664, 2024a.
+URL https://doi.org/10.48550/arX iv.2408.15664.
+
+X. Wang, C. Xu, H. Cao, R. Tian, W. Zhao, K. Yu, and C. Zhao.
+Tilekernels. https://github.c om/deepseek-ai/TileKernels, 2026a.
+
+Y. Wang, X. Ma, G. Zhang, Y. Ni, A. Chandra, S. Guo, W. Ren, A. Arulraj,
+X. He, Z. Jiang, T. Li, M. Ku, K. Wang, A. Zhuang, R. Fan, X. Yue, and
+W. Chen. Mmlu-pro: A more robust and challenging multi-task language
+understanding benchmark. CoRR, abs/2406.01574, 2024b. URL
+https://doi.org/10.48550/arXiv.2406.01574.
+
+Z. Wang, N. Schiller, H. Li, S. S. Narayana, M. Nasr, N. Carlini, X. Qi,
+E. Wallace, E. Bursztein, L. Invernizzi, et al.~Exploitgym: Can ai
+agents turn security vulnerabilities into real attacks? arXiv preprint
+arXiv:2605.11086, 2026b.
+
+Z. Wang, T. Shi, J. He, M. Cai, J. Zhang, and D. Song. Cybergym:
+Evaluating ai agents' real-world cybersecurity capabilities at scale. In
+International Conference on Learning Representations, volume 2026, pages
+123341--123386, 2026c.
+
+Z. Wen, Y. Shi, J. Wang, P. Luo, L. Qiao, D. Li, and T. Sun. Sron:
+State-free llm training via row-wise gradient normalization. 2025.
+
+Z. Xie, Y. Wei, H. Cao, C. Zhao, C. Deng, J. Li, D. Dai, H. Gao, J.
+Chang, K. Yu, L. Zhao, S. Zhou, Z. Xu, Z. Zhang, W. Zeng, S. Hu, Y.
+Wang, J. Yuan, L. Wang, and W. Liang. mhc: Manifoldconstrained
+hyper-connections, 2026. URL https://arxiv.org/abs/2512.24880.
+
+R. Xu, J. Li, and Y. Lu. On the width scaling of neural optimizers under
+matrix operator norms i: Row/column normalization and hyperparameter
+transfer. arXiv preprint arXiv:2603.09952, 2026a.
+
+
+
+Y. Xu, F. Meng, F. Jiang, Y. Wang, R. Zhou, Z. Wang, J. Wu, Z. Pan, X.
+Tang, W. Pei, et al.~Hisa: Efficient hierarchical indexing for
+fine-grained sparse attention. arXiv preprint arXiv:2603.28458, 2026b.
+
+J. Yang, C. E. Jimenez, A. Wettig, K. Lieret, S. Yao, K. R. Narasimhan,
+and O. Press. SWE-agent: Agent-computer interfaces enable automated
+software engineering. In The Thirty-eighth Annual Conference on Neural
+Information Processing Systems, 2024. URL https://arxi
+v.org/abs/2405.15793.
+
+J. Yang, K. Lieret, J. Ma, P. Thakkar, D. Pedchenko, S. Sootla, E.
+McMilin, P. Yin, R. Hou, G. Synnaeve, D. Yang, and O. Press.
+Programbench: Can language models rebuild programs from scratch?, 2026.
+URL https://arxiv.org/abs/2605.03546.
+
+L. Yu, P. Poirson, S. Yang, A. C. Berg, and T. L. Berg. Modeling context
+in referring expressions. In European conference on computer vision,
+pages 69--85. Springer, 2016.
+
+J. Yuan, J. Zou, S. Wang, Y. Liu, and F. Nie. Nora: Normalized
+orthogonal row alignment for scalable matrix optimizer. arXiv preprint
+arXiv:2605.03769, 2026.
+
+X. Yue, T. Zheng, Y. Ni, Y. Wang, K. Zhang, S. Tong, Y. Sun, B. Yu, G.
+Zhang, H. Sun, et al.~Mmmupro: A more robust multi-discipline multimodal
+understanding benchmark. In Proceedings of the 63rd Annual Meeting of
+the Association for Computational Linguistics (Volume 1: Long Papers),
+pages 15134--15186, 2025.
+
+M. Zechner. Pi: The coding-agent harness you can make your own.
+https://github.com/e arendil-works/pi, 2026.
+
+R. Zellers, A. Holtzman, Y. Bisk, A. Farhadi, and Y. Choi. HellaSwag:
+Can a machine really finish your sentence? In A. Korhonen, D. R. Traum,
+and L. Màrquez, editors, Proceedings of the 57th Conference of the
+Association for Computational Linguistics, ACL 2019, Florence, Italy,
+July 28- August 2, 2019, Volume 1: Long Papers, pages 4791--4800.
+Association for Computational Linguistics, 2019. doi:
+10.18653/v1/p19-1472. URL https://doi.org/10.18653/v1/p1 9-1472.
+
+A. Zeng, X. Lv, Z. Hou, Z. Du, Q. Zheng, B. Chen, D. Yin, C. Ge, C.
+Huang, C. Xie, et al.~Glm-5: from vibe coding to agentic engineering.
+arXiv preprint arXiv:2602.15763, 2026.
+
+X. Zhai, B. Mustafa, A. Kolesnikov, and L. Beyer. Sigmoid loss for
+language image pre-training. In 2023 IEEE/CVF International Conference
+on Computer Vision (ICCV), pages 11941--11952. IEEE, 2023.
+
+B. Zhang and R. Sennrich. Root mean square layer normalization. Advances
+in neural information processing systems, 32, 2019.
+
+Y. Zhang. On the principles behind neural network optimizers. arXiv
+preprint arXiv:2608.16760, 2026.
+
+Y. Zhang, C. Chen, T. Ding, Z. Li, R. Sun, and Z.-Q. Luo. Why
+transformers need adam: A hessian perspective. Advances in neural
+information processing systems, 37:131786--131823, 2024.
+
+Y. Zhang, C. Chen, Z. Li, T. Ding, C. Wu, D. D. Kingma, Y. Ye, Z.-Q.
+Luo, and R. Sun. Adammini: Use fewer learning rates to gain more. In
+International Conference on Learning Representations, volume 2025, pages
+28033--28063, 2025a.
+
+
+
+Z. Zhang, Y. Zhong, Y. Jiang, H. Hu, J. Sun, Z. Ge, Y. Zhu, D. Jiang,
+and X. Jin. Disttrain: Addressing model and data heterogeneity with
+disaggregated training for multimodal large language models. In
+Proceedings of the ACM SIGCOMM 2025 Conference, pages 24--38, 2025b.
+
+C. Zhao, L. Zhao, J. Li, Z. Xu, and C. Xu. Deepgemm: clean and efficient
+fp8 gemm kernels with fine-grained scaling.
+https://github.com/deepseek-ai/DeepGEMM, 2025.
+
+W. Zhong, R. Cui, Y. Guo, Y. Liang, S. Lu, Y. Wang, A. Saied, W. Chen,
+and N. Duan. AGIEval: A human-centric benchmark for evaluating
+foundation models. CoRR, abs/2304.06364, 2023. doi:
+10.48550/arXiv.2304.06364. URL
+https://doi.org/10.48550/arXiv.2304.06364.
+
+T. Y. Zhuo, M. C. Vu, J. Chim, H. Hu, W. Yu, R. Widyasari, I. N. B.
+Yusuf, H. Zhan, J. He, I. Paul, S. Brunner, C. Gong, J. Hoang, A. R.
+Zebaze, X. Hong, W. Li, J. Kaddour, M. Xu, Z. Zhang, P. Yadav, and et
+al.~Bigcodebench: Benchmarking code generation with diverse function
+calls and complex instructions. In The Thirteenth International
+Conference on Learning Representations, ICLR 2025, Singapore, April
+24-28, 2025. OpenReview.net, 2025. URL http
+s://openreview.net/forum?id=YrycTjllL0.

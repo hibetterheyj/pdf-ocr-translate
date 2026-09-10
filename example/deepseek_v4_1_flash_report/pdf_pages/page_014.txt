@@ -1,0 +1,49 @@
+The drafter comprises three Transformer blocks with a sliding attention window of 128 tokens.
+A single forward pass through these blocks computes base logits for five draft positions in
+parallel, while a lightweight Markov head models dependencies among the draft tokens. A
+confidence head predicts per-position conditional acceptance probabilities, which are used to
+estimate prefix survival probabilities. The scheduler combines these estimates with profiled
+engine throughput curves to dynamically select the verification length for each request, aiming
+to maximize expected system-wide token throughput under the current system load.
+Unlike the MTP module in DeepSeek-V3 (DeepSeek-AI, 2024), which is trained jointly
+with the backbone throughout pre-training, DSpark is introduced in a dedicated stage after
+pre-training. In this stage, we train only DSpark while keeping the backbone frozen. During post-
+training, we continue to train DSpark alongside the backbone, without propagating gradients
+from the DSpark objective into the backbone. This keeps DSpark aligned with the evolving
+policy, enabling it to accelerate both online serving and rollout generation for RL and OPD.
+2.4.4. FP4 Main KV Cache
+Long-context agent workloads require large per-request KV caches, increasing serving costs.
+DeepSeek-V4 already uses quantization-aware training (QAT) (Jacob et al., 2018) for FP4 indexer
+queries and keys, accelerating index computation and reducing the indexer cache size. We adopt
+the OCP-standard MXFP4 format (Rouhani et al., 2023) to support as many hardware platforms
+as possible, despite the higher accuracy of alternative formats in our experiments. We now
+extend QAT to the main KV cache, where FP4 reduces storage rather than accelerates matrix
+multiplication. Dequantizing cached values before attention allows us to use a more accurate
+format without requiring native matrix-multiplication support for that format, preserving
+compatibility across hardware platforms.
+Among the approximately four-bit formats evaluated, we select E2M1 with one E4M3 scale
+per 16 channels, following NVFP4 (Alvarez et al., 2025) but omitting its second-level global
+scale to balance accuracy and simplicity. Omitting this scale leaves ample dynamic range for
+the main KV cache: the format supports magnitudes up to 448 × 6 = 2688, far above the cache’s
+magnitude bound. In DeepSeek-V4.1-Flash, the largest trained RMSNorm weight magnitude
+is approximately 1. After RMS normalization, the L2 norm of the 512-channel KV latent is at
+most approximately
+√
+512. RoPE preserves this norm, so the maximum absolute value across
+channels after rotation is also bounded by approximately
+√
+512 ≈22.6. Besides, the maximum
+magnitude observed during training is around 10. Therefore, omitting the global scale causes
+no measurable decrease in accuracy and simplifies the cache layout.
+To enable FP4 main KV cache storage in DeepSeek-V4.1-Flash, we introduce QAT during post-
+training. The non-RoPE and RoPE components use the same quantization format. We quantize
+the cache after RoPE: quantizing before RoPE yields only a marginal accuracy improvement
+in our experiments and would introduce additional overhead during decoding. We retain FP8
+for the SWA KV cache due to its sensitivity to quantization. Compared with the FP8 main KV
+cache in DeepSeek-V4, this format nearly halves the storage footprint, both in HBM and when
+offloaded to SSD.
+2.5. Optimization
+Building upon the optimization configuration used in DeepSeek-V4, we make some new modifi-
+cations to better align with the architectural design.
+First, we use head-wise Muon, where Query weights are split by head before applying the
+14

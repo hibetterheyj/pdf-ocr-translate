@@ -1,0 +1,48 @@
+1. Introduction
+Applications of long-horizon agents have expanded rapidly in recent years, making ultra-long-
+context processing an increasingly important model workload. Supporting such workloads
+requires not only efficient long-sequence processing, but also the persistent storage, reuse,
+and transfer of large KV caches. KV cache management has therefore become a foundational
+capability for model deployment, while introducing substantial challenges across computation,
+storage, and communication. Prior advances in sparse attention (DeepSeek-AI, 2025, 2026b) have
+significantly reduced the computational cost of long-sequence processing, making persistent
+storage and data movement increasingly prominent bottlenecks.
+Specifically, DeepSeek-V4 (DeepSeek-AI, 2026b) combines a global attention branch spanning
+the full context with local Sliding-Window Attention (SWA). The global branch maintains global
+KV, comprising main KV and indexer K, while SWA maintains local KV states. For a fixed
+window size, SWA KV storage is bounded independently of sequence length. For sufficiently
+long sequences, global KV therefore dominates the runtime KV footprint, which is constrained
+by HBM capacity. In addition, certain KV are persisted for prefix reuse, referred to as persistent
+KV caches, which are constrained by SSD and host memory capacity. I/O and interconnect
+bandwidth also limit cache migration and loading. Together, these constraints limit serving
+throughput, increase deployment costs, and ultimately hinder the deployment and adoption of
+agents over longer task horizons and across broader application scenarios.
+Further reducing the KV cache footprint is therefore critical to alleviating storage and
+communication bottlenecks and lowering the cost of long-context serving. To this end, we
+develop DeepSeek-V4.1-Flash, a multimodal Mixture-of-Experts (MoE) model designed for
+more aggressive KV cache compression. DeepSeek-V4.1-Flash has 552B backbone parameters,
+natively supports multimodal inputs, and accommodates contexts of up to one million tokens.
+We adopt a Causal Encoder-Decoder (CED) architecture, in which decoder global KV is projected
+from the final encoder hidden states. This design enables the model to activate 8B parameters per
+token during prefill and 16B during decode, which is particularly cost-effective for input-heavy
+agentic scenarios. Despite being considerably larger than DeepSeek-V4-Flash, DeepSeek-V4.1-
+Flash requires only approximately 1/4 as much runtime KV cache storage and 1/8 as much
+persistent KV cache storage at the same sequence length. Moreover, DeepSeek-V4.1-Flash
+delivers better overall performance than DeepSeek-V4-Flash.
+This level of KV cache compression is achieved through joint optimizations in model archi-
+tecture, cache precision, and deployment strategy. Conceptually, DeepSeek-V4 can be viewed
+as an SWA-based local-processing backbone augmented with compressed global context. This
+perspective motivates us to focus on simplifying the global branch while largely preserving
+the local attention design. At the architectural level, we design Compressed Sparse Attention 2
+(CSA2), which applies cross-layer reuse to global KV (including main KV and indexer K) and
+Top-K indices to substantially reduce KV cache storage. CSA2 has three statically assigned
+modes: Full, Reindex, and Reuse. Full Mode generates global KV and performs indexing.
+Reindex Mode reuses the global KV from a preceding layer, and uses its own indexer Q to
+rescore the shared indexer K and select fresh Top-K indices. Reuse Mode reuses both global
+KV and the Top-K indices in a preceding layer, and directly performs sparse attention. In all
+three modes, each layer retains its own global Q and SWA KV. Sharing global KV and indexer K
+reduces duplicated cache storage. In addition, different from DeepSeek-V4 that employs the
+Compressed Sparse Attention (CSA)–Heavily Compressed Attention (HCA) hybrid architecture,
+DeepSeek-V4.1-Flash uses pure CSA2. At the cache-precision level, we use FP4 global KV caches
+during training with only marginal performance degradation. Together, CSA2 and FP4 KV
+4

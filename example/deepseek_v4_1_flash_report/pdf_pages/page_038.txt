@@ -1,0 +1,42 @@
+References
+J. Ainslie, J. Lee-Thorp, M. de Jong, Y. Zemlyanskiy, F. Lebrón, and S. Sanghai. Gqa: Training
+generalized multi-query transformer models from multi-head checkpoints. arXiv preprint
+arXiv:2305.13245, 2023.
+E. Alvarez, O. Almog, E. Chung, S. Layton, D. Stosic, R. Krashinsky, and K. Aubrey. Introducing
+nvfp4 for efficient and accurate low-precision inference, 2025. URL https://developer.
+nvidia.com/blog/introducing-nvfp4-for-efficient-and-accurate-low-pre
+cision-inference/.
+Anomaly. Opencode. https://github.com/anomalyco/opencode, 2026.
+Anthropic. Claude code. https://code.claude.com/docs/en/overview, 2026.
+Y. Bai, S. Tu, J. Zhang, H. Peng, X. Wang, X. Lv, S. Cao, J. Xu, L. Hou, Y. Dong, et al. Longbench
+v2: Towards deeper understanding and reasoning on realistic long-context multitasks. In
+Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics
+(Volume 1: Long Papers), pages 3639–3664, 2025.
+Y. Bai, Q. Dong, T. Jiang, X. Lv, Z. Du, A. Zeng, J. Tang, and J. Li. Indexcache: Accelerating
+sparse attention via cross-layer index reuse. arXiv preprint arXiv:2603.12201, 2026.
+W. Brandon, M. Mishra, A. Nrusimha, R. Panda, and J. Ragan-Kelley. Reducing transformer key-
+value cache size with cross-layer attention. In A. Globerson, L. Mackey, D. Belgrave, A. Fan,
+U. Paquet, J. Tomczak, and C. Zhang, editors, Advances in Neural Information Processing
+Systems, volume 37, pages 86927–86957. Curran Associates, Inc., 2024. doi: 10.52202/07901
+7-2758. URL https://proceedings.neurips.cc/paper_files/paper/2024/file/9
+e23d020c18e4c40d81c6a0fc7a46f68-Paper-Conference.pdf.
+L. Chen, D. Xu, C. An, X. Wang, Y. Zhang, J. Chen, Z. Liang, F. Wei, J. Liang, Y. Xiao, et al.
+Powerattention: exponentially scaling of receptive fields for effective sparse attention. arXiv
+preprint arXiv:2503.03588, 2025.
+L. Chen, W. Xie, Y. Liang, H. He, H. Zhao, Z. Yang, Z. Huang, H. Wu, H. Lu, Y. Bao, et al.
+Babyvision: Visual reasoning beyond language. arXiv preprint arXiv:2601.06521, 2026.
+M. Chen, J. Tworek, H. Jun, Q. Yuan, H. P. de Oliveira Pinto, J. Kaplan, H. Edwards, Y. Burda,
+N. Joseph, G. Brockman, A. Ray, R. Puri, G. Krueger, M. Petrov, H. Khlaaf, G. Sastry, P. Mishkin,
+B. Chan, S. Gray, N. Ryder, M. Pavlov, A. Power, L. Kaiser, M. Bavarian, C. Winter, P. Tillet,
+F. P. Such, D. Cummings, M. Plappert, F. Chantzis, E. Barnes, A. Herbert-Voss, W. H. Guss,
+A. Nichol, A. Paino, N. Tezak, J. Tang, I. Babuschkin, S. Balaji, S. Jain, W. Saunders, C. Hesse,
+A. N. Carr, J. Leike, J. Achiam, V. Misra, E. Morikawa, A. Radford, M. Knight, M. Brundage,
+M. Murati, K. Mayer, P. Welinder, B. McGrew, D. Amodei, S. McCandlish, I. Sutskever, and
+W. Zaremba. Evaluating large language models trained on code. CoRR, abs/2107.03374, 2021.
+URL https://arxiv.org/abs/2107.03374.
+X. Cheng, X. Yu, C. Shao, J. Li, Y. Xiong, Y. Qian, J. Zhu, S. Ma, X. Zhang, J. Ye, et al. Dspark:
+Confidence-scheduled speculative decoding with semi-autoregressive generation. arXiv
+preprint arXiv:2607.05147, 2026a.
+X. Cheng, W. Zeng, D. Dai, Q. Chen, B. Wang, Z. Xie, K. Huang, X. Yu, Z. Hao, Y. Li, H. Zhang,
+H. Zhang, D. Zhao, and W. Liang. Conditional memory via scalable lookup: A new axis of
+38

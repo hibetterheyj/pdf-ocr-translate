@@ -1,0 +1,46 @@
+6. Conclusion, Limitations, and Future Directions
+In this work, we introduce DeepSeek-V4.1-Flash, a multimodal Mixture-of-Experts (MoE) model
+with support for contexts of up to one million tokens. Through joint optimization of model
+architecture, cache precision, and deployment strategy, DeepSeek-V4.1-Flash pushes the limits
+of KV cache compression. Its Causal Encoder-Decoder (CED) architecture enables the model
+to activate only 8B parameters per token during prefill, compared with 16B during decode,
+improving cost efficiency for input-heavy agentic workloads. At equal sequence lengths, cross-
+layer KV cache reuse in Compressed Sparse Attention 2 (CSA2) and FP4 KV caching reduce
+its global KV cache footprint (always in HBM) to 890 bytes per token, roughly 1/4 of the
+corresponding footprint of DeepSeek-V4-Flash. SWA Bounded Replay further reduces its
+persistent KV cache footprint (always on SSD or in host memory) to roughly 1/8 of that of
+DeepSeek-V4-Flash. These reductions alleviate HBM and SSD capacity pressure while the
+model delivers substantially better overall performance than DeepSeek-V4-Flash. Despite
+possessing a significantly smaller parameter footprint than contemporary open-source models
+such as GLM-5.3 and Kimi-K3, DeepSeek-V4.1 achieves comparable—and in several tasks,
+superior—performance across key benchmarks.
+Although DeepSeek-V4.1-Flash substantially simplifies several architectural components
+relative to DeepSeek-V4-Flash, the newly introduced architectural changes also create robustness
+boundaries that have yet to be fully characterized. Our internal evaluations cover a diverse
+range of test cases and boundary conditions, and we have not observed any systematic degra-
+dation in model capabilities in the evaluated settings. Nevertheless, no finite test suite can
+cover every extreme input and deployment condition. Potential selection errors in CSA2 and
+approximate state reconstruction in SWA Bounded Replay may still cause capability degradation
+in untested boundary cases. Going forward, we will continue to expand our stress-testing and
+evaluation stack, with particular attention to sparse retrieval over long contexts and SWA state
+reconstruction at cache-resumption boundaries. We will also monitor real-world workloads,
+systematically characterize potential failure modes and robustness boundaries, and further
+improve model robustness under extreme conditions.
+As AI models achieve remarkable performance capabilities, standard evaluation benchmarks
+have increasingly reached saturation. While DeepSeek-V4.1-Flash demonstrates performance
+that closely approaches top-tier models like Fable-5 and GPT-6 Astra—offering a highly compa-
+rable user experience in daily applications—a performance gap remains on the most challenging
+tasks. Although benchmark scores show a narrow margin, this parity does not imply that the
+model matches the frontier capabilities of leading closed-source systems on complex, high-
+difficulty reasoning and edge cases.
+Consequently, we will continuously update our evaluation protocols to ensure rigorous
+assessment of state-of-the-art reasoning boundaries. Alongside continued efforts to reduce
+model costs, we believe that further advances in model intelligence will depend on the coor-
+dinated scaling of data, model capacity, and RL. With DeepSeek-V4.1-Flash as a new starting
+point, we will continue to explore the limits of model capabilities and systematically address
+key challenges in large-scale data synthesis and RL scaling. We will also actively integrate
+model–harness co-design, enabling the joint system to evolve and be optimized together. By ad-
+vancing cost reduction and capability scaling in tandem, we hope to make highly capable agents
+more accessible and easier to deploy, further lowering the barriers to adopting AI technologies
+across a broader range of industries and scenarios.
+37
