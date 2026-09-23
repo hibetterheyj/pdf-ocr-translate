@@ -195,9 +195,23 @@ mimo_v2_6_report/
 
 2. **`-` 占位符丢失是静默的语义损伤**。Table 3 里 `-` 表示「该模型没跑这个基准」，二阶段版把它删成空单元格，编译不会报任何错，表格看起来也正常——只是读者会把「没测」读成「测了但空白」。这类错误只有比对原表才能发现。
 
-3. **切分脚本与合并脚本的命名约定不一致**。`split_translation_chunks.py` 产出 `chunk_00_preamble.tex` + `NN_<name>.tex`，而 `merge_translation_chunks.py` 用 `re.match(r'chunk_\d+', f.name)` 过滤——按字典序会把 `01_body.tex` 排在 preamble 前，按过滤规则又会把所有正文块丢掉。本示例因此自带 `merge_chunks.py`（按序号排序），skill 里两处待统一。
+3. **切分脚本与合并脚本的命名约定不一致**（两处都是 skill 自带脚本的真实缺陷，本次发现并已在上游修复）。
+   `split_translation_chunks.py` 产出 `chunk_00_preamble.tex` + `NN_<name>.tex`，而
+   `merge_translation_chunks.py` 用 `re.match(r'chunk_\d+', f.name)` 过滤——按过滤规则会
+   **把所有正文块丢掉，只剩 preamble**；就算放宽过滤，按字典序也会把 `01_body.tex` 排在
+   `chunk_00_preamble.tex` 前面。
+   合并脚本还有第二处：它在**正文块**里找摘要标题来定位目录插入点，而切分脚本把标题块和
+   摘要标题都留在了 preamble 块的末尾，于是永远找不到、目录静默不注入。
+   本示例当时自带 `merge_chunks.py` 绕开这两点；上游已修复（`fix: repair chunk merging and
+   custom column types in the skill scripts`），示例保留自己的合并脚本只是为了它额外的
+   `\clearpage` 与三项自检输出。
 
-4. **`check_tables.py` 读不了自定义列类型**。它用 `re.findall(r"[lcr]", spec)` 数列，`L{13em}C{7em}` 这类 `\newcolumntype` 一律数成 0 列，于是报了 50 条「列数不符」的假警报。判据应以 LaTeX 是否 0 错误为准。
+4. **`check_tables.py` 读不了自定义列类型**（同样已在上游修复）。它按固定的字母表数列，而
+   `L{13em}C{7em}` 这类 `\newcolumntype` 里的 `C` 不在表内，于是把 9 列的表数成 1 列，
+   报了 50 条「列数不符」的假警报——**假警报掩盖了它本该抓到的真问题**。
+   修复后它只报 1 条：表 7 的子表头行少一格（该行末尾那一格被上方 `\multirow` 覆盖，
+   LaTeX 会当空格补上，所以渲染一直是对的，但行本身确实不完整）。
+   现在加了 `--fix`，会把这类「末尾缺格」的行补齐；本示例的 `assemble.sh` 已把它接进流程。
 
 5. **并行 agent 全部一次通过**。13 个 agent 各 4–7 次工具调用、无一耗尽上下文。区别在于这次**校验收在切分之前做完**：数学、连字、表格宽度、图片都已修好并写进 `main.tex`，agent 拿到的是一份「已核实、不要重新调查」的清单，没有一个是停下来反复读 PDF 的。（DeepSeek 那次 13 个 agent 挂了 5 个，全是反复读 PDF 做校验的。）
 
