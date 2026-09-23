@@ -28,8 +28,21 @@ TOC_BLOCK = (
 )
 
 
+def order_key(path: Path) -> int:
+    """Chunk order from the leading number, with or without a `chunk_` prefix."""
+    m = re.match(r"(?:chunk_)?(\d+)", path.name)
+    return int(m.group(1)) if m else 10 ** 6
+
+
 def load_chunks(parts_dir: Path) -> list[tuple[str, str]]:
-    """Return [(filename, text)] in chunk order, dropping DROP_AT_MERGE chunks."""
+    """Return [(filename, text)] in chunk order, dropping DROP_AT_MERGE chunks.
+
+    `split_translation_chunks.py` writes `chunk_00_preamble.tex` but names the
+    body chunks `NN_<name>.tex` — no `chunk_` prefix.  Matching only the
+    prefixed form silently merges the preamble alone and drops the whole
+    translation, so accept both and sort on the number rather than the name
+    (`01_...` must not sort after `chunk_00_...`).
+    """
     chunks = []
     cmap = {}
     map_file = parts_dir / 'CHUNK_MAP.json'
@@ -37,8 +50,8 @@ def load_chunks(parts_dir: Path) -> list[tuple[str, str]]:
         cmap = {c['chunk']: c for c in json.loads(map_file.read_text(encoding='utf-8'))}
 
     files = sorted(
-        f for f in parts_dir.glob('*.tex')
-        if re.match(r'chunk_\d+', f.name) or f.name == 'preamble.tex'
+        (f for f in parts_dir.glob('*.tex') if re.match(r'(?:chunk_)?\d+', f.name)),
+        key=order_key,
     )
     for f in files:
         if f.name in cmap and cmap[f.name].get('note') == 'DROP_AT_MERGE':
@@ -87,17 +100,24 @@ def merge(parts_dir: Path, output: Path, toc_title: str, dedupe: bool) -> None:
         body_chunks = dedupe_shared_headings(body_chunks)
 
     # inject TOC after the title/authors — before the Abstract heading.
-    # Find the abstract (or first \section*/\subsection) in chunk 01.
+    # `split_translation_chunks.py` keeps the title block *and* the Abstract
+    # heading at the tail of the preamble chunk, so look there first; a splitter
+    # that cuts after the Abstract heading instead leaves it in the body.
+    abstract_re = re.compile(r'\\subsection\{(摘要|Abstract)\}\s*\\label\{[^}]*\}')
     toc_injected = False
-    for i, (name, text) in enumerate(body_chunks):
-        m = re.search(
-            r'\\subsection\{(摘要|Abstract)\}\s*\\label\{[^}]*\}', text)
-        if m:
-            body_chunks[i] = (name, text.replace(
-                m.group(0), TOC_BLOCK + '\n' + m.group(0), 1))
-            toc_injected = True
-            print(f'  TOC injected before Abstract in {name}')
-            break
+    if abstract_re.search(preamble):
+        preamble = abstract_re.sub(
+            lambda m: TOC_BLOCK + '\n' + m.group(0), preamble, count=1)
+        toc_injected = True
+        print('  TOC injected before Abstract in the preamble chunk')
+    else:
+        for i, (name, text) in enumerate(body_chunks):
+            if abstract_re.search(text):
+                body_chunks[i] = (name, abstract_re.sub(
+                    lambda m: TOC_BLOCK + '\n' + m.group(0), text, count=1))
+                toc_injected = True
+                print(f'  TOC injected before Abstract in {name}')
+                break
     if not toc_injected:
         print('  WARNING: no Abstract heading found; TOC not injected.'
               ' Insert manually before the first body heading.')

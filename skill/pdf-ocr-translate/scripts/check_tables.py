@@ -15,6 +15,7 @@ Two details that matter:
     declared count, so they are skipped rather than flagged.
 
 Usage:  check_tables.py --parts parts
+        check_tables.py --parts parts --fix   # also pad short rows in place
 """
 from __future__ import annotations
 
@@ -29,13 +30,19 @@ END = "\\end{longtable}"
 def column_count(spec: str) -> int:
     """Count declared columns.
 
-    Handles the plain types and the wrapped forms a sizing pass introduces —
-    ``p{3em}``, ``L{15em}`` (a custom ragged-right p-column), and
-    ``>{\\RaggedRight\\arraybackslash}p{3em}``.
+    Handles the plain types plus every wrapped form the pipeline introduces —
+    ``p{3em}``, the custom ``L{15em}`` / ``C{7em}`` ragged-right and centred
+    columns a sizing pass defines, ``>{\\RaggedRight\\arraybackslash}p{3em}``,
+    and ``*{3}{c}``.
+
+    Any *brace-argument* descriptor counts as one column, whatever letter names
+    it: matching a fixed list of letters is what let ``C{7em}`` slip through
+    uncounted and produced a screenful of bogus "declares 1 columns" rows.
     """
-    spec = re.sub(r">\{[^}]*\}", "", spec)          # drop array's >{...} insertions
-    return (len(re.findall(r"[lcr]", spec))
-            + len(re.findall(r"[pLmXb]\{[^{}]*\}", spec)))
+    spec = re.sub(r"[<>]\{[^{}]*\}", "", spec)                # array's >{...}/<{...}
+    spec = re.sub(r"\*\s*\{[^{}]*\}\s*\{([^{}]*)\}", r"\1", spec)   # *{n}{col} -> col
+    spec = re.sub(r"[A-Za-z]\{[^{}]*\}", "X", spec)           # any brace-arg type
+    return len(re.findall(r"[lcrX]", spec))
 
 
 def blank_cell_internals(body: str) -> str:
@@ -46,19 +53,60 @@ def blank_cell_internals(body: str) -> str:
     return body
 
 
-def check(path: Path) -> tuple[int, list[str]]:
+def pad_short_rows(body: str, cols: int) -> tuple[str, int]:
+    """Append the missing trailing ``&`` to rows that fall short of ``cols``.
+
+    A row with fewer cells than the preamble declares is usually just a row
+    whose *trailing* cells are empty — a header row under a ``\\multirow`` (the
+    multirow covers the cell, but the row still has to supply a placeholder),
+    or a data row with no value in the last column.  LaTeX renders those
+    correctly by leaving the cells blank, so the damage is invisible; but it is
+    also indistinguishable from a cell that OCR genuinely dropped, which is why
+    the checker flags it and this pass only ever *appends*, never moves or
+    removes.  Rows that are too *long* are left alone — that is a merged cell
+    and needs the PDF.
+    """
+    pieces, prev, fixed = [], 0, 0
+    for m in re.finditer(r"\\\\(?!\s*\[)", body):
+        row = body[prev:m.start()]
+        pieces.append(row)
+        missing = cols - 1 - row.count("&")
+        if ("&" in row and missing > 0
+                and "\\multicolumn" not in row and "\\multirow" not in row):
+            pieces.append("& " * missing)
+            fixed += 1
+        pieces.append(m.group(0))
+        prev = m.end()
+    pieces.append(body[prev:])
+    return "".join(pieces), fixed
+
+
+def check(path: Path, fix: bool = False) -> tuple[int, list[str], int]:
     text = path.read_text()
     problems: list[str] = []
     checked = 0
+    padded = 0
+    out: list[str] = []
+    pos = 0
     for match in BEGIN.finditer(text):
         end = text.find(END, match.end())
         if end < 0:
             problems.append(f"{path.name}: unterminated longtable at offset {match.start()}")
             continue
         cols = column_count(match.group(1))
-        body = blank_cell_internals(text[match.end():end])
+        body = text[match.end():end]
         checked += 1
-        for row in (r for r in body.split(r"\\") if "&" in r):
+
+        if fix:
+            new_body, n = pad_short_rows(body, cols)
+            if n:
+                out.append(text[pos:match.end()])
+                out.append(new_body)
+                pos = end
+                padded += n
+                body = new_body
+
+        for row in (r for r in blank_cell_internals(body).split(r"\\") if "&" in r):
             if "\\multicolumn" in row or "\\multirow" in row:
                 continue
             amps = row.count("&")
@@ -68,20 +116,30 @@ def check(path: Path) -> tuple[int, list[str]]:
                     f"{path.name}: table #{checked} declares {cols} columns "
                     f"({cols - 1} '&') but this row has {amps}  :: {snippet}"
                 )
-    return checked, problems
+
+    if fix and padded:
+        out.append(text[pos:])
+        path.write_text("".join(out))
+    return checked, problems, padded
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--parts", required=True)
+    ap.add_argument("--fix", action="store_true",
+                    help="append the missing trailing '&' to short rows, in place")
     args = ap.parse_args()
     total = 0
+    padded = 0
     problems: list[str] = []
     for path in sorted(Path(args.parts).glob("*.tex")):
-        n, p = check(path)
+        n, p, f = check(path, fix=args.fix)
         total += n
+        padded += f
         problems += p
     print(f"checked {total} longtable(s)")
+    if args.fix:
+        print(f"padded {padded} short row(s)")
     for p in problems:
         print("  " + p)
     print(f"{len(problems)} row(s) with an unexpected column count")
