@@ -1,0 +1,48 @@
+mirrors real vulnerability analysis, where a researcher runs the target under a debugger, inspects
+memory, and crafts mutations from runtime observations.
+4.2.5
+Multi-Harness Training
+Agent harnesses differ in module design and are selected or built to meet different application
+needs. Models must therefore adapt to diverse interaction mechanisms, including those of har-
+nesses unseen during training, making cross-harness generalization an important capability.
+Training exclusively within a single harness may couple task-solving strategies to harness-specific
+implementations and limiting transfer. We therefore treat harness diversity as an additional
+training dimension alongside diversity in tasks and environments. A natural approach is to train
+on several production harnesses such as MiMo Code and Codex. However, this is a poor fit for
+RL in practice. First, production harnesses wrap the agent loop with engineering safeguards and
+multi-step workflows, and steer the model with numerous constraint and instruction prompts.
+These extras fall outside the task-completion reward signal, making credit assignment unreliable
+and leaving reward-unmeasured requirements to simply be ignored. Second, their modules are
+tightly coupled rather than independently configurable, so one cannot vary a single interaction
+mechanism in isolation or assemble diversity by controlled recombination.
+To this end, we propose multi-harness training with carefully designed mini-harnesses. All mini-
+harnesses start from the same minimal agent loop, which already includes the components
+needed for task completion—system prompt, tools, and context management. These modules
+stay minimal and decoupled, so implementations can be freely recombined and harness expan-
+sion remains controllable, safe, and clean. We then derive diverse, task-adapted mini-harness
+configurations for Code, General, Visual, and Cyber. The resulting training distribution is di-
+verse yet controllable, supporting analysis of individual harness mechanisms and encouraging
+transferable task-solving strategies.
+4.2.6
+Reward Hacking Mitigation
+RL relies on rewards to measure task success, but agents can sometimes earn high rewards by
+exploiting the environment or the evaluation process. This behavior, known as reward hacking,
+can be reinforced during training, increasing scores without improving task performance. For
+common coding agent tasks like repository-repair, a recurring failure mode is solution leakage:
+agents obtain a published fix beyond the intended task context and use it to construct a patch.
+Table 2 links each task request to the agent’s stated intent and subsequent action across five repos-
+itories. Such behavior can satisfy the test-based reward without demonstrating that the agent
+derived the repair from the bug report and the assigned checkout. Followingly, we introduce our
+mitigation combining mid-training alignment data with RL environment preparation, adversarial
+screening, and auditing throughout training.
+Mid-Training Alignment Data
+In early experiments, we observed a tendency toward reward hack-
+ing in MiMo. To mitigate this behavior, we synthesized a set of training examples from these cases
+and included them in mid-training. For each case, MiMo reflects on the faulty reasoning, revises
+the relevant turn, and continues with actions grounded in the task specification. The revised
+reasoning keeps the original error recognizable and makes the correction explicit. We found that
+adding these examples improved the model’s alignment.
+Environment Preparation
+In coding tasks, agents may pass tests by recovering leaked solutions
+from the environment or retrieving existing solutions over the network. Building a project with
+14

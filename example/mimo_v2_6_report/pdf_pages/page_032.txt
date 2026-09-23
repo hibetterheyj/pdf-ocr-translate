@@ -1,0 +1,50 @@
+6.4
+Training/Inference Consistency and Optimization
+We extend the RL and OPD infrastructure of MiMo-V2-Flash (Core Team et al., 2026), keeping
+SGLang (Zheng et al., 2024) and Megatron-LM (Shoeybi et al., 2019) as the inference and the
+training engine, respectively. In MiMo-V2.6, we use MXFP4 as the experts’ data type during
+rollout. We maintain alignment between the two engines in mixture-of-experts (MoE) routing
+and probability normalization. On the inference side, the Context Cache carries routing records,
+sampling candidate sets, and visual inputs alongside the KV state across turns, and offloads idle
+state to host memory. A draft model trained on RL rollout logs further accelerates generation
+through speculative decoding. On the training side, we reduce the memory and communication
+costs of long sequences.
+Training–Inference Consistency
+To support the MiMo-V2.6 series, we apply quantize–dequantize
+(QDQ) to the experts after each parameter update. The quantization follows the numeric con-
+straints of the MXFP4 Humming GEMM kernels (vLLM Project, 2026) used during rollout, so the
+two engines see identical expert weights. Even under identical parameters, numerical differences
+between the engines can flip discrete expert selections; Rollout Routing Replay (R3) (Ma et al.,
+2025) records the expert indices used during rollout and replays them during training, reproduc-
+ing the captured execution path. Top-k and top-p sampling renormalize over a restricted candi-
+date set rather than the full vocabulary; we record each token’s candidate set during rollout (Liu
+et al., 2025a; The Microsoft AI Team, 2026) and renormalize the training log-probabilities within
+it, matching the sampler’s normalization. For top-p sampling, only the GPU–CPU transfer is dense:
+we ship a bitmap of fixed shape and full-vocabulary width. The fixed shape avoids a GPU–CPU
+synchronization; the full width never truncates even a set that spans the whole vocabulary. All
+later stages are sparse: at a typical top-p of 0.97, a candidate set averages fewer than five tokens.
+Both R3 and top-p candidate-set replay incur negligible overhead, as the payloads stay compact
+and move off the critical path.
+Context Caching
+Following the request-level KVCache of MiMo-V2-Flash (Core Team et al.,
+2026), each dialogue context has a persistent key: within one policy version, later turns hit
+the cached KV—including generated tokens—and prefill only the new suffix. Context caching
+is a deliberately stateful choice: the cached state outlives each turn. Expert indices and candi-
+date sets are therefore not returned on intermediate turns but only when the rollout is finally
+collected, avoiding fragmented per-turn communication and processing. Historical multimodal
+inputs need neither re-hashing nor re-sending: their visual tokens already sit inside the cached
+KV. Only newly introduced images cross the process boundary; full visual inputs are sent only
+after a policy update or cache miss. Multi-turn environment interaction divides a trajectory’s wall
+clock into GPU time (generation) and tool time (waiting on the environment); a hierarchical ex-
+tension of the cache reflects this temporal split spatially—a state resides in HBM during GPU time
+and in a pinned host pool during tool time. Offloading and restoration run on side CUDA streams
+rather than the compute stream, never stalling generation. HBM is thereby devoted to running
+requests as far as possible: the larger the decode batch, the higher the arithmetic intensity and
+compute utilization.
+Draft Model Acceleration
+RL rollouts use block-6 DFlash for speculative decoding by default,
+replacing the multi-token prediction (MTP-3) configuration inherited from SFT. Initially trained
+on the SFT policy, DFlash is then finetuned on early RL rollout logs resampled to match the RL
+training distribution. Under this default configuration, average accepted length is 31.3% higher
+than with the MTP configuration. At large RL batch sizes, we select the draft block size based on
+32

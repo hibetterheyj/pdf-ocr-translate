@@ -1,0 +1,48 @@
+1
+Introduction
+Recursive self-improvement (RSI) envisions models that expand their capabilities through sus-
+tained exploration and feedback. Realizing this vision requires agents, which couple models
+with interactive environments and thereby supply the multi-step trajectories and feedback sig-
+nals that self-improvement depends on. Towards this goal, scaling reinforcement learning (RL)
+on complex agentic tasks thus opens a concrete path. However, realizing this potential faces
+two major challenges. First, RL for foundation models requires suitable model architectures and
+a sufficiently rich exploration space for agents. Second, scaling RL requires sophisticated solu-
+tions for infrastructure, environments and grader. In this report, we introduce the MiMo-V2.6
+series, including MiMo-V2.6-Pro, a 1.02T-parameter Mixture-of-Experts model with 42B active
+parameters, and MiMo-V2.6-Flash, a 310B-parameter Mixture-of-Experts model with 15B active
+parameters, to bridge these gaps, taking a practical step in large-scale RL.
+The architecture, pre-training, and mid-training of MiMo-V2.6 jointly establish a powerful and
+efficient foundation model. Motivated by the need to preserve global context at low computa-
+tional cost, MiMo-V2.6 builds a hybrid sparse MoE Transformer backbone that interleaves Local
+Sliding Window Attention (SWA) with Global Attention (GA), augmented by a lightweight visual
+encoder, audio encoders. In addition, large-scale pre-training equips the model with extensive
+knowledge and versatile multimodal understanding across text, audio, and video. We further in-
+troduce an agent-centric mid-training phase that expands the exploration space for agentic tasks,
+enabling the model to discover more effective task-solving trajectories during post-training.
+Next, we scale the RL compute through a systematic, co-designed framework spanning three
+key components. First, we scale batch size and training throughput through fully asynchronous
+training, processing thousands of long-horizon rollouts and billions of tokens per step at context
+lengths of up to 1M. Second, we scale the diversity and complexity of RL environments across
+coding, general, visual, and cybersecurity tasks, using diverse agent harnesses and strengthening
+safeguards against reward hacking. Varying both the harness and the task improves the model
+generalization. Third, we introduce groupwise agentic grading to provide more informative re-
+ward signals beyond binary test cases. Instead of assigning the same reward to all solutions
+that pass the test cases, we compare solutions within each group to distinguish problem-solving
+quality and behaviors. Through our proposed Groupwise Reward Synthesis (GRS) and Group-
+wise Advantage Redistribution (GAR), these fine-grained distinctions are converted into more
+informative learning signals, guiding the model toward more accurate and efficient solutions.
+Realizing these at scale presents both research and engineering challenges for infrastructure. To
+support flexible agentic interaction scenarios, we design a unified trajectory representation and a
+penalty mechanism that together refine the learning signal. To handle large training batches, we
+sustain high-concurrency interaction across diverse agent frameworks through a pool of harness,
+and decouple the control plane from the data plane to buffer and transfer massive trajectories
+carrying routing and multi-modal payloads. A sample mixing mechanism, working together with
+dynamic sampling and partial rollout, stabilizes per-task sample composition in train batches.
+We align the training and inference engines on MoE routing and top-p sampling candidate sets,
+and optimize both engines for RL workloads.
+Scaling RL compute substantially unlocks model potential on both verifiable tasks such as coding
+and less verifiable tasks such as web development. As shown in Figure 1, both MiMo-V2.6-Pro and
+MiMo-V2.6-Flash steadily improve their performance across the reported benchmarks as training
+steps increase. Moreover, these gains are not confined to a single domain, but hold consistently
+across diverse tasks spanning coding on DeepSWE (Huang et al., 2026), general workflows on
+3

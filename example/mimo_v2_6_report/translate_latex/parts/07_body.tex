@@ -1,0 +1,76 @@
+\subsection{4.3.3 行为正则化}\label{behavioral-regularization}
+
+为提高 RL 训练的稳定性并鼓励高效、可靠的行为，我们引入两种互补机制。组相对长度惩罚抑制 token 数量的过度增长，而片段级行为惩罚处理格式违规与工具调用错误。批级优势重平衡改善信用分配，同时限制可能引发熵不受控增长的过度负向优化压力。
+
+组相对长度惩罚 我们发现组相对长度惩罚能提升泛化能力，并抑制 RL 训练期间生成 token 数量的快速增长。对于每个带有 $G$ 条采样 rollout 的提示 $q$，令 \(R _ { i }\) 为原始结果奖励，\(\mathcal { P } _ { q }\) 为成功 rollout 的索引集合，\(\ell _ { i } = | o _ { i } |\) 为生成的 token 数。令 \(A \in [ 0 , 1 ]\) 为最小组通过率，\(B \in ( 0 , 1 0 0 )\) 为分位数参数。对于 \(| { \mathcal { P } } _ { q } | / G > A\) 的组，我们计算参考长度
+\(\ell _ { q } ^ { \star } = \mathrm { Q u a n t i l e } _ { B / 1 0 0 } \{ \ell _ { j } : j \in \mathcal { P } _ { q } \}\)
+并得到调整后的奖励
+
+\[
+\widetilde { R } _ { i } = R _ { i } - 1 \left[ i \in \mathcal { P } _ { q } \right] X \left[ \mathrm { c l i p } \left( \frac { \ell _ { i } / \ell _ { q } ^ { \star } - 1 - \delta } { s - \delta } , 0 , 1 \right) \right] ^ { \gamma } .\tag{4}
+\]
+
+其中 \(X ~ \geq ~ 0\) 是最大奖励扣减量，
+\(\delta \ \geq \ 0\) 是相对 \(\ell _ { q } ^ { \star }\) 所容忍的超额比例，\(s > \delta\) 是惩罚饱和处的超额比例，\(\gamma \geq 1\) 是斜坡指数；
+\(\delta = 0\) 会惩罚长于参考长度的成功 rollout。指示函数 1{[}$\cdot${]} 将扣减限制在成功 rollout 上，且
+\(\mathrm { c l i p } ( x , 0 , 1 ) = \mathrm { m i n } ( 1 , \mathrm { m a x } ( 0 , x ) )\)
+。其他组保留其原始奖励。式 (1) 中的结果优势 \(A _ { i }\) 由调整后的奖励 \(\widetilde { R } _ { i }\) 计算得到；阈值 $A$ 是一个单独的超参数。这鼓励模型以适配每个提示的参考长度给出简洁的成功解，而通过率门控则为困难提示保留探索空间。
+
+
+
+片段级行为惩罚 结果奖励可能强化有缺陷的中间行为，因此我们针对格式违规与工具调用错误（如标记格式错误、工具名无效或参数格式错误）引入片段级规则。令 \(h _ { i , t } = 1\) 标记被标记的 token，否则为 0。在整个训练批次上，\(H _ { \pm }\) 和 \(C _ { \pm }\) 分别收集损失掩码 \(M _ { i , t } = 1\) 下被标记与未被标记的 token 索引 \(( i , t )\)；± 表示所属轨迹结果优势 \(A _ { i : }\) 的符号，下文所有求和均按 token 计数。
+
+\[
+\begin{array} { r l } & { \widetilde { A } _ { i , t } = \left\{ \begin{array} { l l } { \alpha ( 1 - h _ { i , t } ) A _ { i } , } & { A _ { i } > 0 , } \\ { \left[ \beta ( 1 - h _ { i , t } ) + \kappa h _ { i , t } \right] A _ { i } , } & { A _ { i } < 0 , } \\ { 0 , } & { A _ { i } = 0 , } \end{array} \right. \qquad \kappa > 1 , } \\ & { \alpha = \operatorname* { m i n } \Biggl ( \alpha _ { \operatorname* { m a x } } , 1 + \frac { \sum _ { H _ { + } } A _ { i } } { \sum _ { C _ { + } } A _ { i } } \Biggr ) , \qquad \beta = \operatorname* { m a x } \Biggl ( \beta _ { \operatorname* { m i n } } , 1 - \frac { \left( \kappa - 1 \right) \sum _ { H _ { - } } \left| A _ { i } \right| } { \sum _ { C _ { - } } \left| A _ { i } \right| } \Biggr ) . } \end{array}\tag{5}
+\]
+
+其中 \(\kappa > 1\) 放大被标记 token 上负向优势的幅度；\(\alpha\) 将未被标记的正向 token 向上缩放，而 \(\beta\) 将未被标记的负向 token 向零缩放。超参数 \(\alpha _ { \operatorname* { m a x } } \geq 1\) 和 \(0 < \beta _ { \mathrm { m i n } } \le 1\) 分别对正向放大设上限并约束负向衰减。调整后的 token 优势 \(\widetilde { A } _ { i , t }\) 在式 (1) 中取代 \(A _ { i }\)。这会在正向轨迹中掩蔽被标记的 token，并在负向轨迹中更严厉地惩罚它们。被移除的正向优势被重新分配给未被标记的正向 token，而新增的负向幅度则通过降低对未被标记的负向 token 的惩罚来抵消：未检测到错误的行为会依据轨迹的符号获得更多强化或更少惩罚。当两个缩放系数都未被裁剪时，每个符号的优势总量守恒，从而限制可能引发熵不受控增长的过度负向压力。若分母为零，其缩放系数设为一；此时以及发生裁剪时，守恒不再保证。
+
+\subsection{5 实验：You Only RL Once}\label{experiments-you-only-rl-once}
+
+本节描述规模化 RL 训练运行，包括训练设置（§5.1）、评测设置（§5.2）、RL 性能（§5.3）、专家负载稳定性（§5.4），并分析失败情形（§5.5）。运行日志见 https://mimo.xiaomi.com/rl/mimo-v26。
+
+\subsection{5.1 训练设置}\label{training-setup}
+
+RL 设置 我们的 RL 任务覆盖多个领域，包括智能体与竞赛编程（68\%）、通用工具使用（12\%）、美学设计（13\%）、上下文遵循（3\%）以及网络安全（4\%）。我们采样 1568 的提示批次，每个提示 16 条 rollout，合计全局训练批次为 25K 条轨迹。训练采用 GRPO 与异步部分 rollout，陈旧度为 4。
+
+优化器 我们使用 Muown 优化器，学习率为 \(3 \times 1 0 ^ { - 6 }\)，无权重衰减与学习率预热，梯度裁剪阈值为 1.0。对于 Muon 部分，我们使用 0.95 的动量系数并启用 Nesterov 动量，每次更新执行 10 次 Newton-- Schulz 迭代，并施加额外的 0.5 更新缩放因子。对于 Adam 部分，我们设置
+\(\beta _ { 1 } = \beta _ { 2 } = 0 . 9 5\) 和
+\(\epsilon = 1 0 ^ { - 8 }\) 。为稳定 MXFP4 训练，我们通过沿用 SFT checkpoint 的 FP32 主权重与 Muown 的行状态来初始化 RL。在 RL 训练期间，我们冻结路由器以维持稳定的专家负载。
+
+
+
+策略优化算法 我们采用式 (1) 中的组相对策略优化（GRPO），其优势计算详见 §4.3。损失聚合使用提示均值聚合，即在提示层面而非所有响应 token 上对代理目标取平均；这可防止 RL 期间响应长度增长过快。对于重要性采样，比率按 token 计算：
+\(r _ { t , i } = \mathrm { s g } [ \pi _ { \boldsymbol { \theta } } ( o _ { i , t } ) / \mu _ { \boldsymbol { \theta } _ { \mathrm { o l d } } } ( o _ { i , t } ) ]\)
+。每个 token 的训练概率由训练框架中的当前模型产生，推理概率则是 rollout 模型生成该 token 时产生的概率；对于部分 rollout，我们不重新计算推理概率。我们用四个解耦边界裁剪重要性采样比率：正向优势使用
+\(\epsilon _ { + } ^ { l } , \epsilon _ { + } ^ { h }\)，负向优势使用 \(\epsilon _ { - } ^ { l } , \epsilon _ { - } ^ { h }\)，得到裁剪掩码
+\({ \cal M } = \mathbb { 1 } \left[ \big ( A \ge 0 \land \epsilon _ { + } ^ { l } \le r \le \epsilon _ { + } ^ { h } \big ) \lor \big ( A < 0 \land \epsilon _ { - } ^ { l } \le r \le \epsilon _ { - } ^ { h } \big ) \right]\)
+。正向与负向边界均初始化为 {[}0.2, 5.0{]}，并在运行时依据策略熵独立调整：熵过低时放宽正向边界、收窄负向边界以将熵拉回正常范围，熵过高时则相反。整个训练过程中我们还监控各方向的 token 裁剪率。
+
+\subsection{5.2 评测设置}\label{evaluation-settings}
+
+基准套件 我们从四个类别评测智能体能力：代码智能体、网络安全、通用智能体与视觉智能体。我们的评测结合公开基准与三个内部基准：MiMo Code Bench、MiMo Cyber Bench 和 MiMo Visual Coding。
+
+代码智能体 我们使用 DeepSWE v1.1（Huang et al., 2026）、ProgramBench（Yang et al., 2026a）和 MiMo Code Bench 评测软件工程能力。DeepSWE 侧重长时程开发任务。ProgramBench 评估端到端软件构建：智能体必须从其编译后的二进制文件与文档重建程序，产出能复现参考程序行为的实现。MiMo Code Bench 提供额外的内部评测，覆盖多样化的编码任务。
+
+网络安全 我们使用 CyberGym（Wang et al., 2025）1、ExploitGym（Wang et al., 2026）、ExploitBench（Lee and Brumley, 2026）、SEC Bench Pro（Lee et al., 2026）和 MiMo Cyber Bench 评测漏洞复现与利用的互补方面。CyberGym 衡量智能体在真实软件中复现漏洞的能力，而 SEC Bench Pro 侧重从缺陷报告复现复杂漏洞。ExploitGym 评估超越单纯复现崩溃的漏洞利用开发，ExploitBench 评估在多个利用阶段的进展及由此产生的安全影响。MiMo Cyber Bench 以内部网络安全评测补充这些公开基准。
+
+通用智能体 我们评测通用智能体在工具使用、专业知识工作、基于终端的问题求解和计算机使用方面的表现。AutomationBench（Shepard and Salimans, 2026）通过模拟 SaaS 环境中的 REST API 评估跨应用工作流编排，包括 API 发现与业务规则遵循。Toolathlon-Verified（HKUST NLP, 2026; Li et al., 2026a）使用多样化工具评估长时程、多应用工作流，包括通过 Model Context Protocol（MCP）暴露的工具。
+
+1我们根据 4.2.4 节所述方法修正了有缺陷的评测环境。
+
+
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{images_hi/fig09.png}
+\caption{RL 训练过程中在 DeepSWE v1.1、AutomationBench v1.0.6 以及我们内部的 MiMo Visual Coding 基准上的评测分数（上）与总 token 数（千，下）。浅橙色与深橙色曲线分别代表 Flash 和 Pro。}
+\label{fig:9}
+\end{figure}
+
+
+GDPval-AA v2.1（Artificial Analysis, 2026; Patwardhan et al., 2025）是 Artificial Analysis 针对 GDPval 的评测框架，评估在经济价值任务上专业交付物的质量。JobBench（Li et al., 2026b）评估领域专家认为应优先委托给 AI 智能体的工作场所工作流。Agents' Last Exam（Sun et al., 2026）评估具有可验证结果的长时程、有经济价值的专业任务。Terminal-Bench 4.0 和 2.1（Marten et al., 2026; Merrill et al., 2026）评估终端环境中复杂任务的完成情况。OSWorld-Verified（Xie et al., 2024; XLANG Lab, 2025）评估在真实网页与桌面应用上的交互式计算机使用。
+
+视觉智能体 我们使用 MiMo Visual Coding 评测视觉编码能力，这是内部开发的基准，涵盖开放式设计与高保真视觉复刻。该基准包含 WebDev 与 Image2Code 等任务，分别涉及按用户请求构建网站，以及将参考图像转换为视觉上忠实的代码实现。
+
+基线配置 所有可配置推理强度的基线模型都在其支持的最高设置（max）下评测。

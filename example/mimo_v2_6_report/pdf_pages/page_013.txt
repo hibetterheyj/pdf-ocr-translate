@@ -1,0 +1,48 @@
+4.2.3
+Visual Agent Tasks
+To empower agents to shape the digital world through creative expression and precise visual
+control, we curate a diverse suite of visual tasks in which agents work with a broad range of
+artifacts, such as websites, interactive applications, games, 3D scenes, slides, SVG, videos and
+Figma designs. We organize these tasks into two complementary categories: open-ended design
+and high-fidelity visual replication. Together, they develop the model’s ability to produce reliable
+implementations with strong aesthetic quality and precise visual control.
+Open-ended design seeks to produce aesthetically compelling visual artifacts that satisfy user
+intent. The diversity of valid creative solutions makes aesthetic quality difficult to capture through
+fixed rules alone. We therefore combine pointwise and groupwise grading to establish consistent
+quality standards while rewarding relative improvements in aesthetic quality. Specifically, we first
+iteratively refine pointwise rubrics for runtime correctness, instruction adherence, layout integrity,
+and basic aesthetic quality. Once these rubrics stabilize, we introduce groupwise grading that
+jointly compares the rendered artifacts within each rollout group for the same query, identifying
+clearly stronger and weaker candidates and assigning rewards accordingly.
+High-fidelity visual replication aims to faithfully reproduce a specified visual target. Compared
+to open-ended design, the explicit reference enables more direct evaluation of visual fidelity. We
+grade these tasks primarily through rule-based similarity metrics, such as pixel-level similarity
+between rendered artifacts and their references, supplemented by LLM-based judging for holistic
+visual assessment. Together, these signals support effective scaling of reinforcement learning on
+visual replication tasks.
+4.2.4
+Cybersecurity Agent Tasks
+We train cyber agents with RL on real-world vulnerability reproduction: given a project and
+a target bug, the agent must construct an input that triggers it. This foundational offensive-
+security skill underlies exploit development, privilege escalation, and CTF challenges. It is also
+well suited to RL at scale: OSS-Fuzz supplies tens of thousands of manually confirmed instances, a
+volume unmatched by other security tasks. The difficulty is not triggering a crash, since complex
+C/C++ projects expose dozens of reachable crash paths, but triggering the specific vulnerability
+described. Verification must therefore separate the intended bug from unrelated crashes, and
+because it doubles as the RL reward, it must be accurate, deterministic, and cheap.
+Existing oracles fall short. Fix-binary differential testing, as used in CyberGym (Wang et al.,
+2025), accepts a PoC that crashes the vulnerable binary but not the patched one; an incomplete
+patch rejects correct PoCs, and unrelated changes between the two commits flip verdicts for rea-
+sons unconnected to the bug. Either error corrupts the training gradient. LLM-based judging
+returns different verdicts for the same PoC across runs and cannot serve as a stable reward. We
+instead extract two attributes from the ground-truth sanitizer (ASan/MSan/UBSan) report: the
+vulnerability type (e.g., heap-buffer-overflow) and the crash location (the topmost project-level
+stack frame). A PoC is accepted iff its crash matches both under rule-based string matching,
+which is deterministic, reproducible, and computationally trivial. The task description is derived
+from the same report, stating the exact type and function in which the crash must occur, so de-
+scription and verification share a single source of truth; CyberGym’s LLM-generated descriptions,
+by contrast, are often too broad (e.g., “buffer overflow in libxml2”) or simply wrong.
+For each vulnerability we check out the source at the reported commit, build the fuzzing harness,
+and give the agent the complete runtime environment: full source plus the compiled harness
+binary. CyberGym withholds the binary, restricting agents to source-only analysis; providing it
+13

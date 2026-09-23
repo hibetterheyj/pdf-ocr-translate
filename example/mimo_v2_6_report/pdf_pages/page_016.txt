@@ -1,0 +1,50 @@
+(a) Reward Hacking Prevention
+(b) Hack Detection Rates
+Before Training
+Environment Preparation
+Artifact, cache & Git cleanup
+Network isolation
+Hack Agent
+Search for attack routes
+New
+exploits
+Refine the
+environment
+New
+exploits
+During Training
+RL Training
+No exploit found
+Offline Trajectory Audits
+Continuous monitoring
+Rollouts
+Figure 6 Reward hacking prevention and monitoring. (a) Environment preparation and iterative
+hack-agent screening before training, while offline trajectory audits monitor hacking behaviors
+throughout training. Findings from both stages are used for environment improvements. (b)
+Top: the fraction of environments found hackable over cleanup rounds. Bottom: the fraction of
+trajectories with detected reward hacking throughout our final RL run.
+the updated environments. These subsequent checks repeatedly exposed further weaknesses,
+requiring additional rounds of cleanup and testing. We continued this process until the hack
+agent could no longer find a successful exploit in any of the environments.
+Training-Time Auditing
+We regularly audit agent trajectories offline for reward hacking through-
+out training. As the policy evolves, it may discover shortcuts that were not found during adversar-
+ial screening. We use these observations to identify weaknesses in the environments and guide
+further cleanup and access restrictions. Alongside these offline audits, the groupwise agentic
+grader (Section 4.3.2) sets the effective reward of confirmed hacking trajectories to zero before
+recomputing group statistics and advantages. With this correction in place, the logged confirmed-
+hack share remains below 2% throughout the whole training process for both MiMo-V2.6-Flash
+and MiMo-V2.6-Pro (Figure 6).
+4.3
+Groupwise Agentic Grading
+For code agent tasks, binary test rewards provide a scalable correctness signal but do not dis-
+tinguish implementation quality or problem-solving behavior among passing solutions. We use
+two complementary methods on distinct subsets of these tasks. Groupwise Reward Synthesis
+(GRS) is used for a subset of high-passrate tasks. It compares multiple offline rollouts to construct
+task-specific rubrics, which are reused during training to score individual rollouts and combine
+their quality scores with test rewards. For all the remaining code agent tasks, we rely primarily
+on Groupwise Advantage Redistribution (GAR). Its online agentic grader jointly examines suc-
+cessful and failed trajectories within each mixed-outcome group, ranks passing solutions, and
+redistributes positive advantage toward higher-quality passing trajectories. Figure 7 summarizes
+both workflows.
+16

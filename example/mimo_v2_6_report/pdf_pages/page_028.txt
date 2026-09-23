@@ -1,0 +1,73 @@
+Payload Porter
+Control Plane
+Data Plane
+Training Engine
+Sample Mixer
+Packer
+Distributed Trajectory Storage
+SWA CP
+Loss Fusion
+Adv
+Packed
+Data
+Harness Pool
+Inference Engine
+Instance
+Harness A
+Endpoint
+Agent Loop
+Instance
+Harness B
+Endpoint
+Agent Loop
+Instance
+Harness C
+Endpoint
+Agent Loop
+Prefill
+Decode
+(DFlash)
+MoE IDs
+Top-p
+Context
+Cache
+L2Cache
+Dispatch
+Metadata
+Payload
+QDQ weights
+Response
+Tokens &
+Δimages
+Figure 14 Overview architecture of RL infrastructure.
+Multi-tenant Rollout Execution
+We use Ray actors (Moritz et al., 2018) to execute agent har-
+nesses and Agent Loops across the cluster. A dedicated Ray actor for every harness instance and
+Agent Loop would cost one file descriptor per actor on Ray’s global control store (GCS) node, and
+a large batch would exhaust the GCS node’s file descriptors. We instead run fixed-size pools of
+persistent host actors, each carrying many concurrent tenants—Agent Loops on the model side
+and harness instances on the environment side. Each tenant keeps its own trajectory state, and as-
+signments are balanced by in-flight instance count. A host is a single process whose tenants share
+one event loop. On the model side they also share one request endpoint, one inference proxy,
+and one tokenizer; on the environment side, one imported harness codebase. A shared event
+loop would let one blocking call stall every tenant, so blocking work—environment operations
+and tokenization—runs on background threads. This amortizes process and service overhead
+across concurrent rollouts, supporting larger concurrent batches without a proportional increase
+in actor count.
+Heterogeneous Agent Harnesses
+We configure harness codebases, agent behavior, and environ-
+ment settings separately to accommodate diverse tasks within a single training run. Different
+data sources can use different codebases, while agent configurations vary across prompts within
+a source. Each training sample group uses a common configuration for group-relative advantage
+estimation. One process can import only one harness codebase, so different codebases run in sep-
+arate pools. These pools receive configurable shares of a fixed budget of host actors—set once at
+startup, independent of the training-data mixture that is scheduled every step. Harness diversity
+and rollout concurrency thus scale within one execution framework.
+Disaggregated Data Plane and Control Plane
+Scaled batches must buffer tens of thousands of
+sequences at a time, and each is heavy: besides token ids and log-probabilities, it carries MoE
+routing data, top-p sampling indices, and multimodal data. Payload volume grows with both
+sequence count and length, and gathering every payload on one driver node ties batch size to
+that node’s memory. We therefore disaggregate the data plane from the control plane, splitting
+each sequence at rollout finish: its payload is written once into a distributed key-value store (e.g.,
+28

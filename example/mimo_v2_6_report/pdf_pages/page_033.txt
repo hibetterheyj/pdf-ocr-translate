@@ -1,0 +1,46 @@
+end-to-end throughput rather than acceptance rate alone. Smaller draft blocks reduce verification
+work: in mixed-task RL evaluation, block-6 improves global average throughput by approximately
+6% over block-8, with little change in average accepted length. Low-precision draft computation
+(FP8) is also applied to reduce drafting overhead. On our long-context workload, RL-adapted
+FP8 DFlash achieves approximately 10.3% higher per-node throughput than the baseline.
+Training Optimization
+We train RL at a 1M-token context length. MiMo-V2.6 interleaves 128-
+token sliding-window layers with full attention. Under context parallelism, the sliding-window
+layers exchange only the KV their queries can reach—at most a window-sized segment—so per-
+layer traffic is bounded by the window rather than the sequence length. Long sequences also
+inflate the memory footprint, and MoE expert imbalance pushes peak memory higher. Optimizer
+states stay in CPU memory and are copied back only for parameter updates. All loss computation
+is fused into one kernel: the policy-gradient loss (with or without top-p renormalization) and the
+OPD loss, optionally with metrics such as entropy, label logit, and top-p mass. The fusion saves
+memory and reduces step time.
+7
+Open Foundations for Agentic RL
+The MiMo-V2.6 series demonstrates the potential of reinforcement learning to substantially ad-
+vance agentic capabilities. Building on this progress requires capable models and high-quality RL
+environments that pair meaningful tasks with reliable verifiers. Sharing these resources alongside
+reproducible baselines supports continued research and innovation in the open-source commu-
+nity. We therefore open-source MiMo-V2.6-Distill-Qwen-9B,2 a small model distilled from MiMo
+as a shared starting point for further RL training. Alongside the model, we release high-quality
+RL environments and an end-to-end open-source RL framework. In this section, we establish
+domain-specific GRPO baselines using these released resources. We also conduct a separate multi-
+harness training experiment using coding as a case study, following the approach described for
+MiMo-V2.6. Our experiments show substantial gains across multiple domains, demonstrating
+the value of these resources for RL training.
+7.1
+Distillation from MiMo-V2.6
+Scaling RL computation and broadening the coverage of environments and harnesses create more
+opportunities for exploration and learning. Across these settings, effective exploration depends
+on coordinating actions and responding to environmental feedback. Realizing the potential of
+agentic RL therefore begins with a strong foundation of task-solving capabilities.
+To provide the open-source community with such a foundation, we develop MiMo-V2.6-Distill-
+Qwen-9B by transferring MiMo’s agentic experience into a smaller model. We obtain the model
+by supervised fine-tuning Qwen3.5-9B (Qwen Team, 2025) on MiMo-generated data spanning
+coding, general-domain, visual, and cybersecurity tasks. The mixture contains 77.4 billion total
+tokens, including 27.2 billion loss tokens that contribute to the SFT objective. Table 4 summarizes
+the data composition.
+The resulting MiMo-V2.6-Distill-Qwen-9B checkpoint improves over Qwen3.5-9B across the re-
+ported evaluations (Table 6). For example, SWE-bench Pro (Deng et al., 2025) increases from
+32.0 to 44.6, and AutomationBench from 5.0% to 30.3%. We view these strengthened task-
+solving capabilities as a promising foundation for further improvement through RL. We therefore
+2https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Distill-Qwen-9B
+33

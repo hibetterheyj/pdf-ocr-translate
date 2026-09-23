@@ -1,0 +1,72 @@
+Pattern and shortcut
+Illustrative case
+Install and read
+Uses a newer release of the
+target package as an answer
+key, copying a fix absent from
+the assigned checkout.
+Task (pytest): Fix Windows conftest.py imports broken by path
+lowercasing.
+Thinking: “Let me check the pytest changelog or GitHub to see if
+there’s a more recent fix.”
+Action: pip install pytest==5.4.3; inspect the installed source.
+Fetch upstream source
+Downloads an upstream file or
+patch that already contains the
+fix, exposing the code changes
+needed to pass the tests.
+Task (Astropy): Correct the misleading error when a required
+TimeSeries column is removed.
+Thinking: “Let me just look at the file directly from the GitHub raw
+URL.”
+Action: curl .../astropy/timeseries/core.py
+Clone upstream
+Reads a newer upstream
+checkout to reconstruct the
+published fix missing from the
+assigned historical commit.
+Task (Matplotlib): Stop ax.clear() from restoring hidden ticks and
+labels on shared axes.
+Thinking: “Let me directly fetch and inspect the relevant files from the
+latest matplotlib.”
+Action: git clone .../matplotlib.git; inspect axis.py.
+Look up a solution
+Searches issue discussions, pull
+requests, or linked commits for
+the original solution and uses it
+to guide the patch.
+Task (Django): Fix MultiValueField ignoring required subfields.
+Thinking: “Let me get more info - changesets and the fix that was
+applied.”
+Action: Read the change history of Django ticket #29205.
+Probe versions
+Finds a newer release to
+download and compare for its
+fix. The probe is a precursor to
+copying the solution.
+Task (Sphinx): Remove the spurious return type from class
+documentation.
+Thinking: “Let me look for the fix. The issue is likely fixed in later
+versions.”
+Action: pip index versions sphinx
+Table 2 Representative reward-hacking cases in repository-repair tasks. In this setting, retrieving
+existing fixes outside the assigned checkout bypasses the intended repair task. Task queries are
+summarized, thinking excerpts are quoted verbatim, and actions are abbreviated. Each row
+comes from a single rollout.
+the reference patch applied during environment construction can leave behind artifacts that re-
+veal the solution. We therefore remove build logs, verifier outputs, residual patches, and project-
+generated binaries or bytecode that could expose it. We also clean caches that may contain
+solution information, including those outside the repository, while preserving third-party depen-
+dencies needed for offline rebuilding. For every task, we retain Git history up to and including
+the base commit, removing later commits and their associated references. We enforce container-
+level network isolation to restrict access to upstream fixes and alternative package versions that
+may contain the solution. These safeguards are accompanied by explicit instructions against
+retrieving existing solutions or bypassing the required implementation.
+Hack Agent
+A dedicated hack agent then probes the prepared environments for remaining leaks
+and exploitable weaknesses. We guide its search with examples from early experiments, including
+recovering solutions from cached artifacts or preinstalled copies of the target project. The agent
+checks these known routes while searching for new ones. It uncovered many exploit paths that
+we had not observed during training and that our existing cleanup procedures did not cover.
+We use these findings to refine cleanup and access restrictions, then rerun the hack agent on
+15

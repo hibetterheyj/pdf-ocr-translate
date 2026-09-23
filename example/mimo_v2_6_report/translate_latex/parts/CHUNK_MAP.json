@@ -1,0 +1,85 @@
+[
+  {
+    "chunk": "chunk_00_preamble.tex",
+    "lines": 129,
+    "pages": "-"
+  },
+  {
+    "chunk": "01_body.tex",
+    "lines": 152,
+    "pages": "3-3",
+    "note": ""
+  },
+  {
+    "chunk": "02_2_2_mimo-vit.tex",
+    "lines": 153,
+    "pages": "4-6",
+    "note": ""
+  },
+  {
+    "chunk": "03_3_pre-training.tex",
+    "lines": 155,
+    "pages": "7-8",
+    "note": ""
+  },
+  {
+    "chunk": "04_body.tex",
+    "lines": 207,
+    "pages": "9-12",
+    "note": ""
+  },
+  {
+    "chunk": "05_4_2_3_visual_agent_tasks.tex",
+    "lines": 238,
+    "pages": "13-15",
+    "note": ""
+  },
+  {
+    "chunk": "06_body.tex",
+    "lines": 168,
+    "pages": "16-18",
+    "note": ""
+  },
+  {
+    "chunk": "07_body.tex",
+    "lines": 203,
+    "pages": "19-21",
+    "note": ""
+  },
+  {
+    "chunk": "08_5_3_rl_performance.tex",
+    "lines": 209,
+    "pages": "22-25",
+    "note": ""
+  },
+  {
+    "chunk": "09_body.tex",
+    "lines": 182,
+    "pages": "26-28",
+    "note": ""
+  },
+  {
+    "chunk": "10_body.tex",
+    "lines": 206,
+    "pages": "29-32",
+    "note": ""
+  },
+  {
+    "chunk": "11_body.tex",
+    "lines": 255,
+    "pages": "33-35",
+    "note": ""
+  },
+  {
+    "chunk": "12_8_conclusion.tex",
+    "lines": 423,
+    "pages": "36-43",
+    "note": ""
+  },
+  {
+    "chunk": "13_body.tex",
+    "lines": 43,
+    "pages": "44-44",
+    "note": ""
+  }
+]

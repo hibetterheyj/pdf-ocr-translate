@@ -1,0 +1,104 @@
+0
+5
+10
+15
+20
+25
+30
+48
+56
+64
+72
+Benchmark score
+0
+5
+10
+15
+20
+25
+30
+45
+48
+51
+54
+0
+5
+10
+15
+20
+25
+30
+64
+68
+72
+76
+0
+5
+10
+15
+20
+25
+30
+160
+200
+240
+Total tokens (K)
+0
+5
+10
+15
+20
+25
+30
+6
+9
+12
+15
+0
+5
+10
+15
+20
+25
+30
+75
+100
+125
+150
+Flash
+Pro
+Coding
+DeepSWE v1.1
+General workflows
+AutomationBench v1.0.6
+Visual tasks
+MiMo Visual Coding
+RL training step
+Figure 9 Benchmark scores (top) and total token counts in thousands (bottom) during RL train-
+ing on DeepSWE v1.1, AutomationBench v1.0.6, and our in-house MiMo Visual Coding bench-
+mark. Light and dark orange curves represent Flash and Pro, respectively.
+GDPval-AA v2.1 (Artificial Analysis, 2026; Patwardhan et al., 2025), Artificial Analysis’s evalu-
+ation framework for GDPval, assesses the quality of professional deliverables on economically
+valuable tasks. JobBench (Li et al., 2026b) evaluates workplace workflows that domain experts
+identify as high-priority for delegation to AI agents. Agents’ Last Exam (Sun et al., 2026) evalu-
+ates long-horizon, economically valuable professional tasks with verifiable outcomes. Terminal-
+Bench 4.0 and 2.1 (Marten et al., 2026; Merrill et al., 2026) evaluate the completion of complex
+tasks in terminal environments. OSWorld-Verified (Xie et al., 2024; XLANG Lab, 2025) evaluates
+interactive computer use across real web and desktop applications.
+Visual Agent
+We evaluate visual coding capabilities using MiMo Visual Coding, an internally de-
+veloped benchmark spanning open-ended design and high-fidelity visual replication. The bench-
+mark includes tasks such as WebDev and Image2Code, which involve building websites to fulfill
+user requests and translating reference images into visually faithful code implementations, re-
+spectively.
+Baseline Configuration
+All baseline models with configurable reasoning effort are evaluated at
+the highest supported setting (max).
+5.3
+RL Performance
+The performance changes are monitored during the process to validate the scaled RL compute.
+As shown in Figure 9, both Flash and Pro achieve overall improvements on DeepSWE v1.1,
+AutomationBench v1.0.6, and MiMo Visual Coding during RL training, despite fluctuations be-
+tween checkpoints. These gains generally accompany increasing total token counts, showing
+that stronger task performance develops alongside greater token usage. We further investigate
+22

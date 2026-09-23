@@ -1,0 +1,61 @@
+(a) Domain-Specific Teachers
+Verifiable Tasks
+mixRL Teachers
+Open-Domain Tasks
+SFT Teachers
+(b) Standard MOPD
+(c) Prefix-Conditioned OPD
+Task prompt
+Full student rollout
+y1
+y2
+yT
+...
+OPD (mixRL teacher)
+Teacher-Prefix OPD
+SFT-Prefix OPD
+Trajectory from
+Teacher Rollout
+Trajectory from
+SFT Data
+Split into k history prefixes
+h1
+Student turn
+y1
+h2
+Student turn
+y2
+hk
+Student turn
+yk
+...
+...
+OPD (mixRL / SFT teacher)
+MiMo Student Update
+Figure 13 Overview of MiMo MOPD2. (a) Domain-specialized teachers are trained with MixRL
+on verifiable tasks or with SFT on synthetic demonstrations for open-domain tasks. (b) Standard
+MOPD uses RL teachers to supervise full student rollouts. (c) Prefix-Conditioned OPD reuses
+trajectories from teacher rollouts (Teacher-Prefix OPD) or SFT data (SFT-Prefix OPD). A source
+trajectory with 𝑘assistant-turn decision points yields 𝑘complete history prefixes ℎ𝑖, each of which
+can initialize a separate student-generated turn 𝑦𝑖for token-level distillation by the relevant
+domain teacher. SFT data provide prefix contexts rather than fixed continuation targets.
+add prefix-conditioned single-turn rollouts (Liao et al., 2026). Figure 13 illustrates the teacher
+configurations and the standard and prefix-conditioned distillation workflows.
+Prefixes come from teacher rollouts (Teacher-Prefix OPD) or SFT data (SFT-Prefix OPD). A tra-
+jectory with 𝑘assistant turns provides 𝑘complete history prefixes, each ending before the corre-
+sponding turn. The student samples one new turn from each prefix without regenerating earlier
+interactions. A preassigned teacher provides token-level supervision conditioned on the same
+history and the student’s preceding tokens.
+For open-domain tasks where reliable RL rewards are difficult to design, we train SFT teachers on
+high-quality synthetic demonstrations. Their training may provide limited coverage of histories
+reached after repeated student deviations in long-horizon tasks (Xu et al., 2025). SFT-Prefix OPD
+therefore starts each rollout from a fixed demonstration prefix, limiting deviations before the sam-
+pled turn. Demonstrations supply the context, while the student generates its own continuation
+rather than imitating a fixed response.
+MOPD2 further extends the capabilities of the RL-trained model to domains where reliable training-
+time verification is challenging, including those with complex environments or verifiers that are
+difficult to design, such as long-horizon game development, scientific research, and embodied
+intelligence. The final evaluation results of MiMo-V2.6 are reported in Table 3. The MiMo-V2.6
+series delivers substantial improvements over MiMo-V2.5, achieving performance comparable to
+that of frontier models across various domains.
+25

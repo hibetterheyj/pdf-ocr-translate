@@ -1,0 +1,48 @@
+discrepancies between specifications and tests, we further assess their alignment through rollout-
+based auditing. Each task is attempted four times by a coding agent. An auditing agent receives
+all four rollouts in a shared workspace containing the problem statement, tests, reference patch,
+and each rollout’s submitted patch, test output, and full conversation log. The auditor first articu-
+lates what a correct solution requires and assesses whether the tests capture those requirements.
+It then evaluates each submitted solution against the specification using its patch and conver-
+sation log, and compares this assessment with the observed reward. A passing solution judged
+incorrect is flagged as a potential false positive, suggesting incomplete verification. A failing so-
+lution judged correct is flagged as a potential false negative, suggesting overly restrictive tests
+or execution failures. These disagreements identify tasks requiring further review and provide
+concrete evidence of possible mismatches between the intended behavior and the implemented
+verification.
+Robustness of Supervision
+We check reward stability through repeated execution. For those
+tasks with reference patch, we ensure fail-to-pass (F2P) tests must fail and pass-to-pass (P2P)
+tests must pass before applying the reference patch; after the patch, both must pass. We require
+these outcomes to remain stable across eight reruns, screening for flaky tests and environment-
+induced reward fluctuations. We also reuse the previous rollout pipeline to collect agent tra-
+jectories to investigate potential reward hacking. The submitted patches and conversation logs
+provide evidence of how agents obtained their rewards, helping identify unintended shortcuts
+or exploitation of the environment and evaluation process. These checks complement the as-
+sessment of solution correctness and inform the broader reward-hacking mitigation procedures
+described below.
+Together, these procedures support the construction of a diverse coding-task corpus under a con-
+sistent standard of supervision quality. Specification–test alignment targets the fidelity of the
+reward signal, repeated execution checks its stability, and rollout-based auditing probes whether
+it agrees with an independent assessment of solution correctness. Our objective is to make this
+combination scalable, so that RL training can benefit from broad task coverage while encouraging
+agents to satisfy the intended requirements rather than exploit gaps in evaluation.
+4.2.2
+General Agent Tasks
+We extend agent capabilities to real-world professional workflows across diverse domains, whose
+workflows require agents to analyze heterogeneous documents, use specialized software, and pro-
+duce deliverables that meet domain-specific standards. We synthesize environments that support
+such workflows, then construct challenging tasks with verifiable outcomes. Figure 5 summarizes
+this pipeline, including environment construction, task synthesis, and iterative rubric refinement.
+Environment Design
+A general-agent environment typically consists of a workspace and a set
+of software tools, accessible through interfaces such as MCP, APIs, CLIs, and GUIs. Our design
+balances realism with the requirements of large-scale RL: files, software behavior, and underlying
+data should reflect professional practice, while execution must remain local and environments
+must be easy to reset. We therefore collect real-world files for direct inclusion or as references
+for synthesis, and use an automated multi-agent workflow to build local software mocks that
+reproduce supported operations, state changes, output formats, and error responses. Tools that
+already operate without external services are integrated directly. All state is stored locally, and
+each rollout runs in an isolated sandbox that can be restored to a fixed initial state. This avoids
+network variability and service limits while supporting reproducible execution.
+11

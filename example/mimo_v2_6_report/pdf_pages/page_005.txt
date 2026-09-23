@@ -1,0 +1,68 @@
+𝑥!"#
+𝑥!"$
+𝑥!%$
+𝑥!
+Embedding
+RMSNorm
+Sliding Window Attention
+RMSNorm
+Sparse MoE
+RMSNorm
+Global Attention
+RMSNorm
+Sparse MoE
+N×
+1×
+M×
+LM Head
+K×
+Linear
+RMSNorm
+RMSNorm
+GA block
+SWA block
+𝑥!"$𝑥!"#𝑥!"&
+𝑥!
+Embedding (tied)
+Sliding Window Attention
+RMSNorm
+MTP block
+Dense FFN
+RMSNorm
+LM Head (tied)
+00:00
+00:01
+…
+Visual Encoder
+Audio Encoder
+MiMo Hybrid-SWA Backbone
+Figure 2 Overall architecture of MiMo-V2.6. Audio, visual, and text inputs are mapped into
+a shared token sequence and processed by the MiMo Hybrid-SWA backbone, followed by the
+language-modeling head and multi-token prediction (MTP) blocks.
+image tokens, MiMo-ViT learns strong visual representations and serves as a robust foundation
+for MiMo-V2.6.
+2.3
+Audio Encoder
+Audio encoding in MiMo-V2.6 consists of two stages: audio tokenization with the Audio Tok-
+enizer, followed by patch encoding. The Audio Tokenizer encoder first processes log-mel spec-
+trograms through a two-layer convolutional frontend that halves the frame rate. The resulting
+sequence is then passed through a Transformer with a causal hybrid attention architecture that
+interleaves SWA and GA layers. SWA layers capture local temporal dependencies, while GA layers
+aggregate context across the full preceding sequence. A subsequent downsampling convolution
+further halves the frame rate to 25 Hz, after which a 20-layer residual vector quantizer (RVQ) rep-
+resents each frame as 20 discrete audio tokens. The Audio Tokenizer follows the training recipe of
+MiMo-Audio (Xiaomi, 2025) and is trained on 20 million hours of audio spanning speech, music,
+and other audio content.
+The audio patch encoder follows the architectural design of MiMo-Audio and is trained jointly
+with the text backbone. At each time step, the audio tokens are embedded using separate em-
+bedding tables, one per RVQ codebook, and the resulting embeddings are summed to form a
+single frame representation. Every four consecutive frames are grouped into an audio patch and
+processed by a Transformer with bidirectional self-attention confined to that patch. The four out-
+put representations are then concatenated and linearly projected into a single backbone input
+embedding, reducing the audio sequence rate from 25 Hz to 6.25 Hz.
+2.4
+Speculative Decoder
+Speculative decoding in MiMo-V2.6 uses a multi-token prediction (MTP) module following the
+block diffusion design of DFlash (Chen et al., 2026). The drafter comprises 5 Transformer layers
+with dense feed-forward networks. Conditioned on backbone hidden features and a clean anchor
+5

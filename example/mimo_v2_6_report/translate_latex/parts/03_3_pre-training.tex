@@ -1,0 +1,52 @@
+\subsection{3 预训练}\label{pre-training}
+
+\subsection{3.1 预训练设置}\label{pre-training-setup}
+
+MiMo-V2.6 的预训练语料覆盖文本、视觉和音频。文本语料来自多种来源，包括公开网页内容、书籍、学术论文、代码和 STEM 材料。视觉语料包括图像描述、视觉定位、OCR、GUI、对话、视频和视觉编程数据。音频方面，我们大规模策展了多样、高质量的数据，并把数据组织成三种任务格式：语音-文本交织、自动语音识别（ASR）和通用音频描述。
+
+我们采用两阶段预训练策略。第一阶段在纯文本数据上训练语言主干，建立扎实的基础语言能力。第二阶段把主干与自研的预训练 ViT 和音频编码器整合，在全模态数据上联合训练完整模型，使其能够理解图像、视频和音频。
+
+预训练从 32K token 的上下文长度开始，并在训练中途扩展到 256K。MiMo-V2.6-Flash 在 48T token 上训练，其中文本阶段 26T token、全模态阶段 22T token。MiMo-V2.6-Pro 在 30T token 上训练，两个阶段分别为 27T 和 3T token。MiMo-V2.6 的预训练使用 AdamW 优化器。
+
+\subsection{3.2 中期训练设置}\label{mid-training-setup}
+
+预训练建立起跨文本、视觉和音频的广泛知识与通用理解。中期训练连接这一通用基础与后续的大规模 RL，进一步培养模型的智能体能力、扩展长上下文支持，并为大批量训练调整优化设置。
+
+为此，我们在多样、以智能体为中心的数据混合上训练 MiMo-V2.6 系列模型。其多样性同时体现在任务领域和数据模态上，把编程、通用、视觉和研究任务中的真实智能体轨迹，与高质量文本、仓库级代码以及图像、视频、音频数据结合起来。训练分两个阶段进行：先在 256K 上下文长度下训练，并把大部分算力分配到这一阶段，然后在最后阶段把上下文长度扩展到 1M。
+
+我们的基座模型用 AdamW 预训练，但前期实验显示，在混合任务 RL 中，随着批大小增大，优化效率逐渐下降。与逐元素自适应参数的 AdamW 不同，Muon 通过对隐层权重的更新做正交化，利用其矩阵结构（Jordan et al., 2024）。这种基于矩阵的更新在超过临界批大小后仍保持更强的数据效率，使 Muon 对大批量训练尤其有吸引力（Liu et al., 2025b; Shah et al., 2025）。因此，我们在中期训练中把隐层权重矩阵切换为 Muon 优化器的一个变体 Muown，为后续大批量 RL 做准备。Muown 在 Muon 基础上增加了显式的行范数控制，缓解谱范数漂移，并在几乎无额外开销的情况下降低对权重衰减的敏感度（Lion et al., 2026）。嵌入、LM head 和 MoE 路由器继续使用 AdamW。
+
+已有工作报告，把 Adam 预训练的模型切换到 Muon 训练会导致优化器不匹配和性能下降（Qu et al., 2026）。但在我们的中期训练中，整个训练过程没有出现损失尖峰。
+
+我们在中期训练中采用 MXFP4 量化感知训练（QAT），使模型适应低精度计算，同时保持模型质量。
+
+
+
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{images_hi/fig03.png}
+\caption{左：DeepSWE v1.1 上的 average@3 分数与累计 RL 成本。右：MiMo-V2.6-Pro 与 MiMo-V2.6-Flash 的训练、rollout 和评分器成本占比。}
+\label{fig:3}
+\end{figure}
+
+
+\subsection{4 扩展强化学习}\label{scaling-reinforcement-learning}
+
+在本次发布中，我们继续推进后训练算法的边界，特别关注扩展 RL 算力。经过一个简短的监督微调（SFT）阶段后，我们沿三个维度扩展 RL：训练算力（§4.1）、环境与智能体脚手架（§4.2）以及评分器算力（§4.3），实现模型能力的根本性跃升。
+
+\subsection{4.1 扩展 RL 训练算力}\label{scaling-rl-training-computation}
+
+我们在单次运行中把 RL 计算扩展到数千块 GPU，MiMo-V2.6-Pro 和 MiMo-V2.6-Flash 的 RL 后训练分别花费 $2.6M and $0.9M。我们使用大批量训练：1,568 条 prompt，组大小 $G=16$，因此每步 rollout 出 25K 条序列，合计 2.7B--3.7B 训练 token（每条序列约 110K--150K token）。图 3 的左图展示了扩展 RL 计算带来的收益。两个模型在 DeepSWE 基准（Huang and Jiang, 2026）上的 average@3 分数都随累计成本稳步上升：在 RL 过程中，MiMo-V2.6-Pro 从 58.4 提升到 72.6，MiMo-V2.6-Flash 从 48.7 提升到 65.7。计算分为三部分：rollout、评分和训练。这种扩展需要扎实的基础设施来保证训练高效稳定。
+
+我们把 RL 学习目标构造如下：
+
+\[
+\mathcal {L} (\theta) = - \mathbb {E} _ {q \sim \bigcup_ {d} \mathcal {D} _ {d}, \{o _ {i} \} _ {i = 1} ^ {G} \sim \mu_ {\theta_ {\mathrm {old}}} (\cdot | q)} \left[ \frac {1}{\sum_ {i = 1} ^ {G} | o _ {i} |} \sum_ {i = 1} ^ {G} \sum_ {t = 1} ^ {| o _ {i} |} r _ {i, t} M _ {i, t} A _ {i} \log \pi_ {\theta} (o _ {i, t} \mid q, o _ {i, < t}) \right],\tag{1}
+\]
+
+其中 $r$ 表示重要性采样比率，$M$ 是 token 级掩码，$A$ 是优势。该计算可分解为三部分。第一部分是 rollout：对于从任务数据集并集 \(\cup _ { d } \mathcal { D } _ { d }\) 中抽取的每条 prompt $q$，rollout 策略 \(\mu _ { \theta _ { \mathrm { o l d } } }\) 生成一组 $G$ 个候选解 $\{o_i\}$。第二部分是评分：我们在智能体评估上投入额外算力，以区分有效解与有缺陷的解及其行为，这超出了二值测试结果所能揭示的范围。这些判断给出优势 \(A _ { i } ,\)，从而在轨迹间实现更准确的信用分配。第三部分是训练：收集到的 token 通过 log \(\pi _ { \theta } ( o _ { i , t } ~ \mid ~ q , o _ { i , < t } )\) 的梯度更新 $\theta$，并采用 prompt 均值聚合。图 3 的右图按算力去向拆解了 MiMo-V2.6-Pro 的成本：rollout 占 43.8\%，训练占 43.5\%，评分器占剩下的 12.7\%。大批量在一次运行中从跨多种环境和脚手架的各种 RL 任务中采样（第 4.2 节）。我们还扩展评分器以提供细粒度的学习信号（第 4.3 节）。
+
+
+
+大批量有利于横向扩展 GPU：rollout 在序列间并行，训练则把批切分到各数据并行 rank 上，因此吞吐随 GPU 数量增长。由于运行中的批占据了大部分 HBM，我们可以保持高算术强度，在 rollout 中充分利用 GPU。由于 rollout 和评分存在长尾，我们使用部分 rollout（Kimi Team, 2025）来保持运行批饱和：收集训练批时，我们让在途序列中断，并在下一个 rollout 阶段恢复它们。代价是重新 prefill：一次续跑必须在每次策略更新后重建其 KV cache，因此批大小和部分 rollout 需一起选择---大批量可以摊薄重新 prefill 的开销。为支持稳定的 RL 训练，R3（Ma et al., 2025）以及对 top-p 采样候选集的重放（Liu et al., 2025a; The Microsoft AI Team, 2026）保证了训推一致性。为确保所有样本都能以有效梯度参与训练，我们引入动态采样器（Yu et al., 2025）过滤全通过或全失败的组。在多任务 RL 中，我们实现了一个 Sample Mixer，以在不同任务 rollout 时长和通过率各异的情况下，保证训练批分布高效稳定。为把 rollout 产生的轨迹打包成大批量训练批（2.7B--3.7B token），我们把数据面与控制面解耦。这些设计背后的基础设施在第 6 节介绍。

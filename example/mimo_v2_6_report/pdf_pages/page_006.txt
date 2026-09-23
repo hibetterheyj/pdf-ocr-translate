@@ -1,0 +1,107 @@
+Block
+Configuration
+MiMo-V2.6-Flash
+MiMo-V2.6-Pro
+Main Block
+Layers (Total/SWA/GA)
+48/39/9
+70/60/10
+Hidden Size
+4096
+6144
+SWA Heads (Q/KV)
+64/8
+128/8
+Sliding Window Size
+128
+128
+GA Heads (Q/KV)
+64/4
+128/8
+Head Dimensions (QK/V)
+192/128
+192/128
+Experts (Total/Activated)
+256/8
+384/8
+# Total Parameters
+310B
+1.02T
+# Active Parameters
+15B
+42B
+MiMo-ViT
+Layers (Total/SWA/GA)
+28/24/4
+Hidden Size
+1280
+Attention Heads (Q/KV)
+32/8
+Head Dimension
+64
+Patch Size (𝑇× 𝐻× 𝑊)
+2 × 16 × 16
+Sliding Window Size (Left/Right)
+64/64
+Spatial Merge Size
+2 × 2
+# Parameters
+681M
+Audio Tokenizer Encoder
+Layers (Total/SWA/GA)
+24/12/12
+Hidden Size
+1024
+Attention Heads (Q/KV)
+16/16
+Head Dimension
+64
+Mel Bins
+128
+Sliding Window Size
+128
+Codebooks
+20
+# Parameters
+308M
+Audio Patch Encoder
+Layers
+6
+Hidden Size
+1024
+Attention Heads (Q/KV)
+16/16
+Head Dimension
+64
+Attention Group Size
+4
+# Parameters
+127M
+Speculative Decoder
+Layers (Total/SWA/GA)
+5/5/0
+5/5/0
+Hidden Size
+4096
+6144
+SWA Heads (Q/KV)
+64/8
+128/8
+Sliding Window Size
+1024
+1024
+GA Heads (Q/KV)
+64/4
+128/8
+Head Dimensions (QK/V)
+128/128
+128/128
+Table 1
+Detailed model configurations of MiMo-V2.6-Flash and MiMo-V2.6-Pro. Main block
+layer counts exclude MTP modules. Encoder parameter counts include input embeddings but
+exclude projectors. The audio tokenizer encoder parameter count excludes EMA codebooks.
+token, it predicts 7 subsequent tokens in a single forward pass for parallel verification by the
+backbone. All draft layers use sliding-window attention (SWA) with grouped queries to limit
+attention computation and KV-cache size. Tokens attend bidirectionally within their draft block
+and to at most 1,024 backbone context positions preceding the anchor.
+6

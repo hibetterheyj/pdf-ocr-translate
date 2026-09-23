@@ -1,0 +1,71 @@
+𝑆sol for the quality of the implementation and a behavior score 𝑆beh for how the agent approached
+and verified its work.
+For trajectory 𝑖, let 𝑅test
+𝑖
+denote the original binary test reward. We synthesize the final training
+reward by multiplying this test reward by the two rubric scores:
+𝑅𝑖= 𝑅test
+𝑖
+· 𝑆sol
+𝑖
+· 𝑆beh
+𝑖
+.
+(2)
+This multiplicative form keeps rubric supervision tied to test outcomes. Failed trajectories retain
+zero reward, while passing trajectories are further distinguished by implementation quality and
+problem-solving behavior. Even when every rollout in a group passes the tests, differences in the
+product of the two rubric scores can still provide a learning signal. The offline task analysis thus
+becomes a reusable source of supervision, allowing training to capture quality differences that
+binary test rewards leave unexpressed.
+4.3.2
+Groupwise Advantage Redistribution (GAR, Online Grading)
+We apply online groupwise advantage redistribution to the remaining code agent tasks. For each
+mixed-outcome rollout group, we place all trajectories in a shared workspace containing the task
+specification, repository, submitted patches, and test outputs. An SFT-trained agentic grader
+jointly examines all trajectories within the group, contrasting successful and failed attempts and
+comparing passing patches along five dimensions: the suitability of the solution approach, pre-
+cision in implementing that approach without omissions or unnecessary fallbacks, minimality
+relative to the necessary changes, avoidance of unintended effects outside the task, and crafts-
+manship consistent with codebase conventions. These assessments guide the groupwise ranking,
+with ties when differences are inconclusive. The grader can inspect repository code and run tar-
+geted tests to better understand the task and verify candidate solutions. When evidence confirms
+dependence on an external or leaked answer, we reset the trajectory’s effective reward to zero
+and treat it as a failure before recomputing group statistics.
+We use the remaining quality rankings to redistribute sequence-level advantages. For trajectory
+𝑖, let 𝑅𝑖be the effective binary reward after hack correction, ¯𝑅its group mean, 𝐴𝑖= 𝑅𝑖−¯𝑅its
+sequence-level advantage, and P = {𝑖: 𝑅𝑖= 1}. For nonempty P, quality factors 𝑓𝑖∈(0, 1]
+first downweight lower-quality passes, after which a common factor redistributes the removed
+positive advantage mass among passing trajectories. The uncapped update is
+𝜆=
+Í
+𝑗∈P 𝐴𝑗
+Í
+𝑗∈P 𝑓𝑗𝐴𝑗
+,
+𝐴′
+𝑖=
+(
+𝜆𝑓𝑖𝐴𝑖,
+𝑖∈P,
+𝐴𝑖,
+𝑖∉P.
+(3)
+This uncapped update preserves Í
+𝑖∈P 𝐴′
+𝑖= Í
+𝑖∈P 𝐴𝑖and the quality-induced relative weights
+without altering failed trajectories. In effect, it redistributes positive advantage mass from lower-
+quality to higher-quality successful trajectories. Simply downweighting positive advantages leaves
+negative advantages unchanged; renormalization restores their balance as a safeguard against
+excessive entropy growth. In practice, we cap the common rescaling factor to prevent excessive
+amplification of positive advantages. We then subtract the group mean from the advantages of
+both passing and failed trajectories, yielding final sequence advantages 𝐴new
+𝑖
+with zero group
+mean. We broadcast this sequence-level advantage to all response tokens in the trajectory. Grad-
+ing runs asynchronously, with unusable grader outputs falling back to the original advantages.
+To assess the effect of online groupwise advantage redistribution on training dynamics, we com-
+pare code-only RL runs of MiMo-V2.6-Flash with and without it, using a training batch size of
+128 and token-mean loss aggregation (Figure 8). Without online grading, turns and total token
+18

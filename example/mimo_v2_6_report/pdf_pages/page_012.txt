@@ -1,0 +1,58 @@
+RL Environment Synthesis
+Verifiable Task Synthesis
+Real-world
+file collection
+>_
+Real-world
+software mocks
+Plan
+Workspace · Software · Databases
+Parallel Multi-Agent Synthesis
+Agent 1
+Agent 2
+Agent n
+···
+Review & Repair
+Local & Global Consistency Checks
+RL Environments
+Explore Environment
+Write Tasks & Rubrics
+Multi-Model Rollouts
+Model 1
+Model 2
+Model n
+···
+Review & Revise Rubrics
+Verifiable Tasks
+Figure 5 The overall general-agent environment and verifiable-task synthesis pipeline. We first
+construct realistic, resettable environments from real-world files and software mocks. Agents
+then explore these environments and synthesize tasks with verifiable rubrics.
+Environment Synthesis
+To assemble these components into coherent scenarios, a planning agent
+specifies the workspace structure, selects appropriate tools, and plans file and database contents.
+Web search grounds the plan in real-world information, while relationships across files and be-
+tween files and database records support subsequent multi-hop reasoning and cross-validation.
+Multiple agents then generate files and populate databases in parallel, following the shared plan
+and each mock’s data specification. A review agent checks individual artifacts and global con-
+sistency, including entity names, numerical reconciliation, timelines, and references. Iterative
+repair resolves inconsistencies before task construction. The workspace and tool configuration
+vary by scenario, so each environment reflects the relevant working practices without requiring
+every available file type or software interface.
+Task Synthesis and Verification
+We survey common professional tasks and combine and general-
+ize them into seed tasks. An agent explores each environment and uses these seeds to construct
+tasks suited to its contents and tools. Task completion is evaluated using atomic, binary rubric
+items: code-based checks verify deterministic properties, such as database values and deliverable
+formats, while LLM-based checks assess more open-ended content. For LLM-based items, agree-
+ment across repeated judgments by the same model and across different judge models helps
+identify ambiguity.
+Consistency alone does not establish that rubrics capture task completion. We therefore collect
+rollouts from models with different capability levels and have a review agent examine their tra-
+jectories, execution results, and rubric judgments. The reviewer revises overly restrictive criteria
+that reject valid solutions and overly permissive criteria that accept incomplete ones. To test
+resistance to reward hacking, we include negative checks for unintended changes to unrelated
+files or databases and construct adversarial solutions that appear correct without actually solving
+the task. During RL, a self-hosted MiMo-V2.6-SFT model serves as the grader to support stable
+scoring. This process yields thousands of environments and diverse, verifiable tasks, which we
+combine with other tasks for RL training.
+12

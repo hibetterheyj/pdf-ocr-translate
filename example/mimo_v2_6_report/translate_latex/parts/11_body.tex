@@ -1,0 +1,150 @@
+\subsection{7 面向智能体 RL 的开放基础}\label{open-foundations-for-agentic-rl}
+
+MiMo-V2.6 系列展示了强化学习在显著提升智能体能力方面的潜力。在此基础上继续推进，需要能力足够强的模型，以及能将有意义任务与可靠校验器配对的高质量 RL 环境。把这些资源连同可复现的基线一并公开，有助于开源社区持续开展研究与创新。因此我们开源了 MiMo-V2.6-Distill-Qwen-9B,2，一个从 MiMo 蒸馏得到的小模型，作为后续 RL 训练的共享起点。除模型之外，我们还发布了高质量的 RL 环境以及一套端到端的开源 RL 框架。本节中，我们使用这些已发布的资源建立各领域的 GRPO 基线。我们还在编码任务上做了一项独立的多脚手架训练实验作为案例研究，沿用 MiMo-V2.6 所描述的方法。实验显示多个领域都取得了显著提升，说明这些资源对 RL 训练具有价值。
+
+\subsection{7.1 从 MiMo-V2.6 蒸馏}\label{distillation-from-mimo-v2.6}
+
+扩展 RL 算力、扩大环境与脚手架的覆盖面，会带来更多探索与学习的机会。在这些场景中，有效的探索依赖于协调动作并对环境反馈作出响应。因此，释放智能体 RL 的潜力，首先要有一个扎实的任务求解能力基础。
+
+为给开源社区提供这样一个基础，我们通过将 MiMo 的智能体经验迁移到更小的模型中，开发了 MiMo-V2.6-Distill-Qwen-9B。该模型由 Qwen3.5-9B (Qwen Team, 2025) 在 MiMo 生成的数据上监督微调得到，数据覆盖编码、通用领域、视觉和网络安全任务。该数据混合共含 774 亿 token，其中 272 亿为参与 SFT 目标的 loss token。表 4 汇总了数据组成。
+
+得到的 MiMo-V2.6-Distill-Qwen-9B checkpoint 在各项报告的评测上均优于 Qwen3.5-9B（表 6）。例如 SWE-bench Pro (Deng et al., 2025) 从 32.0 提升到 44.6，AutomationBench 从 5.0\% 提升到 30.3\%。我们认为这些增强后的任务求解能力是进一步通过 RL 改进的良好基础。因此我们把该 checkpoint 作为下文各领域 GRPO 实验与多脚手架编码实验的共同初始化。
+
+2https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Distill-Qwen-9B
+
+
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}|l|l|l|l|@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\hline
+数据来源 & 总 token 数（B） & token 占比（\%） & Loss token 数（B） \\
+\hline
+代码 & 23.2 & 29.9 & 7.3 \\
+\hline
+网络安全 & 11.0 & 14.2 & 4.8 \\
+\hline
+通用 & 22.0 & 28.5 & 5.7 \\
+\hline
+视觉 & 21.2 & 27.4 & 9.4 \\
+\hline
+总计 & 77.4 & 100.0 & 27.2 \\
+\hline
+\end{longtable}
+}
+
+表 4 加权 SFT 数据组成。token 数量以十亿计。数值四舍五入到一位小数；总计使用未舍入的汇总计数。
+
+表 5 已发布 RL 环境概览，包括训练任务数量以及用于判定任务完成情况的校验器。任务数为近似值，基于各训练集中不同的任务标识符统计；k 表示一千。
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}|l|l|l|l|@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\hline
+领域 & 任务族 & 训练任务 & 校验器 \\
+\hline
+代码 & 软件工程 & 3k & 可执行测试 \\
+\hline
+网络安全 & 漏洞复现 & 1k & 规则检查 \\
+\hline
+通用 & 知识工作 & 1k & 基于评分细则的评判 \\
+\hline
+视觉 & 网页开发 & 2k & 视觉评分 \\
+\hline
+\end{longtable}
+}
+
+\subsection{7.2 开放环境下的 RL}\label{rl-with-open-environments}
+
+环境概览 表 5 汇总了我们发布的 RL 环境，覆盖编码、网络安全、通用领域和视觉任务。四个训练集总共约含 7k 个任务，其中通用领域集聚焦知识工作。训练资源还包含约 1k 个音乐生成任务，用于支持下文报告的 GRPO 实验。
+
+RL 实验 从同一个 MiMo-V2.6-Distill-Qwen-9B SFT checkpoint 出发，我们使用对应的已发布环境，分别针对编码、网络安全、通用领域和视觉任务进行 GRPO 训练。除公开基准外，我们还评测四个内部集合：面向软件工程的 MiMo Code Bench (mini)、面向漏洞复现的 MiMo Cyber Bench (mini)、面向知识工作的 MiMo General Bench (mini)，以及面向网站开发的 MiMo Visual Coding (mini)。这些评测集遵循与其对应训练集相同的任务分布。
+
+表 6 显示，RL 在表中报告的 11 项评测上相对 SFT checkpoint 均有提升，覆盖四个任务领域。SWE-bench Verified (Jimenez et al., 2024) 从 61.1 升至 66.2，Terminal Bench 2.1 (Merrill et al., 2026) 从 37.1 提升到 52.8。OfficeQA Pro (Opsahl-Ong et al., 2026) 从 19.5 提升到 24.8，Toolathlon-Verified (HKUST NLP, 2026) 从 35.2 升至 38.0。MiMo Visual Coding (mini) 从 64.0 提升到 72.4，MiMo Cyber Bench (mini) 从 31.3 升至 47.0。除表 6 报告的任务外，我们还探索了艺术创作与设计等新兴任务，例如音乐创作。在我们的内部音乐基准上，分数从 SFT 后的 45.7 大幅提升到 RL 后的 52.5。
+
+
+
+表 6 Qwen3.5-9B、SFT 后的 MiMo-V2.6-Distill-Qwen-9B，以及进一步 GRPO 训练（RL）后各领域 checkpoint 的评测结果。代码使用单脚手架 RL。每行中的最高可得分数以粗体标出。
+
+{\footnotesize\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}L{17em}llll@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\multirow{2}{*}{基准} & \multirow{2}{*}{指标} &
+\multirow{2}{*}{Qwen3.5-9B} & \multicolumn{2}{l@{}}{%
+MiMo-V2.6-Distill-Qwen-9B} \\
+& & & SFT & RL \\
+\multicolumn{5}{@{}l@{}}{%
+代码} \\
+SWE-bench Verified & avg@3 & 60.0 & 61.1 & 66.2 \\
+SWE-bench Pro & avg@3 & 32.0 & 44.6 & 47.6 \\
+MiMo Code Bench (mini) & avg@3 & 19.5 & 51.6 & 59.9 \\
+\multicolumn{5}{@{}l@{}}{%
+网络安全} \\
+MiMo Cyber Bench (mini) & avg@3 & 5.7 & 31.3 & 47.0 \\
+\multicolumn{5}{@{}l@{}}{%
+通用} \\
+AutomationBench v1.0.6 & avg@1 & 5.0 & 30.3 & 33.1 \\
+Terminal Bench 2.1 & avg@1 & 27.0 & 37.1 & 52.8 \\
+Toolathlon-Verified & avg@1 & 25.9 & 35.2 & 38.0 \\
+OfficeQA Pro & avg@1 & 9.0 & 19.5 & 24.8 \\
+JobBench & avg@1 & 2.6 & 18.3 & 25.2 \\
+MiMo General Bench (mini) & avg@1 & 28.5 & 62.2 & 70.6 \\
+\multicolumn{5}{@{}l@{}}{%
+视觉} \\
+MiMo Visual Coding (mini) & avg@1 & 61.7 & 64.0 & 72.4 \\
+\end{longtable}
+}
+
+这些结果凸显了高质量训练数据与强 SFT 初始化对进一步 RL 改进的价值。
+
+多脚手架训练 表 6 中的编码结果通过单脚手架 RL 得到。我们在另一项编码实验中进一步研究多脚手架训练，同样从 MiMo-V2.6-Distill-Qwen-9B SFT checkpoint 出发。沿用 MiMo-V2.6 描述的多脚手架训练方法，我们在四个 mini-harness 上联合优化模型，并在这些脚手架以及另外三个留出（held-out）脚手架上评测。表 7 在三个编码评测和七个智能体脚手架上比较了 Qwen3.5-9B 与多脚手架 RL 前后的 MiMo-V2.6-Distill-Qwen-9B。MiMo-V2.6-Distill-Qwen-9B 在全部 21 个数据集--脚手架组合上优于 Qwen3.5-9B，多脚手架 RL 又进一步提升了每一组合。在 MiMo Code Bench (mini) 上，相对 SFT 的额外增益在七个脚手架上介于 1.8 到 9.3 个百分点之间。
+
+案例研究 为更直观地展示我们的 SFT 与 RL 方案如何逐步增强模型能力，我们给出一个网页开发方向的案例研究（该领域的视觉质量一目了然），在图 17 中比较 Qwen3.5-9B、MiMo-V2.6-Distill-Qwen-9B (SFT) 与 MiMo-V2.6-Distill-Qwen-9B (RL) 生成的网站。如左列所示，Qwen3.5-9B 生成的网站在视觉设计上较为朴素，布局简单，图片使用很少。值得注意的是，(c) 中的人力资源管理界面存在明显的布局问题。经过蒸馏后，MiMo-V2.6-Distill-Qwen-9B (SFT)（中列）生成的网站内容明显更丰富，配色更协调，图像素材的运用也更有效，例如 (b) 中埃塞俄比亚遗产页面的摄影元素。经过 RL 训练后（右列），模型更进一步，给出最精致的结果：排版考究、hero 区域视觉冲击力强（如 (b) 中的日落图像），页面布局也更完整、结构更清晰（如 (c) 中功能齐全的人力资源仪表盘，带有侧边导航、日历组件和详细的统计卡片）。这些逐步的定性改进与表 6 中观察到的定量轨迹（61.7 $\to$ 64.0 $\to$ 72.4）一致，共同说明先从 MiMo-V2.6 蒸馏再经 RL，能累积提升生成结果的美学质量与功能完整度。
+
+
+
+表 7 各智能体脚手架上的编码表现。均值为七个脚手架分数的未加权平均，四舍五入到一位小数。每个数据集内各列的最佳结果以粗体标出。
+
+{\footnotesize\setlength{\tabcolsep}{3pt}\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}L{14em}C{5em}C{5em}C{5em}C{5em}C{5em}C{5em}C{5em}C{5em}@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\multirow{2}{*}{模型} & \multicolumn{4}{l}{%
+训练脚手架} & \multicolumn{3}{l}{%
+留出（held-out）脚手架} & \multirow{2}{*}{均值} \\
+& mini-harness1 & mini-harness2 & mini-harness3 & mini-harness4 & codex
+& claude code & mini-swe-agent & \\
+\multicolumn{9}{@{}l@{}}{%
+SWE-bench Verified} \\
+Qwen3.5-9B & 58.4 & 36.4 & 54.8 & 57.8 & 48.6 & 54.8 & 60.6 & 53.1 \\
+MiMo-V2.6-Distill-Qwen-9B & 61.7 & 63.9 & 61.7 & 63.1 & 58.5 & 61.7 &
+65.3 & 62.3 \\
++ Multi-Harness RL & 67.9 & 65.1 & 66.6 & 67.2 & 61.1 & 65.3 & 66.7 &
+65.7 \\
+\multicolumn{9}{@{}l@{}}{%
+SWE-bench Pro} \\
+Qwen3.5-9B & 33.5 & 15.2 & 31.1 & 31.1 & 23.1 & 26.9 & 31.6 & 27.5 \\
+MiMo-V2.6-Distill-Qwen-9B & 45.2 & 46.6 & 45.1 & 45.5 & 40.3 & 42.2 &
+45.6 & 44.4 \\
++ Multi-Harness RL & 48.5 & 46.9 & 47.6 & 48.0 & 42.6 & 43.1 & 48.4 &
+46.5 \\
+\multicolumn{9}{@{}l@{}}{%
+MiMo Code Bench (mini)} \\
+Qwen3.5-9B & 19.0 & 7.5 & 16.5 & 22.5 & 10.5 & 13.5 & 17.5 & 15.3 \\
+MiMo-V2.6-Distill-Qwen-9B & 53.2 & 56.7 & 51.5 & 56.3 & 46.0 & 51.2 &
+56.8 & 53.1 \\
++ Multi-Harness RL & 62.5 & 64.5 & 57.0 & 63.3 & 50.7 & 53.0 & 62.0 &
+59.0 \\
+\end{longtable}
+}

@@ -1,0 +1,85 @@
+0%
+200%
+400%
+600%
+Collection progress
+(a) Deficit-based
+α = 0
+(b) Target-based
+α = 1
+(c) Deficit-corrected
+α = 0.5
+(d) Steady-state
+startup (α = 0.5)
+0
+2
+4
+6
+8 10
+0.0
+0.5
+1.0
+Rollout occupancy
+0
+2
+4
+6
+8
+10
+0
+2
+4
+6
+8
+10
+0
+2
+4
+6
+8
+10
+Training step
+Chat
+Visual
+General
+Cyber
+Code 1
+Code 2
+16.4 min / 64.1%
+Target 7.0%
+12.1 min / 100.0%
+Target 9.0%
+14.2 min / 61.5%
+Target 7.0%
+50.7 min / 89.0%
+Target 14.3%
+24.1 min / 99.5%
+Target 34.1%
+37.2 min / 71.0%
+Target 28.6%
+Figure 16 Trace-driven scheduling simulation for six sources. Legend: mean duration / group ac-
+ceptance rate. Top: Collection progress (accepted groups / nominal per-step targets, with surplus
+carried forward). Bottom: Rollout occupancy (shares of occupied sequence slots). Step spacing
+reflects elapsed time. Dotted lines mark step boundaries. Training time, credit-assignment la-
+tency, staleness expiry, and replay are excluded.
+priors are updated from completed rollouts and used to estimate KV demand. We admit a rollout
+only when a safety-margin multiple of its estimated KV demand fits within the target rank’s
+remaining GPU KV capacity. Hierarchical caching (§6.4) spans HBM and a pinned host pool:
+the two tiers jointly retain the state of admitted rollouts. The estimated fraction of rollout time
+spent in environment execution converts rollout concurrency into expected inference concurrency.
+We bound this expectation by the max running requests used for CUDA graph capture, limiting
+queueing delays that prolong rollout lifetimes and increase staleness. To maximize throughput
+under both constraints, a greedy heuristic selects the feasible rank with the greatest remaining
+capacity—the minimum of available concurrency slots and remaining KV capacity, both expressed
+in sequence units—with both quantities updated after each placement.
+Sample Replay
+We use sample replay to accelerate initial collection from slow sources. In pro-
+filing, startup sample collection took approximately 1.8× as long as that of continuous operation.
+Within slow sources, shorter rollouts tend to finish first, biasing the initial batch even when per-
+source targets are met. We therefore reuse completed rollout groups from selected slow sources
+during the first collection step after startup or checkpoint recovery, filling remaining per-source
+deficits under current filtering rules. Fresh-start replay assumes that stored rollouts were gener-
+ated under the run’s starting policy; recovery replay reuses completed rollouts generated before
+recovery and still within each source’s staleness limit. Restricting replay to the first collection step
+reduces the wait for slow sources while preserving the specified training distribution.
+31

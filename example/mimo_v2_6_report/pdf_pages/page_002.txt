@@ -1,0 +1,97 @@
+Contents
+1
+Introduction
+3
+2
+Architecture
+4
+2.1
+Overall Architecture
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+4
+2.2
+MiMo-ViT . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+4
+2.3
+Audio Encoder
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+5
+2.4
+Speculative Decoder
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+5
+3
+Pre-Training
+7
+3.1
+Pre-Training Setup . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+7
+3.2
+Mid-Training Setup . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+7
+4
+Scaling Reinforcement Learning
+8
+4.1
+Scaling RL Training Computation . . . . . . . . . . . . . . . . . . . . . . . . . . .
+8
+4.2
+Scaling RL Environments and Harnesses . . . . . . . . . . . . . . . . . . . . . . .
+9
+4.3
+Groupwise Agentic Grading . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+16
+5
+Experiments: You Only RL Once
+20
+5.1
+Training Setup
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+20
+5.2
+Evaluation Settings . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+21
+5.3
+RL Performance . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+22
+5.4
+Router Freezing for Stable RL . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+23
+5.5
+RL Failure Analysis . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+23
+5.6
+Broadening Capabilities via MOPD2 . . . . . . . . . . . . . . . . . . . . . . . . . .
+24
+6
+RL and OPD Infrastructure
+26
+6.1
+Agentic RL with Fine-grained Learning Signals . . . . . . . . . . . . . . . . . . . .
+26
+6.2
+Harness Pool and Payload Porter: Large-Batch RL with Multiple Harnesses . . . . .
+27
+6.3
+Sample Mixer: Stable Asynchronous Mixed-task RL
+. . . . . . . . . . . . . . . . .
+29
+6.4
+Training/Inference Consistency and Optimization . . . . . . . . . . . . . . . . . .
+32
+7
+Open Foundations for Agentic RL
+33
+7.1
+Distillation from MiMo-V2.6 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+33
+7.2
+RL with Open Environments . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+34
+8
+Conclusion
+36
+A
+Contributions and Acknowledgments
+44
+2

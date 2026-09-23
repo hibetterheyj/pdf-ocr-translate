@@ -1,0 +1,66 @@
+(a) Groupwise Reward Synthesis (GRS)
+(b) Groupwise Advantage Redistribution (GAR)
+Offline
+τ1:n
+Rollouts
+Build
+Rubrics
+Solution
+Behavior
+Online
+τi
+Rubric Grader
+Reuse
+τ1
+Pass
+τ2
+Pass
+τn
+Fail
+…
+Groupwise Grader
+Rank Passing Patches
+Confirmed Hack
+Ri ← 0
+Reward Refinement
+Ri =Ri
+test · S i
+sol · S i
+beh
+Advantage Redistribution
+Before
+Low Quality
+High Quality
+After
+Low Quality
+High Quality
+RL Policy Update
+Online
+Figure 7 Groupwise agentic grading for code-agent RL. (a) Groupwise reward synthesis combines
+test outcomes with per-rollout scores from precomputed task-specific rubrics. (b) Groupwise
+advantage redistribution compares trajectories online, resets confirmed-hack rewards to zero,
+and redistributes sequence-level advantages. Bars schematically illustrate the redistribution of
+positive advantage from lower- to higher-quality passing solutions.
+4.3.1
+Groupwise Reward Synthesis (GRS, Offline Rubrics)
+For each selected task, we collect multiple offline rollouts and ask an agent to study them together
+with the task specification and repository. Comparing these attempts exposes different solution
+approaches, recurring mistakes, and useful behaviors that may be distributed across several tra-
+jectories. The agent turns this analysis into two sets of criteria: solution rubrics, which assess
+the resulting implementation, and behavior rubrics, which assess how the agent approaches and
+verifies its work.
+Solution rubrics describe task-relevant properties of a good implementation, including satisfac-
+tion of the requirements, appropriate handling of edge cases, and changes consistent with the
+surrounding codebase. Behavior rubrics describe observable practices that support reliable prob-
+lem solving, such as gathering relevant evidence and checking the effects of code changes. We
+seek criteria that distinguish meaningful differences in quality while allowing different valid ap-
+proaches to the task.
+The sampled rollouts inform rubric construction, but the criteria are grounded in the task itself.
+A useful behavior may appear in only one attempt, and a requirement supported by the task may
+be absent from every observed solution. The agent can therefore identify improvements beyond
+those demonstrated in the sampled rollouts. At the same time, a choice made by one successful
+solution does not automatically become a requirement for all others.
+The resulting rubrics are reused to evaluate subsequent training rollouts individually. A grader
+agent enters each rollout’s execution environment and assesses it against the task-specific rubrics,
+using the resulting code, execution results, and trajectory as evidence. It assigns a solution score
+17

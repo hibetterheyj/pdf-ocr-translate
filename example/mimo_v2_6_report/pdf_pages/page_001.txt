@@ -1,0 +1,96 @@
+MiMo-V2.6: Scaling Reinforcement Learning Towards
+Self-Improvement
+LLM-Core Xiaomi
+Abstract
+Reinforcement learning (RL) is the central training paradigm for advancing large foundation
+models towards self-improvement. This report introduces the MiMo-V2.6 series, an omni-modal
+family that pushes the frontier of model intelligence by scaling RL compute. Prior to RL, we con-
+duct mid-training on a broad multimodal corpus to provide ample exploration space, and build
+a solid infrastructure on the pretrained hybrid-SWA architecture to support subsequent scale-up.
+We scale RL compute along three dimensions: (1) larger batches and higher throughput, with
+an asynchronous training that consumes 1,568 samples and 2.7∼3.7B tokens per step at context
+lengths of up to 1M; (2) more diverse and complex environments, spanning code, general, vi-
+sual, and cyber domains under a mixture of agent harnesses; and (3) more grader compute, via
+groupwise agentic grading that yields more accurate reward signals for long-horizon tasks and
+steers the model towards shorter, more token-efficient solutions. To keep training stable at scale,
+we freeze the MoE router and establish a multi-layer defense against reward hacking. We fur-
+ther build infrastructure for mixed-task agentic RL, including a unified trajectory representation,
+high-concurrency multi-framework rollout, decoupled control and data planes, and training–
+inference consistency. We open-source the training dynamics, RL environments, and RL frame-
+work to facilitate reproduction and further research on scaled RL and model self-improvement.
+5
+10
+15
+20
+25
+30
+48
+56
+64
+72
+Score
+Coding
+DeepSWE v1.1
+5
+10
+15
+20
+25
+30
+54
+57
+60
+63
+Coding
+SWE-Bench Pro
+5
+10
+15
+20
+25
+30
+52
+56
+60
+Coding
+MiMo Code Bench
+5
+10
+15
+20
+25
+30
+45
+48
+51
+54
+Score
+General workflows
+AutomationBench v1.0.6
+5
+10
+15
+20
+25
+30
+66
+69
+72
+75
+Visual design tasks
+MiMo Visual Coding
+5
+10
+15
+20
+25
+30
+66
+72
+78
+Cybersecurity
+MiMo Cyber Bench
+RL training step
+MiMo-V2.6-Pro
+MiMo-V2.6-Flash
+Figure 1 Benchmark score per task of MiMo-V2.6-Pro and MiMo-V2.6-Flash throughout RL training.

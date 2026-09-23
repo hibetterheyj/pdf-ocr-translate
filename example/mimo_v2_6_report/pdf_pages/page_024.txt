@@ -1,0 +1,95 @@
+5
+10
+15
+20
+25
+Training step
+1.0
+1.5
+2.0
+CV
+(a) CV of L9
+(std / mean)
+5
+10
+15
+20
+25
+Training step
+5
+10
+15
+Max/mean
+(b) peak load of L9
+(max / mean)
+5
+10
+15
+20
+25
+Training step
+0
+10
+20
+Cold experts (%)
+(c) cold experts of L9
+(<0.1×mean)
+w/o freeze router
+w/ freeze router
+Figure 11 MiMo-V2.6-Pro expert-load balance at decoder layer 9 (384 experts) during RL, com-
+paring runs with and without freezing the router. (a) Coefficient of variation of expert load. (b)
+Peak load factor (max/mean). (c) Fraction of cold experts with load below 0.1× the mean.
+Completed step
+Infra failure
+Inference failure
+Training failure
+Driver failure
+0
+20
+40
+60
+80
+100
+120
+Elapsed time (h)
+MiMo-V2.6-Pro
+1
+5
+10
+15
+20
+25
+30
+Step
+123.1 h
+MiMo-V2.6-Flash
+1
+5
+10
+15
+20
+25
+30
+Step
+81.8 h
+Figure 12
+MiMo-V2.6-Pro and MiMo-V2.6-Flash timelines over 30 training steps, aligned by
+elapsed time. Light orange denotes completed steps; other colors denote failure and recovery
+intervals by cause.
+startup, biasing length estimates in Predictive Rollout Dispatch (§6.3) and exhausting both the
+GPU and pinned host-memory KV pools. Despite early refinements, one harness later produced
+rollouts less than half as long as those from other harnesses on the same code dataset, skewing
+estimates in the second and third steps after restart. Training failures were GPU out-of-memory
+(OOM) errors from MoE imbalance within a micro-batch: at one layer, an expert-parallel (EP)
+rank received over 30× the mean token load despite a relatively balanced full batch. We adjusted
+parallelism to reduce activation memory and accommodate these peaks. Driver failures occurred
+during packing late in Flash as longer sequences increased per-node data volume beyond host-
+memory capacity. Although packing was distributed across nodes (§6.2), local memory demand
+still caused CPU OOM and interrupted the run.
+5.6
+Broadening Capabilities via MOPD2
+After mixed RL, we use Multi-Prefix Multi-Teacher On-Policy Distillation (MOPD2) to combine
+capabilities from teachers trained for different tasks, including tasks that are hard to verify.
+Building on MOPD from MiMo-V2-Flash (Core Team et al., 2026; Ma et al., 2026), we retain
+autonomous student rollouts in domains with suitable mixRL teachers (Standard MOPD) and
+24

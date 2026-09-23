@@ -1,0 +1,66 @@
+Task Synthesis
+Environment · query · verifiers
+Issue-driven
+development
+Everyday
+workflows
+Specification-driven
+coding
+Functionality
+implementation
+Long-horizon
+engineering
+Data vendors
+…
+Supervision Assessment
+Accuracy assessment
+Auditing agent
+Observed reward
+Review specification–test alignment and audit
+agent rollouts to assess reward correctness.
+Robustness assessment
+Before patch
+F2P
+P2P
+After patch
+F2P
+P2P
+Apply reference
+patch
+Repeat test execution to detect environment
+flakiness and verify reward stability.
+Figure 4 The overall code agent task scaling pipeline. We build tasks from diverse sources and
+go through rigorous assessment stages to ensure the supervision is accurate and robust.
+settings, and task horizons. First, in GitHub-based synthesis, we collect pull requests and their as-
+sociated issues and apply heuristic and model-assisted filters to remove duplicate, malformed, or
+non-reproducible candidates. When a pull request is linked to an issue that provides a sufficiently
+complete description of the intended change, we use the issue as the task specification. Other-
+wise, an LLM reconstructs an issue-style specification from the reference patch and the surround-
+ing repository context, while being explicitly instructed to omit implementation-specific details
+that could reveal the solution. Second, to capture everyday development workflows, including
+interactive “vibe coding” scenarios, we collect real-world development requests contributed by
+employees within our organization. These requests cover common activities such as feature im-
+plementation, refactoring, debugging, and repository maintenance, for which agents generate
+and implement test cases that operationalize the requested behavior. Third, specification-driven
+tasks emphasize code generation under detailed, multi-constraint requirements, allowing us to
+evaluate whether models can faithfully translate complex specifications into executable imple-
+mentations. Fourth, in source-code-driven synthesis, we use CodeMidas (Ye et al., 2026) to derive
+tasks from functionality implemented in existing codebases. Agents identify candidate function-
+ality and translate its observable behavior into task specifications and executable environments,
+this pathway enables scalable task construction across diverse repositories without requiring is-
+sues, pull requests, or other development artifacts. For long-horizon software-engineering tasks,
+agents iteratively elaborate task requirements, expand the scope of the required changes, intro-
+duce dependencies across components, and construct tests that exercise the resulting multi-step
+behavior.
+We also include and filter samples from public sources (Badertdinov et al., 2026;
+PrimeIntellect, 2026; Tao et al., 2026; Yang et al., 2026b; Zan et al., 2025; Zhao et al., 2026)
+and licensed data vendors to further enrich the task distribution. Collectively, these pathways
+produce tasks spanning a broad range of programming languages, development contexts, imple-
+mentation complexities, and task horizons.
+Accuracy of Supervision
+We align the behavioral scope of each task specification with that of its
+unit tests. The goal is to accept implementations that satisfy the specification and reject those
+that violate it, without requiring incidental details of the reference implementation. We review
+tasks for insufficient coverage and overly restrictive checks. In particular, tests that enforce re-
+quirements absent from the specification are revised or removed. As inspection alone may miss
+10

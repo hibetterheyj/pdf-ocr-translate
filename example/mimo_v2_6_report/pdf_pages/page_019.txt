@@ -1,0 +1,87 @@
+0
+10
+20
+30
+40
+50
+RL training step
+40
+50
+60
+70
+avg@n (%)
+(a) Passrate
+0
+10
+20
+30
+40
+50
+RL training step
+100
+110
+120
+130
+140
+Mean turns
+(b) Total turns
+0
+10
+20
+30
+40
+50
+RL training step
+125
+150
+175
+200
+225
+Mean length (k tokens)
+(c) Total token length
+Without Groupwise Advantage Redistribution (GAR)
+With Groupwise Advantage Redistribution (GAR)
+Figure 8 Comparison with and without online groupwise advantage redistribution on DeepSWE
+v1.1, using code-only RL with MiMo-V2.6-Flash (training batch size 128). Pass rate is avg@n
+with 𝑛= 3; we also report the mean total number of turns and total token length.
+length grow rapidly, causing more trajectories to hit the length limit, making it difficult to sustain
+improvements in pass rate. With online grading, pass-rate gains are sustained through step 52,
+while turn counts remain roughly stable and token length grows gradually. These trends suggest
+that online grading supports continued policy improvement under a more stable training regime.
+Separate maintainer-oriented audits found that, under pressure to improve test pass rates, poli-
+cies trained without online grading increasingly adopted undesirable behaviors such as spec-
+ulative compatibility branches, broad exports, exception swallowing, relaxed validation, and
+evaluation-specific configuration changes. These workarounds aim to increase the likelihood of
+passing test but can exceed the scope of the task instructions, expand APIs unnecessarily, obscure
+failures, and make the code harder to maintain. In contrast, policies trained with online grading
+tended to produce smaller, more precise patches that remained within the requested scope and
+were easier to maintain.
+4.3.3
+Behavioral Regularization
+To improve RL training stability and encourage efficient, reliable behavior, we introduce two com-
+plementary mechanisms. A group-relative length penalty curbs excessive token growth, while
+segment-level behavioral penalties address format violations and tool call errors. Batch-level
+advantage rebalancing improves credit assignment while limiting excess negative optimization
+pressure that can drive uncontrolled entropy growth.
+Group-Relative Length Penalty
+We find that a group-relative length penalty improves general-
+ization and curbs rapid growth in generated tokens during RL training. For each prompt 𝑞with
+𝐺sampled rollouts, let 𝑅𝑖be the original outcome reward, P𝑞the indices of successful rollouts,
+and ℓ𝑖= |𝑜𝑖| the generated-token count. Let 𝐴∈[0, 1] be the minimum group pass rate and
+𝐵∈(0, 100) the percentile parameter. For groups with |P𝑞|/𝐺> 𝐴, we compute the reference
+length ℓ★
+𝑞= Quantile𝐵/100{ℓ𝑗: 𝑗∈P𝑞} and obtain the adjusted reward
+e𝑅𝑖= 𝑅𝑖−1[𝑖∈P𝑞] 𝑋
+
+clip
+ ℓ𝑖/ℓ★
+𝑞−1 −𝛿
+𝑠−𝛿
+, 0, 1
+ 𝛾
+.
+(4)
+Here 𝑋≥0 is the maximum reward deduction, 𝛿≥0 the tolerated relative excess above ℓ★
+𝑞,
+𝑠> 𝛿the excess at which the penalty saturates, and 𝛾≥1 the ramp exponent; 𝛿= 0 penalizes
+19

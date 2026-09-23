@@ -1,0 +1,101 @@
+\subsection{2.2 MiMo-ViT}\label{mimo-vit}
+
+MiMo-ViT 采用混合注意力架构。它将 MiMo-VL-7B（Yue et al., 2025）中固定、不重叠的窗口注意力替换为带 sink 增强的 SWA，使信息能够在相邻层之间跨窗口边界交换，缓解视觉碎片化。局部 SWA 层在行优先与列优先的 token 序列化之间交替，以支持信息沿两个空间轴传播。此外，GA 层被周期性地插入，以直接聚合全局上下文。该设计大幅降低了高分辨率视觉处理的计算开销，同时达到与 GA ViT 相当的性能。更多分析请参见 He et al.~(2026)。为从零预训练 MiMo-ViT，我们将其与一个小规模预训练 LLM 配对，仅在多模态理解数据上以交叉熵目标优化所得的 VLM。这一简单配方避免了对比学习等辅助目标，使预训练高效且可扩展。关键在于，LLM 保持可训练，从而为 ViT 提供稳定且语义有意义的梯度。在超过 4T 图像 token 上预训练后，MiMo-ViT 学到了强视觉表征，可作为 MiMo-V2.6 的稳健基础。
+
+
+
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{images_hi/fig02.png}
+\caption{MiMo-V2.6 的整体架构。音频、视觉与文本输入被映射为共享的 token 序列，由 MiMo 混合 SWA 主干处理，随后经过语言建模头和多 token 预测（MTP）块。}
+\label{fig:2}
+\end{figure}
+
+\subsection{2.3 音频编码器}\label{audio-encoder}
+
+MiMo-V2.6 中的音频编码分为两个阶段：先用 Audio Tokenizer 进行音频分词，随后进行 patch 编码。Audio Tokenizer 编码器首先通过两层卷积前端处理 log-mel 频谱图，将帧率减半。得到的序列随后经过一个 Transformer，其因果混合注意力架构交替堆叠 SWA 与 GA 层。SWA 层捕捉局部时间依赖，GA 层则在完整的前序序列上聚合上下文。随后的下采样卷积将帧率进一步减半至 25 Hz，之后一个 20 层残差向量量化器（RVQ）将每一帧表示为 20 个离散音频 token。Audio Tokenizer 沿用 MiMo-Audio（Xiaomi, 2025）的训练配方，在涵盖语音、音乐及其他音频内容的 2000 万小时音频上训练。
+
+音频 patch 编码器沿用 MiMo-Audio 的架构设计，并与文本主干联合训练。在每个时间步，音频 token 通过各自独立的嵌入表进行嵌入，每个 RVQ 码本一个，所得嵌入相加构成单帧表示。每四个连续帧被归为一个音频 patch，由在该 patch 内进行双向自注意力的 Transformer 处理。四个输出表示随后拼接并线性投影为单个主干输入嵌入，将音频序列速率从 25 Hz 降至 6.25 Hz。
+
+\subsection{2.4 推测解码器}\label{speculative-decoder}
+
+MiMo-V2.6 中的推测解码使用一个多 token 预测（MTP）模块，沿用 DFlash（Chen et al., 2026）的块扩散设计。起草器由 5 层 Transformer 组成，使用稠密前馈网络。以主干隐状态和一个干净的锚点 token 为条件，它在单次前向中预测后续 7 个 token，交由主干并行校验。所有起草层都使用带分组查询的滑动窗口注意力（SWA），以限制注意力计算量和 KV-cache 大小。token 在其起草块内双向注意力，并最多关注锚点之前 1,024 个主干上下文位置。
+
+
+
+表 1 MiMo-V2.6-Flash 与 MiMo-V2.6-Pro 的详细模型配置。主块的层数不含 MTP 模块。编码器参数量包含输入嵌入，但不含投影层。音频分词器编码器的参数量不含 EMA 码本。
+
+{\footnotesize\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}L{13em}L{15em}C{8em}C{8em}@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+模块 & 配置 & MiMo-V2.6-Flash & MiMo-V2.6-Pro \\
+\multirow{9}{*}{主块} & 层数（总/SWA/GA） & 48/39/9 &
+70/60/10 \\
+& 隐藏层维度 & 4096 & 6144 \\
+& SWA 头数（Q/KV） & 64/8 & 128/8 \\
+& 滑动窗口大小 & 128 & 128 \\
+& GA 头数（Q/KV） & 64/4 & 128/8 \\
+& 头维度（QK/V） & 192/128 & 192/128 \\
+& 专家数（总/激活） & 256/8 & 384/8 \\
+& 总参数量 & 310B & 1.02T \\
+& 激活参数量 & 15B & 42B \\
+\multirow{8}{*}{MiMo-ViT} & 层数（总/SWA/GA） &
+\multicolumn{2}{l@{}}{%
+28/24/4} \\
+& 隐藏层维度 & \multicolumn{2}{l@{}}{%
+1280} \\
+& 注意力头数（Q/KV） & \multicolumn{2}{l@{}}{%
+32/8} \\
+& 头维度 & \multicolumn{2}{l@{}}{%
+64} \\
+& Patch 大小 ($T \times H \times W$) &
+\multicolumn{2}{l@{}}{%
+$2 \times 16 \times 16$} \\
+& 滑动窗口大小（左/右） & \multicolumn{2}{l@{}}{%
+64/64} \\
+& 空间合并大小 & \multicolumn{2}{l@{}}{%
+$2 \times 2$} \\
+& 参数量 & \multicolumn{2}{l@{}}{%
+681M} \\
+\multirow{8}{*}{音频分词器编码器} & 层数（总/SWA/GA） &
+\multicolumn{2}{l@{}}{%
+24/12/12} \\
+& 隐藏层维度 & \multicolumn{2}{l@{}}{%
+1024} \\
+& 注意力头数（Q/KV） & \multicolumn{2}{l@{}}{%
+16/16} \\
+& 头维度 & \multicolumn{2}{l@{}}{%
+64} \\
+& Mel 频带数 & \multicolumn{2}{l@{}}{%
+128} \\
+& 滑动窗口大小 & \multicolumn{2}{l@{}}{%
+128} \\
+& 码本数 & \multicolumn{2}{l@{}}{%
+20} \\
+& 参数量 & \multicolumn{2}{l@{}}{%
+308M} \\
+\multirow{6}{*}{音频 patch 编码器} & 层数 & \multicolumn{2}{l@{}}{%
+6} \\
+& 隐藏层维度 & \multicolumn{2}{l@{}}{%
+1024} \\
+& 注意力头数（Q/KV） & \multicolumn{2}{l@{}}{%
+16/16} \\
+& 头维度 & \multicolumn{2}{l@{}}{%
+64} \\
+& 注意力分组大小 & \multicolumn{2}{l@{}}{%
+4} \\
+& 参数量 & \multicolumn{2}{l@{}}{%
+127M} \\
+\multirow{6}{*}{推测解码器} & 层数（总/SWA/GA） & 5/5/0 &
+5/5/0 \\
+& 隐藏层维度 & 4096 & 6144 \\
+& SWA 头数（Q/KV） & 64/8 & 128/8 \\
+& 滑动窗口大小 & 1024 & 1024 \\
+& GA 头数（Q/KV） & 64/4 & 128/8 \\
+& 头维度（QK/V） & 128/128 & 128/128 \\
+\end{longtable}
+}

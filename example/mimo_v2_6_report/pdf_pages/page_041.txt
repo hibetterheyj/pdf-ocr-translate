@@ -1,0 +1,48 @@
+J. Wang, W. Wang, X. Wang, Z. Wang, D. Wong, A. Wu, D. Wu, F. Wu, M. M. Wu, Y. Wu, Y. Wu,
+Y. Wu, Q. Wuwu, W. Xiao, Y. Xiong, F. Xu, R. Xu, M. Yan, B. Yang, J. Yang, S. Yang, X. Yang,
+Y. Yang, H. Ye, X. Yu, Z. Yu, C. Zhang, C. Zhang, H. Zhang, H. Zhang, J. Zhang, K. Zhang,
+S. Zhang, W. Zhang, W. Zhang, Y. Zhang, Y. Zhang, B. Zhao, Q. Zhao, Y. Zhao, Y. Zheng,
+L. Zhou, T. Zhou, S. Zhu, S. Zhu, Y. Zhu, Y. Zhu, J. Zuo, C. Cai, H. Casademunt, W. Chen,
+C. Cheng, N. Deng, R. Fu, T. Fu, Y. Han, H. Ren, Z. He, Q. Jin, L. Li, Y. Li, S. Liu, L. Lu, L. Zhou,
+S. Mukherjee, Y. Ouyang, Y. Ren, D. Shi, H. Wu, Z. Wu, H. Yao, Z. Yi, J. Yu, R. Zhan, H. Zhou,
+B. Zhu, J. Zhu, A. Yuille, Y. Liu, R. A. Poldrack, J. Li, Z. Li, M. Tao, J. Huang, W. Shi, C. Spanos,
+L. Sun, C. Wang, O. Xu, Z. Dong, H. Gomez, A. Caliskan, A. Emami, H. Hu, Z. Li, L. Liu, M. Niu,
+Y. Shao, J. Sun, M. Tolonen, T. Wang, S. Das, Y. Gao, W. Guo, E. J. Schneider, Z. Lu, Y. Ma,
+M. Mueller, R. Poovendran, S. Sojoudi, Y. Zhu, and D. Song. Agents’ last exam, 2026. URL
+https://arxiv.org/abs/2606.05405.
+C. Tao, J. Chen, Y. Jiang, K. Kou, S. Wang, R. Wang, X. Li, S. Yang, Y. Du, J. Dai, Z. Mao, X. Wang,
+L. Shang, and H. Bai. Swe-lego: Pushing the limits of supervised fine-tuning for software issue
+resolving, 2026. URL https://arxiv.org/abs/2601.01426.
+The Microsoft AI Team. MAI-Thinking-1: Building a hill-climbing machine. Technical report,
+Microsoft AI, 2026. URL https://microsoft.ai/pdf/mai-thinking-1.pdf.
+A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez, L. Kaiser, and I. Polosukhin.
+Attention is all you need. In I. Guyon, U. von Luxburg, S. Bengio, H. M. Wallach, R. Fergus,
+S. V. N. Vishwanathan, and R. Garnett, editors, Advances in Neural Information Processing
+Systems 30: Annual Conference on Neural Information Processing Systems 2017, December
+4-9, 2017, Long Beach, CA, USA, pages 5998–6008, 2017. URL https://proceedings.neurips.
+cc/paper/2017/hash/3f5ee243547dee91fbd053c1c4a845aa-Abstract.html.
+vLLM Project.
+Humming.
+h t t p s : / / g i t h u b . c o m / v l l m- p r o j e c t / h u m m i n g / r e l
+e as es / t a g / v 0 . 1 . 1 5, September 2026.
+Version 0.1.15, GitHub repository, commit
+a74973b5079e42ef861720b62f847ce9d33447f5; accessed 2026-09-19.
+Z. Wang, T. Shi, J. He, M. Cai, J. Zhang, and D. Song. Cybergym: Evaluating AI agents’ cyberse-
+curity capabilities with real-world vulnerabilities at scale, 2025. URL https://arxiv.org/abs/
+2506.02548.
+Z. Wang, N. Schiller, H. Li, S. S. Narayana, M. Nasr, N. Carlini, X. Qi, E. Wallace, E. Bursztein,
+L. Invernizzi, K. Thomas, Y. Shoshitaishvili, W. Guo, J. He, T. Holz, and D. Song. Exploitgym:
+Can AI agents turn security vulnerabilities into real attacks?, 2026. URL https://arxiv.org/ab
+s/2605.11086.
+B. Xia, B. Shen, D. Zhu, D. Zhang, G. Wang, H. Zhang, H. Liu, J. Xiao, J. Dong, L. Zhao, et al.
+Mimo: Unlocking the reasoning potential of language model–from pretraining to posttraining,
+2025. URL https://arxiv.org/abs/2505.07608.
+L. Xiaomi. Mimo-audio: Audio language models are few-shot learners, 2025. URL https://arxiv.
+org/abs/2512.23808.
+T. Xie, D. Zhang, J. Chen, X. Li, S. Zhao, R. Cao, T. J. Hua, Z. Cheng, D. Shin, F. Lei, Y. Liu, Y. Xu,
+S. Zhou, S. Savarese, C. Xiong, V. Zhong, and T. Yu. Osworld: Benchmarking multimodal agents
+for open-ended tasks in real computer environments. In A. Globersons, L. Mackey, D. Belgrave,
+A. Fan, U. Paquet, J. M. Tomczak, and C. Zhang, editors, Advances in Neural Information
+Processing Systems 37: Annual Conference on Neural Information Processing Systems 2024,
+NeurIPS 2024, Vancouver, BC, Canada, December 10 - 15, 2024, 2024. doi: 10.52202/07901
+41

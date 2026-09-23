@@ -1,0 +1,48 @@
+and advantage shaping. It targets local model errors and keeps infrastructure failures out of the
+training signal.
+Agent Loop
+We shift rollout from an inference-centric design to an agent-centric one: each
+sequence runs as an Agent Loop that owns the environment lifecycle, manages the dialogues
+it produces, and calls the inference engine on demand. The lifecycle covers setup, interaction,
+reward evaluation (e.g., running test cases), and cleanup. During interaction the loop exposes a
+request endpoint, and the external agent drives the rollout by calling it. Each dialogue is kept both
+as a string prefix and as a token sequence. Prefix matching locates the dialogue that an incoming
+request extends, and only the new suffix is tokenized and passed to the inference engine, keeping
+its interface purely token-in, token-out.
+Trajectory Hierarchy
+Subagents, context compaction, and multiple agent roles produce concur-
+rent dialogue branches within one rollout. We organize the trajectory data into a four-level
+hierarchy: Sample →Sequence →Context →Segment. A Sample is a prompt dispatched by the
+Sample Mixer (§6.3). In group-wise algorithms such as GRPO (Shao et al., 2024), the Sample
+spawns a group of Sequences, and the group is accepted or rejected as a whole. A Sequence is one
+Agent Loop execution and may contain several concurrent Contexts. A Context is one dialogue
+branch holding a list of Segments; it is the unit of prefix matching, KV-cache reuse, and training-
+data export. A Segment is a single turn—a system or user message, a model generation, or a tool
+result—and only model-generated turns contribute to the loss.
+Penalty Module
+Group-wise algorithms spread the outcome reward evenly across all model-
+generated tokens of a sequence. Within the hierarchy above, credit is rarely uniform: some
+turns are off-path or degenerate, and some failures are unrelated to the model. To assign credit
+where it is due, we separate detection from its effect on training. A Rule judges a segment, con-
+text, or sequence by handcrafted logic or a model-based judge. For example, rules can catch
+infrastructure failures not attributable to the model, garbled token patterns, calls to unavailable
+tools, and repetition. A Strategy binds an action to a level of the hierarchy: mask excludes the hit
+content from the loss, advantage shaping sets, scales, or subtracts the advantages on hit tokens,
+and monitor records metrics alone. The composite early stop strategy halts the rollout as soon as
+its rule fires, zeroes the outcome reward, applies separate actions to the triggering turn and ear-
+lier turns, and masks sibling contexts. Penalties escalate along the hierarchy: a context with no
+surviving model turns is dropped, a sequence with no surviving context receives zero advantage,
+and a sample with no surviving sequence is rejected. The specific penalties applied in training
+are described in §4.3.3.
+6.2
+Harness Pool and Payload Porter: Large-Batch RL with Multiple Harnesses
+Scaling RL training to large batches increases rollout concurrency and the memory and commu-
+nication costs of trajectory data. Mixed-task batches add another axis of heterogeneity: a single
+batch mixes several harnesses, with each training sample group bound to one harness. On the
+execution side, the Harness Pool hosts concurrent harness instances and Agent Loops in persistent
+multi-tenant actor pools, and harness codebases, agent behavior, and environment settings are
+configured independently. On the data side, the Payload Porter keeps the driver scheduling on
+lightweight metadata alone. Heavy payloads are written once to a distributed store and packed
+where they are consumed. Multi-modal payloads split the same way into metadata and pixels,
+with incremental transport and load-balanced encoding.
+27

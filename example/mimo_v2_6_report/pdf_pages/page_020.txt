@@ -1,0 +1,73 @@
+successful rollouts longer than the reference length. The indicator 1[·] restricts the deduction
+to successful rollouts, and clip(𝑥, 0, 1) = min(1, max(0, 𝑥)). Other groups retain their original
+rewards. The outcome advantage 𝐴𝑖in Eq. (1) is computed from the adjusted rewards e𝑅𝑖; the
+threshold 𝐴is a separate hyperparameter. This encourages concise successful solutions using a
+reference adapted to each prompt, while the pass-rate gate preserves room for exploration on
+difficult prompts.
+Segment-Level Behavioral Penalties
+Outcome rewards can reinforce faulty intermediate behav-
+ior, motivating segment-level rules for format violations and tool call errors such as malformed
+markup, invalid tool names, or malformed arguments. Let ℎ𝑖,𝑡= 1 mark flagged tokens and 0
+otherwise. Across the full training batch, 𝐻± and 𝐶± collect flagged and unflagged token indices
+(𝑖, 𝑡) with loss mask 𝑀𝑖,𝑡= 1, respectively; ± denotes the sign of the owning trajectory’s outcome
+advantage 𝐴𝑖, and all sums below count tokens.
+e𝐴𝑖,𝑡=
+
+
+𝛼(1 −ℎ𝑖,𝑡)𝐴𝑖,
+𝐴𝑖> 0,
+
+𝛽(1 −ℎ𝑖,𝑡) + 𝜅ℎ𝑖,𝑡
+
+𝐴𝑖,
+𝐴𝑖< 0,
+0,
+𝐴𝑖= 0,
+𝜅> 1,
+𝛼= min
+
+𝛼max, 1 +
+Í
+𝐻+ 𝐴𝑖
+Í
+𝐶+ 𝐴𝑖
+
+,
+𝛽= max
+
+𝛽min, 1 −(𝜅−1) Í
+𝐻−|𝐴𝑖|
+Í
+𝐶−|𝐴𝑖|
+
+.
+(5)
+Here 𝜅> 1 multiplies the magnitude of negative advantage on flagged tokens; 𝛼scales unflagged
+positive tokens upward, while 𝛽scales unflagged negative tokens toward zero. The hyperpa-
+rameters 𝛼max ≥1 and 0 < 𝛽min ≤1 cap positive amplification and bound negative attenuation,
+respectively. The adjusted token advantage e𝐴𝑖,𝑡replaces 𝐴𝑖in Eq.(1). This masks flagged tokens
+in positive trajectories and penalizes them more strongly in negative trajectories. Removed pos-
+itive advantage is redistributed to unflagged positive tokens, while added negative magnitude
+is offset by reducing penalties on unflagged negative tokens: behavior without detected errors
+receives more reinforcement or less punishment, depending on the trajectory’s sign. Each sign’s
+total advantage mass is conserved when neither scale is clipped, limiting excess negative pres-
+sure that can drive uncontrolled entropy growth. If a denominator is zero, its scale is set to one;
+conservation is not guaranteed in this case or when clipping occurs.
+5
+Experiments: You Only RL Once
+In this section, we describe the scaled RL training run, including training setup (§5.1), evalu-
+ation settings (§5.2), RL performance (§5.3), expert load stability (§5.4) and analyze the fail-
+ures (§5.5). The running log can be found at https://mimo.xiaomi.com/rl/mimo-v26.
+5.1
+Training Setup
+RL Settings
+Our RL tasks span various domains, including agentic and competitive coding (68%),
+general tool use (12%), aesthetic design (13%), context following (3%), and cyber security (4%).
+We sample a prompt batch of 1568 with 16 rollouts per prompt, totaling a global train batch of
+25K trajectories. Training uses GRPO with asynchronous partial rollouts at a staleness of 4.
+Optimizer
+We use the Muown optimizer with a learning rate of 3 × 10−6, no weight decay or
+learning rate warmup, and a gradient clipping threshold of 1.0. For the Muon component, we
+use a momentum coefficient of 0.95 with Nesterov momentum enabled, perform 10 Newton–
+Schulz iterations per update, and apply an additional update scaling factor of 0.5. For the Adam
+20

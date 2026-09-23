@@ -1,0 +1,46 @@
+3
+Pre-Training
+3.1
+Pre-Training Setup
+The pre-training corpus of MiMo-V2.6 spans text, vision, and audio. The text corpus draws from a
+broad range of sources, including public web content, books, academic papers, code, and STEM
+materials. The vision corpus includes image-captioning, grounding, OCR, GUI, conversation,
+video, and visual-coding data. For audio, we curate diverse, high-quality data at scale and or-
+ganize the data into three task formats: speech-text interleaving, automatic speech recognition
+(ASR), and general audio captioning.
+We adopt a two-stage pre-training strategy. In the first stage, we train the language backbone
+on text-only data to establish strong foundational language capabilities. In the second stage, we
+integrate the backbone with our in-house pre-trained ViT and audio encoder and jointly train the
+full model on omni-modal data, enabling it to understand images, videos, and audio.
+We begin pre-training with a context length of 32K tokens and extend it to 256K partway through
+training. MiMo-V2.6-Flash is trained on 48T tokens, comprising 26T tokens in the text stage and
+22T in the omni stage. MiMo-V2.6-Pro is trained on 30T tokens, with 27T and 3T tokens in the
+two stages, respectively. We employ the AdamW optimizer in the pre-training of MiMo-V2.6.
+3.2
+Mid-Training Setup
+Pre-training builds broad knowledge and general understanding across text, vision, and audio.
+Mid-training bridges this general foundation and subsequent large-scale RL by further developing
+the model’s agentic abilities, extending long-context support, and adapting the optimization setup
+for large-batch training.
+To this end, we train the MiMo-V2.6 model series on a diverse, agent-centric data mixture. Its
+diversity spans both task domains and data modalities, combining realistic agent trajectories
+across coding, general, visual, and research tasks with high-quality text, repository-level code,
+and image, video, and audio data. Training proceeds in two stages: we first train with a 256K
+context length, allocating the majority of compute to this stage, and then extend the context
+length to 1M in the final stage.
+Our base model was pre-trained with AdamW, but our preliminary experiments showed diminish-
+ing optimization efficiency as the batch size increased in mixed-task RL. Unlike AdamW, which
+adapts parameters element-wise, Muon leverages the matrix structure of hidden weights by or-
+thogonalizing their updates (Jordan et al., 2024). This matrix-based update retains stronger data
+efficiency beyond the critical-batch-size regime, making Muon particularly attractive for large-
+batch training (Liu et al., 2025b; Shah et al., 2025). We therefore switch to a variant of Muon
+optimizer, Muown, for the hidden weight matrices during mid-training to prepare the model for
+subsequent large-batch RL. Muown augments Muon with explicit row-norm control, mitigating
+spectral-norm drift and reducing sensitivity to weight decay at negligible overhead (Lion et al.,
+2026). Embeddings, the LM head, and the MoE router continue to use AdamW.
+Prior work reports that switching an Adam-pre-trained model to Muon training can cause op-
+timizer mismatch and degraded performance (Qu et al., 2026). Nevertheless, during our mid-
+training, we observe no loss spike throughout the training process.
+We employ MXFP4 quantization-aware training (QAT) during mid-training, allowing the model
+to adapt to low-precision computation while preserving model quality.
+7

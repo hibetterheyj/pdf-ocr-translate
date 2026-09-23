@@ -1,0 +1,49 @@
+gradient of log 𝜋𝜃(𝑜𝑖,𝑡| 𝑞, 𝑜𝑖,<𝑡), with prompt-mean aggregation. The right panel of Figure 3
+breaks down the cost of MiMo-V2.6-Pro by where the compute goes: rollout consumes 43.8%
+and training 43.5%, while the grader takes the remaining 12.7%. A large batch draws from
+diverse RL tasks spanning various environments and harnesses within one run (Section 4.2). We
+also scale the grader to provide fine-grained learning signals (Section 4.3).
+A large batch is good for scaling out GPUs: rollout parallelizes over sequences and training shards
+the batch across data-parallel ranks, so throughput grows with the GPU count. With HBM mostly
+occupied by the running batch, we can keep a high arithmetic intensity to fully use the GPU in roll-
+out. Since rollout and grading have a long tail, we use partial rollout (Kimi Team, 2025) to keep
+the running batch saturated: when we collect a training batch, we leave the in-flight sequences
+interrupted and resume them in the next rollout phase. The cost is re-prefill: a continuation
+must rebuild its KV cache after each policy update, so batch size and partial rollout are chosen
+together—a large batch amortizes the re-prefill. To support stable RL training, train–inference
+consistency is ensured by R3 (Ma et al., 2025) and the replay of top-p sampling candidate sets (Liu
+et al., 2025a; The Microsoft AI Team, 2026). To ensure that all samples contribute to training
+with effective gradients, we incorporate a dynamic sampler (Yu et al., 2025) to filter groups that
+are all-pass or all-fail. In multi-task RL, we implement a Sample Mixer to ensure efficient and
+stable training batch distribution given various rollout durations and pass rates of different tasks.
+To pack the trajectories from rollout into large training batches (2.7B–3.7B tokens), we decou-
+ple the data plane and control plane. The infrastructure behind these designs is described in
+Section 6.
+4.2
+Scaling RL Environments and Harnesses
+Scaling agentic RL requires diverse environments that reflect real-world tasks, support repro-
+ducible execution at training scale, and provide rewards aligned with task objectives.
+Meet-
+ing these requirements jointly is challenging: realistic workflows involve heterogeneous tools
+and complex state, while automated graders may be incomplete, inconsistent, or vulnerable
+to exploitation. We therefore invest in large-scale environment synthesis and curation across
+coding (§4.2.1), general professional workflows (§4.2.2), visual artifacts (§4.2.3), and cyberse-
+curity (§4.2.4), emphasizing supervision quality. This subsection describes how we construct
+tasks and environments across these domains, the harnesses through which agents interact with
+them (§4.2.5), and the execution checks, rollout-based audits, and adversarial testing used to
+improve reward reliability and mitigate reward hacking before and during training (§4.2.6).
+4.2.1
+Code Agent Tasks
+Coding tasks are particularly well suited to RL, as candidate solutions can be executed and evalu-
+ated through automated tests, providing feedback at scale. However, executable evaluation alone
+does not guarantee reliable supervision: tests may overlook required behavior, reject valid imple-
+mentations, or yield inconsistent outcomes across executions. The central challenge is therefore
+to scale task construction while ensuring that rewards faithfully reflect task correctness. Moti-
+vated by this, we devote substantial effort to building a scalable synthesis and curation pipeline
+for coding-agent tasks, with an emphasis on the accuracy and robustness of supervision. Figure 4
+summarizes the task synthesis pathways and the checks used to assess supervision accuracy and
+robustness.
+Scalable Task Synthesis from Diverse Sources
+We scale task construction through five complemen-
+tary synthesis pathways, designed to cover heterogeneous programming languages, development
+9

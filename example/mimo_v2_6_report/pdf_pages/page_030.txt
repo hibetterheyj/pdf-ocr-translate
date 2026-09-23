@@ -1,0 +1,57 @@
+100
+101
+102
+102
+103
+104
+Start
+Mean of steps 1–5
+End
+Mean of steps 26–30
+Mean generated tokens per rollout (thousands)
+Mean rollout time (s)
+Chat
+Visual
+General
+Cyber
+Code
+Figure 15 Rollout heterogeneity across 25 data sources. Each line connects one source’s Start
+point (faint) to its End point (solid); each point plots that source’s mean generated tokens against
+mean rollout time over completed rollouts (tokens summed across dialogue contexts before con-
+text filtering). Both axes are logarithmic.
+concurrency scales with 𝑡𝑖𝑚𝑖. We assign each source a scheduling budget of (1 + 𝑝𝑖)𝑚𝑖groups,
+where the oversampling ratio 𝑝𝑖satisfies
+𝑝𝑖= clip(𝑐𝑡𝑖−1, 𝑝min, 𝑝max),
+Í
+𝑖𝑚𝑖𝑝𝑖
+Í
+𝑖𝑚𝑖
+= ¯𝑝.
+(6)
+The shared factor 𝑐keeps the demand-weighted mean of 𝑝𝑖at the global oversampling ratio
+¯𝑝, subject to per-source bounds. We recompute this allocation from recent timing and accep-
+tance statistics as workloads change. In steady state, the concurrency requirement grows with a
+source’s rollout duration and target, and falls with its acceptance rate.
+Adaptive Rollout Scheduling
+Within these budgets, scheduling balances long-run generation de-
+mand with progress toward the current training batch. If 𝐴𝑖groups have already been accepted
+from source 𝑖for the current batch, its scheduling weight is
+𝑤𝑖= 𝛼𝐵𝑖
+𝑟𝑖
++ (1 −𝛼) (𝐵𝑖−𝐴𝑖)+
+𝑟𝑖
+,
+(7)
+where (𝑥)+ = max(𝑥, 0) and 𝛼∈[0, 1]. The target term maintains generation demand; the deficit
+term prioritizes sources with a remaining deficit. These weights drive smooth weighted round-
+robin; Steady-state startup combines 𝛼= 0.5 with initial concurrency allocated in proportion
+to 𝑡𝑖𝑚𝑖. The trace-driven simulation in Figure 16 compares the policies at a fixed concurrency
+limit with nonbinding source budgets: Deficit-corrected scheduling (𝛼= 0.5) improves occupancy
+stability over Deficit-based scheduling (𝛼= 0) and collection balance over Target-based scheduling
+(𝛼= 1) in this workload. Simulation durations are calibrated to each source’s mean rollout time
+at End in Figure 15.
+Predictive Rollout Dispatch
+We jointly estimate KV demand and expected inference concurrency
+to guide the admission and placement of new rollouts across ranks. Per-source priors estimate
+a rollout’s total sequence length (input and generated tokens), summed across contexts; these
+30

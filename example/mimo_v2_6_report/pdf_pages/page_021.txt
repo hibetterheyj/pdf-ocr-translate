@@ -1,0 +1,61 @@
+component, we set 𝛽1 = 𝛽2 = 0.95 and 𝜖= 10−8. To stabilize MXFP4 training, we initialize RL by
+carrying over the FP32 master weights and Muown’s row state from the SFT checkpoint. During
+RL training, we freeze the router to maintain stable expert loads.
+Policy Optimization Algorithm
+We adopt Group Relative Policy Optimization (GRPO) in Eq. (1),
+with the advantage computation detailed in §4.3. For loss aggregation we use prompt-mean ag-
+gregation, which averages the surrogate at the prompt level rather than over all response tokens;
+this prevents response length from growing too quickly during RL. For importance sampling, the
+ratio is computed per token: 𝑟𝑡,𝑖= sg[𝜋𝜃(𝑜𝑖,𝑡)/𝜇𝜃old(𝑜𝑖,𝑡)]. The training probability of each token
+is produced by the current model in the training framework, and the inference probability is
+the one produced by the rollout model when that token was generated; for partial rollouts we
+do not recompute inference probabilities. We clip the importance sampling ratio with four de-
+coupled bounds, 𝜖𝑙
++, 𝜖ℎ
++ for positive advantages and 𝜖𝑙
+−, 𝜖ℎ
+−for negative ones, giving the clip mask
+𝑀= 1
+
+(𝐴≥0∧𝜖𝑙
++ ≤𝑟≤𝜖ℎ
++) ∨(𝐴< 0∧𝜖𝑙
+−≤𝑟≤𝜖ℎ
+−)
+
+. Positive and negative bounds are both initial-
+ized to [0.2, 5.0] and tuned independently at runtime based on policy entropy: when entropy is
+too low, we widen the positive bounds and narrow the negative ones to pull entropy back to the
+normal range, and we do the opposite when entropy is too high. Throughout training we also
+monitor the token clipping rate of each direction.
+5.2
+Evaluation Settings
+Benchmark Suite
+We evaluate agentic capabilities across four categories: code agent, cyberse-
+curity, general agent, and visual agent. Our evaluation combines public benchmarks with three
+internal benchmarks: MiMo Code Bench, MiMo Cyber Bench, and MiMo Visual Coding.
+Code Agent
+We evaluate software-engineering capabilities using DeepSWE v1.1 (Huang et al.,
+2026), ProgramBench (Yang et al., 2026a), and MiMo Code Bench. DeepSWE focuses on long-
+horizon development tasks. ProgramBench assesses end-to-end software construction: agents
+must reconstruct a program from its compiled binary and documentation, producing an imple-
+mentation that reproduces the reference program’s behavior. MiMo Code Bench provides an
+additional in-house evaluation of coding agents across a diverse range of coding tasks.
+Cybersecurity
+We evaluate complementary aspects of vulnerability reproduction and exploita-
+tion using CyberGym (Wang et al., 2025)1, ExploitGym (Wang et al., 2026), ExploitBench (Lee
+and Brumley, 2026), SEC Bench Pro (Lee et al., 2026), and MiMo Cyber Bench. CyberGym mea-
+sures agents’ ability to reproduce vulnerabilities in real-world software, while SEC Bench Pro
+emphasizes reproducing complex vulnerabilities from bug reports. ExploitGym assesses exploit
+development beyond merely reproducing a crash, and ExploitBench evaluates progress through
+multiple exploitation stages and the resulting security impact. MiMo Cyber Bench supplements
+these public benchmarks with an in-house cybersecurity evaluation.
+General Agent
+We evaluate general-purpose agents across tool use, professional knowledge
+work, terminal-based problem solving, and computer use. AutomationBench (Shepard and Sal-
+imans, 2026) evaluates cross-application workflow orchestration through REST APIs in simu-
+lated SaaS environments, including API discovery and adherence to business rules. Toolathlon-
+Verified (HKUST NLP, 2026; Li et al., 2026a) evaluates long-horizon, multi-application work-
+flows using diverse tools, including those exposed through the Model Context Protocol (MCP).
+1We corrected the flawed evaluation environments based on the method described in Section 4.2.4.
+21

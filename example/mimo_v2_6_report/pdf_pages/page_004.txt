@@ -1,0 +1,46 @@
+AutomationBench (Shepard and Salimans, 2026), visual tasks on MiMo Visual Coding, and cy-
+bersecurity on MiMo Cyber Bench. These gains indicate that MiMo-V2.6 is capable of stronger
+complex problem solving and more reliable performance in daily co-work scenarios, reflecting
+more general agentic intelligence.
+To promote research in agentic RL, we open-source a comprehensive suite covering the key com-
+ponents of the RL development stack, including the lightweight model MiMo-V2.6-Distill-Qwen-
+9B, curated task environments with verifiers across multiple domains, an end-to-end RL training
+framework, and a composable mini-harness for flexible agentic interactions. Together, these com-
+ponents provide a unified and accessible platform for studying agentic RL under diverse tasks,
+environments, and agent configurations, while reducing the engineering barriers to reproduc-
+ing and extending large-scale RL experiments. Experiments with MiMo-V2.6-Distill-Qwen-9B
+demonstrate consistent RL gains across diverse tasks and agent harnesses, validating the effec-
+tiveness and generality of the proposed suite. We hope this open-source suite can serve as a fair,
+strong, and reproducible baseline for the community, enabling systematic investigation of agentic
+RL and advancing research toward recursive self-improvement.
+2
+Architecture
+2.1
+Overall Architecture
+As illustrated in Figure 2, MiMo-V2.6 follows a standard Transformer (Vaswani et al., 2017)
+backbone, augmented with visual and audio encoders connected through lightweight projectors.
+The text backbone of MiMo-V2.6 is mainly composed of repeated hybrid blocks that interleave
+Local Sliding Window Attention (SWA) and Global Attention (GA). It stacks 𝑀hybrid blocks,
+each structured with 𝑁consecutive SWA blocks followed by a GA block. The only exception is
+the very first Transformer block, which uses global attention with a dense Feed-Forward Network
+(FFN) to stabilize early representation learning. The sliding window size 𝑊used in MiMo-V2.6
+is 128. Both the SWA block and the GA block utilize a sparse MoE FFN without shared experts.
+MiMo-V2.6 also integrates an SWA and dense FFN based MTP (Gloeckle et al., 2024; Liu et al.,
+2024; Xia et al., 2025) to improve model performance during pre-training. A more comprehensive
+description of the text backbone architecture can be found in Core Team et al. (2026). The model
+configurations are shown in Table 1.
+2.2
+MiMo-ViT
+MiMo-ViT adopts a hybrid attention architecture. It replaces fixed, non-overlapping window
+attention in MiMo-VL-7B (Yue et al., 2025) with sink-augmented SWA, enabling information ex-
+change across window boundaries over successive layers and mitigating visual fragmentation.
+Local SWA layers alternate between row-major and column-major token serialization to support
+information propagation along both spatial axes. Finally, GA layers are inserted periodically to
+aggregate global context directly. This design substantially reduces the computational cost of
+high-resolution visual processing while achieving performance comparable to GA ViTs. Please
+refer to He et al. (2026) for more analysis. To pre-train MiMo-ViT from scratch, we pair it with a
+small pre-trained LLM and optimize the resulting VLM solely on multimodal understanding data
+using a cross-entropy objective. This simple recipe avoids auxiliary objectives such as contrastive
+learning, making pre-training efficient and scalable. Crucially, the LLM remains trainable to pro-
+vide stable, semantically meaningful gradients to the ViT. After pre-training on more than 4T
+4

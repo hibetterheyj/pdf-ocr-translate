@@ -1,0 +1,42 @@
+F. Gloeckle, B. Y. Idrissi, B. Rozière, D. Lopez-Paz, and G. Synnaeve. Better & faster large language
+models via multi-token prediction. In Forty-first International Conference on Machine Learning,
+ICML 2024, Vienna, Austria, July 21-27, 2024. OpenReview.net, 2024. URL https://openrevi
+ew.net/forum?id=pEWAcejiU2.
+Z. Han, A. You, H. Wang, K. Luo, G. Yang, W. Shi, M. Chen, S. Zhang, Z. Lan, C. Deng, et al.
+Asyncflow: An asynchronous streaming rl framework for efficient llm post-training, 2025. URL
+https://arxiv.org/abs/2507.01663.
+C. He, L. Li, S. Li, H. Lv, L. Kong, Q. Liu, T. Yang, and S. Ren. Semantic head specialization guides
+hybrid vit attention for multimodal llms, 2026. URL https://arxiv.org/abs/2608.28383.
+HKUST NLP. Introducing Toolathlon-Verified, June 2026. URL https://toolathlon.xyz/docs/bl
+og/toolathlon-verified.
+W. Huang and P. Jiang. Deepswe v1.1: a cleaner, more reproducible benchmark for frontier
+coding agents, 2026. URL https://github.com/datacurve-ai/deep-swe.
+W. Huang, C. Lee, L. Tng, and S. Ge. Deepswe: Measuring frontier coding agents on original,
+long-horizon engineering tasks, 2026. URL https://arxiv.org/abs/2607.07946.
+C. E. Jimenez, J. Yang, A. Wettig, S. Yao, K. Pei, O. Press, and K. R. Narasimhan. Swe-bench: Can
+language models resolve real-world github issues? In The Twelfth International Conference
+on Learning Representations, ICLR 2024, Vienna, Austria, May 7-11, 2024. OpenReview.net,
+2024. URL https://openreview.net/forum?id=VTF8yNQM66.
+K. Jordan, Y. Jin, V. Boza, J. You, F. Cesista, L. Newhouse, and J. Bernstein. Muon: An optimizer
+for hidden layers in neural networks, 2024. URL https://kellerjordan.github.io/posts/muon/.
+Kimi Team. Kimi k1.5: Scaling reinforcement learning with llms, 2025. URL https://arxiv.org/
+abs/2501.12599.
+H. Lee, J. Liu, D. Kim, Z. Zhang, C. S. Xia, and L. Zhang. Sec-bench pro: Can language models
+solve long-horizon software security tasks?, 2026. URL https://arxiv.org/abs/2605.26548.
+S. Lee and D. Brumley.
+Exploitbench: A capability ladder benchmark for LLM cybersecurity
+agents, 2026. URL https://arxiv.org/abs/2605.14153.
+J. Li, W. Zhao, J. Zhao, W. Zeng, H. Wu, X. Wang, R. Ge, Y. Cao, Y. Huang, W. Liu, J. Liu, Z. Su,
+Y. Guo, F. Zhou, L. Zhang, J. Michelini, X. Wang, X. Yue, S. Zhou, G. Neubig, and J. He. The
+tool decathlon: Benchmarking language agents for diverse, realistic, and long-horizon task
+execution. In International Conference on Learning Representations, 2026a. URL https://ar
+xiv.org/abs/2510.25726.
+Y. Li, Y. Feng, Z. Xu, Z. Ma, K. Zheng, F. Jiang, X. Sun, R. Shao, Z. Chen, Y. Huang, X. Han,
+B. Lee, K. Xu, S. Zeng, H. Hua, X. Zhang, B. Alomair, R. Krishna, L. Zettlemoyer, P. W. Koh,
+B. Ramasubramanian, L. Niu, X. Yue, and R. Poovendran. JobBench: Aligning agent work with
+human will, 2026b. URL https://arxiv.org/abs/2605.26329.
+B. Liao, H. Dong, C. Monz, X. Xu, L. Dong, and F. Wei. Multi-turn on-policy distillation with
+prefix replay, 2026. URL https://arxiv.org/abs/2607.04763.
+K. Lion, F. Hübler, B. Li, A. Orvieto, and N. He. Muown: Row-norm control for Muon optimization,
+2026. URL https://arxiv.org/abs/2605.10797.
+38

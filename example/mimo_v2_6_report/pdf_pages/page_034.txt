@@ -1,0 +1,79 @@
+Data source
+Total tokens
+(B)
+Token share
+(%)
+Loss tokens
+(B)
+Code
+23.2
+29.9
+7.3
+Cyber
+11.0
+14.2
+4.8
+General
+22.0
+28.5
+5.7
+Visual
+21.2
+27.4
+9.4
+Total
+77.4
+100.0
+27.2
+Table 4 Weighted SFT data composition. Token counts are in billions. Values are rounded to
+one decimal place; totals use unrounded aggregate counts.
+Domain
+Task Family
+Training Tasks
+Verifier
+Code
+Software engineering
+3k
+Executable tests
+Cyber
+Vulnerability reproduction
+1k
+Rule checks
+General
+Knowledge work
+1k
+Rubric-based judging
+Visual
+Web development
+2k
+Visual grading
+Table 5 Overview of the released RL environments, including training task counts and the ver-
+ifiers used to evaluate task completion. Task counts are approximate, based on distinct task
+identifiers in each training set; k denotes one thousand.
+use this checkpoint as the common initialization for the domain-specific GRPO experiments and
+the multi-harness coding experiment described below.
+7.2
+RL with Open Environments
+Environments Overview
+Table 5 summarizes the RL environments we release across coding, cy-
+bersecurity, general-domain, and visual tasks. The four training sets contain approximately 7k
+tasks in total, with the general-domain set focusing on knowledge work. The training resources
+additionally include approximately 1k music-generation tasks, which support the GRPO experi-
+ments reported below.
+RL Experiments
+Starting from the same MiMo-V2.6-Distill-Qwen-9B SFT checkpoint, we con-
+duct GRPO training separately for coding, cybersecurity, general-domain, and visual tasks using
+the corresponding released environments. Alongside public benchmarks, we evaluate on four
+internal sets: MiMo Code Bench (mini) for software engineering , MiMo Cyber Bench (mini) for
+vulnerability reproduction, MiMo General Bench (mini) for knowledge work, and MiMo Visual
+Coding (mini) for website development. These evaluation sets follow the same task distributions
+as their corresponding training sets.
+Table 6 shows that RL improves on the SFT checkpoint in all 11 evaluations reported in the table,
+spanning the four task domains. SWE-bench Verified (Jimenez et al., 2024) rises from 61.1 to
+66.2, while Terminal Bench 2.1 (Merrill et al., 2026) improves from 37.1 to 52.8. OfficeQA
+Pro (Opsahl-Ong et al., 2026) improves from 19.5 to 24.8, and Toolathlon-Verified (HKUST NLP,
+2026) increases from 35.2 to 38.0. MiMo Visual Coding (mini) improves from 64.0 to 72.4, and
+MiMo Cyber Bench (mini) increases from 31.3 to 47.0. Beyond the tasks reported in Table 6, we
+also explore emerging tasks in artistic creation and design, such as music composition. On our
+internal music benchmark, the score improves substantially from 45.7 after SFT to 52.5 after RL.
+34

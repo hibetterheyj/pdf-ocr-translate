@@ -1,0 +1,75 @@
+0
+0.5
+1
+1.5
+2
+2.5
+Cumulative cost (USD million)
+50
+55
+60
+65
+70
+75
+DeepSWE score (%)
+72.57
+65.68
+MiMo-V2.6-Pro
+MiMo-V2.6-Flash
+43.5%
+43.8%
+12.7%
+MiMo-V2.6-Pro
+40.9%
+44.9%
+14.2%
+MiMo-V2.6-Flash
+Training
+Rollout
+Grader
+Figure 3 Left: average@3 score on DeepSWE v1.1 versus cumulative RL cost. Right: training,
+rollout, and grader cost shares for MiMo-V2.6-Pro and MiMo-V2.6-Flash.
+4
+Scaling Reinforcement Learning
+In this release, we continue to push the boundaries of post-training algorithms, with a particular
+focus on scaling RL compute. Following a short supervised fine-tuning (SFT) stage, we scale RL
+along three dimensions, training computation (§4.1), environments and agent harnesses (§4.2),
+and grader computation (§4.3), achieving a fundamental leap in model capabilities.
+4.1
+Scaling RL Training Computation
+We scale RL computation across thousands of GPUs in a single run, spending $2.6M and $0.9M on
+RL post-training for MiMo-V2.6-Pro and MiMo-V2.6-Flash, respectively. We use a large training
+batch: 1,568 prompts with group size 𝐺=16, so each step rolls out 25K sequences that amount to
+2.7B–3.7B training tokens (roughly 110K–150K tokens per sequence). The left panel of Figure 3
+shows the benefit of scaling RL computation. The average@3 score on the DeepSWE bench-
+mark (Huang and Jiang, 2026) rises steadily with cumulative cost for both models: over the
+course of RL, MiMo-V2.6-Pro improves from 58.4 to 72.6 and MiMo-V2.6-Flash from 48.7 to 65.7.
+The computation splits into three parts: rollout, grading, and training. Such scaling calls for solid
+infrastructure to keep training efficient and stable.
+We form the RL learning objective as follows:
+L(𝜃) = −E𝑞∼Ð
+𝑑D𝑑, {𝑜𝑖}𝐺
+𝑖=1∼𝜇𝜃old (·|𝑞)
+"
+1
+Í𝐺
+𝑖=1 |𝑜𝑖|
+𝐺
+Õ
+𝑖=1
+|𝑜𝑖|
+Õ
+𝑡=1
+𝑟𝑖,𝑡𝑀𝑖,𝑡𝐴𝑖log 𝜋𝜃(𝑜𝑖,𝑡| 𝑞, 𝑜𝑖,<𝑡)
+#
+,
+(1)
+where 𝑟denotes the importance sampling ratio, 𝑀is the token-level mask, and 𝐴is the advantage.
+The computation can be decomposed into three parts. The first is rollout: for every prompt
+𝑞drawn from the union of task datasets Ð
+𝑑D𝑑, the rollout policy 𝜇𝜃old generates a group of
+𝐺candidate solutions {𝑜𝑖}. The second is grading: we invest additional compute in agentic
+evaluation to distinguish effective solutions and behaviors from flawed ones, beyond what binary
+test outcomes reveal. These judgments inform the advantages 𝐴𝑖, enabling more accurate credit
+assignment across trajectories. The third is training: the collected tokens update 𝜃through the
+8

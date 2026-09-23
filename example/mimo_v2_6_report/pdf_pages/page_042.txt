@@ -1,0 +1,46 @@
+7-1650. URL http://papers.nips.cc/paper_files/paper/2024/hash/5d413e48f84dc61244b6be5
+50f1cd8f5-Abstract-Datasets_and_Benchmarks_Track.html.
+XLANG Lab. Introducing OSWorld-Verified, July 2025. URL https://xlang.ai/blog/osworld-verif
+ied.
+W. Xu, R. Han, Z. Wang, L. T. Le, D. Madeka, L. Li, W. Y. Wang, R. Agarwal, C. Lee, and T. Pfister.
+Speculative knowledge distillation: Bridging the teacher-student gap through interleaved sam-
+pling. In The Thirteenth International Conference on Learning Representations, ICLR 2025,
+Singapore, April 24-28, 2025. OpenReview.net, 2025. URL https://openreview.net/forum?i
+d=EgJhwYR2tB.
+J. Yang, K. Lieret, J. Ma, P. Thakkar, D. Pedchenko, S. Sootla, E. McMilin, P. Yin, R. Hou, G. Syn-
+naeve, D. Yang, and O. Press. Programbench: Can language models rebuild programs from
+scratch?, 2026a. URL https://arxiv.org/abs/2605.03546.
+S. Yang, C. Tao, J. Chen, T. Yu, R. Wang, Y. Jiang, Y. Du, W. Xu, J. Xiong, T. Wu, L. Shang,
+X. Li, N. Wong, and H. Bai. What makes interaction trajectories effective for training terminal
+agents?, 2026b. URL https://arxiv.org/abs/2606.03461.
+B. Ye, L. Li, S. Li, Z. Yue, L. Zhang, H. Lv, Y. Liu, W. Ma, H. Tian, R. Li, J. Dong, Y. Zhao, X. Deng,
+H. Zhang, L. Zhao, Q. Liu, L. Kong, T. Yang, and F. Luo. CodeMidas: Scaling agentic coding rl
+environments from code itself, 2026. URL https://arxiv.org/abs/2609.22068.
+Q. Yu, Z. Zhang, R. Zhu, Y. Yuan, X. Zuo, Y. Yue, W. Dai, T. Fan, G. Liu, J. Liu, L. Liu, X. Liu,
+H. Lin, Z. Lin, B. Ma, G. Sheng, Y. Tong, C. Zhang, M. Zhang, R. Zhang, W. Zhang, H. Zhu,
+J. Zhu, J. Chen, J. Chen, C. Wang, H. Yu, Y. Song, X. Wei, H. Zhou, J. Liu, W. Ma, Y. Zhang,
+L. Yan, Y. Wu, and M. Wang. DAPO: an open-source LLM reinforcement learning system at
+scale.
+In D. Belgrave, C. Zhang, L. N. Montoya, H. Lin, R. Pascanu, P. Koniusz, M. Ghas-
+semi, N. Chen, I. V. M. Ruíz, and A. Loaiza-Bonilla, editors, Advances in Neural Information
+Processing Systems 38: Annual Conference on Neural Information Processing Systems 2025,
+NeurIPS 2025, San Diego, CA, USA, December 2-7, 2025 / Mexico City, Mexico, November 30
+- December 5, 2025, 2025. URL http://papers.nips.cc/paper_files/paper/2025/hash/a4277
+440d50f1f15d2cb4c14f7e0c0d2-Abstract-Conference.html.
+Z. Yue, Z. Lin, Y. Song, W. Wang, S. Ren, S. Gu, S. Li, P. Li, L. Zhao, L. Li, et al. Mimo-vl technical
+report, 2025. URL https://arxiv.org/abs/2506.03569.
+D. Zan, Z. Huang, W. Liu, H. Chen, S. Xin, L. Zhang, Q. Liu, A. Li, L. Chen, X. Zhong, S. Liu,
+Y. Xiao, L. Chen, Y. Zhang, J. Su, T. Liu, R. Long, M. Ding, and L. Xiang.
+Multi-swe-
+bench: A multilingual benchmark for issue resolving. In D. Belgrave, C. Zhang, L. N. Mon-
+toya, H. Lin, R. Pascanu, P. Koniusz, M. Ghassemi, N. Chen, I. V. M. Ruíz, and A. Loaiza-
+Bonilla, editors, Advances in Neural Information Processing Systems 38: Annual Conference on
+Neural Information Processing Systems 2025, NeurIPS 2025, San Diego, CA, USA, December
+2-7, 2025 / Mexico City, Mexico, November 30 - December 5, 2025, 2025.
+URL http:
+//papers.nips.cc/paper_files/paper/2025/hash/5afa9cb1e917b898ad418216dc726fbd-A
+bstract-Datasets_and_Benchmarks_Track.html.
+J. Zhao, G. Chen, F. Meng, M. Li, J. Chen, H. Xu, Y. Sun, X. Zhao, R. Song, Y. Zhang, P. Wang,
+C. Chen, J. Wen, and K. Jia. Immersion in the github universe: Scaling coding agents to mastery,
+2026. URL https://arxiv.org/abs/2602.09892.
+42

@@ -1,0 +1,156 @@
+Benchmark
+MiMo-V2.6
+Pro
+MiMo-V2.6
+Flash
+MiMo-V2.5
+Pro
+Claude
+Opus 5
+GPT-5.6
+Sol
+Claude
+Fable 5
+Code Agent
+DeepSWE v1.1
+71.9
+67.9
+19.0
+74.0
+73.0
+70.0
+ProgramBench
+26.5
+26.0
+12.5
+37.0
+25.0
+33.0
+MiMo Code Bench
+63.2
+61.2
+40.4
+68.6
+59.3
+-
+General Agent
+AutomationBench v1.0.6
+53.1
+52.3
+16.0
+50.3
+45.8
+46.2
+Toolathlon-Verified
+76.9
+73.6
+49.1
+80.6
+74.9
+77.9
+GDPval-AA 2.1
+1673
+-
+1107
+1708
+1588
+1595
+Agents’ Last Exam
+31.6
+27.6
+13.2
+31.6
+30.8
+25.7
+Terminal Bench 4.0
+34.9
+28.8
+1.5
+49.0
+39.9
+42.4
+Terminal Bench 2.1
+89.9
+87.6
+65.2
+89.1
+88.8
+84.3
+OSWorld-Verified
+82.0
+80.8
+-
+83.4
+83.0
+86.0
+JobBench
+62.0
+61.2
+25.0
+65.7
+45.4
+57.4
+Cybersecurity
+CyberGym
+94.0
+95.1
+40.0
+-
+-
+-
+MiMo Cyber Bench
+80.2
+77.2
+0.0
+-
+-
+-
+ExploitGym
+17.8
+6.0
+0.2
+22.1
+30.3
+28.4
+ExploitBench
+47.9
+25.3
+16.6
+70.0
+78.5
+78.0
+SEC Bench Pro
+66.3
+47.5
+17.7
+-
+79.1
+-
+Visual Agent
+MiMo Visual Coding
+72.3
+71.5
+-
+70.0
+73.4
+69.1
+Table 3
+Comparison of MiMo-V2.6 with previous-generation and frontier models on agentic
+benchmarks.
+6
+RL and OPD Infrastructure
+The MiMo-V2.6 series scales RL and OPD training to large mixed-task batches of agentic rollouts.
+To support flexible agentic rollout scenarios, we define the execution model and trajectory data
+structure, and refine the learning signal with a Penalty Module (§6.1). At large batch sizes, we
+implement the Harness Pool to host multiple harnesses and sustain high rollout concurrency, and
+the Payload Porter to buffer tens of thousands of trajectories heavy with routing and multimodal
+data (§6.2). We implement a Sample Mixer that works with the dynamic sampler and partial roll-
+out to stably deliver training batches matching a specified training distribution (§6.3). Towards
+stable and efficient RL training, we align MoE routing and top-p sampling candidate sets between
+the training and inference engines, while optimizing both engines for RL workloads (§6.4).
+6.1
+Agentic RL with Fine-grained Learning Signals
+Agentic rollouts span multiple turns and dialogue contexts, while outcome rewards provide only
+coarse supervision. We therefore adopt an agent-centric execution model and organize trajectory
+data as a hierarchy. Within this hierarchy, a configurable Penalty Module applies loss masking
+26

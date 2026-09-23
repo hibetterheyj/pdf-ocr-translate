@@ -1,0 +1,74 @@
+1
+8
+14
+20
+26
+30
+Training step
+50
+55
+60
+65
+70
+pass@1(%)
+(a) Training harnesses
+code-mini-harness1
+code-mini-harness2
+code-mini-harness3
+code-mini-harness4
+Mean
+1
+8
+14
+20
+26
+30
+Training step
+40
+45
+50
+55
+60
+65
+70
+75
+pass@1(%)
+(b) Held-out harnesses
+codex
+claude code
+mini-swe-agent
+Mean
+Figure 10 Pass@1 on DeepSWE v1.1 during Multi-Harness Training, evaluated with (a) train-
+ing harnesses and (b) held-out harnesses. Lighter curves show individual harness results; thick
+orange curves show the mean within each panel.
+the effect of multi-harness training, with results demonstrated in Figure 10. The dedicated train-
+ing improves DeepSWE v1.1 performance across both the four training mini-harnesses and the
+three held-out harnesses: codex, claude code, and mini-swe-agent. Despite fluctuations between
+checkpoints, all three held-out harnesses improve over the course of training, with their mean
+Pass@1 increasing from approximately 50% to 66%. The gap between the mean performance
+on training and held-out harnesses also narrows, providing evidence that the learned coding
+capabilities transfer across harness implementations. These results support our design of using
+lightweight, modular mini-harnesses to introduce controlled diversity during RL.
+5.4
+Router Freezing for Stable RL
+Figure 11 compares two MiMo-V2.6-Pro RL runs that differ only in whether the MoE router is
+frozen, tracking three expert-load statistics at decoder layer 9: the coefficient of variation (CV),
+the peak load factor (max/mean), and the fraction of cold experts below 0.1× the mean (loads
+normalized per step). We observe a severe load-collapse problem when the router is trainable:
+all three metrics rise monotonically over the first 20 steps, with CV increasing from 0.78 to 2.0,
+peak load from 6× to 16×, and the cold-expert fraction from 0.5% to 22%. To diagnose the
+cause, we restore the router parameters of the step-20 checkpoint to their initial pre-RL values
+while keeping all other parameters unchanged: load balance recovers to near-initial levels while
+benchmark performance remains unchanged, indicating that the collapse is driven by router drift
+rather than by degradation of the expert weights. We therefore freeze the router for RL training;
+the frozen-router run keeps all three statistics flat (CV ≈0.7, peak load ≈5.5×, cold fraction near
+1%) with benchmark performance growing normally.
+5.5
+RL Failure Analysis
+Figure 12 summarizes interruptions in the MiMo-V2.6-Pro and MiMo-V2.6-Flash training runs.
+Infrastructure failures were primarily GPU-memory double-bit errors (DBEs).
+Flash was also
+restarted after a Kubernetes failure caused pods in the Cyber-task cluster to crash between steps
+15 and 16. Pro was restarted after the grader became unreachable over the network after step
+14. Rollout failures arose in the partial-rollout setting: shorter rollouts completed first after
+23

@@ -1,0 +1,48 @@
+the Ray object store or TransferQueue (Han et al., 2025)), while the driver runs all scheduling
+on lightweight metadata—scalar rewards, per-context lengths, and the keys addressing each
+payload. At group finish, only the fields needed are read from the store: a few columns for the
+accept-time hook. A group-wise grader, when configured, runs fully asynchronously alongside
+the Agent Loops—its latency hidden and its results free to lag—and rewrites the group rewards
+on return. The sampler then accepts or rejects the group by passrate, on metadata alone, and
+the hook imposes length penalties, computes group-relative advantages, and applies advantage
+shaping. The per-token advantages are written back into the store; groups whose advantages are
+all zero are dropped by default. Under OPD, reward evaluation is replaced by teacher scoring:
+each trajectory is sent to a teacher server, and its scores are collected asynchronously into the
+same distributed store. At batch yield—once each data source has contributed its share of the
+batch—a yield hook packs the accepted sequences into micro-batches and assigns them to ranks,
+touching no tensor. At pack time, one packer per training tensor-parallel (TP) group serves every
+rank in the group. From the unpadded rows in the store, it fetches only those its context-parallel
+(CP) window touches and cuts out that window alone. The result is shared across the TP group
+as a single read-only in-memory copy. This avoids full-batch aggregation on the driver and dense
+padded intermediates during packing.
+Multi-Modal Data
+Multi-modal payloads follow the same meta/payload split, but demand extra
+care: as the agent repeatedly takes screenshots and reads images across turns, a single trajectory
+can accumulate gigabytes of such data—costly to store, and costly to retransmit as the history
+grows. During rollout, the Agent Loop therefore ships only the multi-modal delta between re-
+quests (§6.4). For training, every image item must pass through the vision encoder. Because the
+encoder is replicated across the tensor-parallel group while the LLM backbone is sharded, encod-
+ing runs data-parallel first—image items are balanced across ranks independently of where each
+sequence’s tokens land. After encoding, embeddings are redistributed to the ranks holding the
+corresponding tokens. The payload itself stays in the distributed key-value store: load-balance
+planning reads only item metadata, and pixels are fetched only for the encoder computation.
+This limits redundant payload movement while accommodating uneven multi-modal workloads.
+6.3
+Sample Mixer: Stable Asynchronous Mixed-task RL
+Since MiMo-V2-Flash (Core Team et al., 2026), we have maintained a Data Scheduler that targets
+a specified training distribution across data sources, together with dynamic sampler (Yu et al.,
+2025) and partial rollout (Kimi Team, 2025). Mixed-task RL must preserve this distribution de-
+spite large variations in rollout duration and filtering rates, so that every data source is trained
+effectively. Across 25 profiled data sources, the mean generated tokens and the active rollout du-
+ration vary by 90× and 66×, respectively (Figure 15), motivating scheduling that adapts to each
+source’s workload. To meet these challenges, we implement the Sample Mixer, with four mech-
+anisms filling the specified training distribution: Adaptive Rollout Concurrency sets per-source
+budgets, Adaptive Rollout Scheduling selects data sources within the budgets, Predictive Rollout
+Dispatch places new rollouts across ranks, and Sample Replay covers startup and recovery.
+Adaptive Rollout Concurrency
+Slower sources need more concurrent rollouts to sustain the same
+training contribution. For source 𝑖, let 𝐵𝑖denote the target number of retained sample groups per
+training step, 𝑟𝑖the estimated group acceptance rate, and 𝑡𝑖the estimated active rollout duration,
+including model generation and environment interaction but excluding pauses between training
+steps. The expected generation demand is 𝑚𝑖= 𝐵𝑖/𝑟𝑖; at a fixed training throughput, the required
+29
