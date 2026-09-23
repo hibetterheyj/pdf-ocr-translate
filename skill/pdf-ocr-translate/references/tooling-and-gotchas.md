@@ -141,6 +141,53 @@ python3 scripts/extract_hd_figures.py --pdf source.pdf --output-dir images_hi --
 python3 scripts/extract_hd_figures.py --pdf source.pdf --output-dir images_hi --render-pages 1 --crop page=1,x=520,y=3900,w=3900,h=2050,name=Figure1_hi.png
 ```
 
+## Table and Caption Layout
+
+Longtable has two defaults that make a correctly-sized table still look wrong,
+and neither produces an error or an overfull box.
+
+**`\LTcapwidth` defaults to 4in.** `\caption` inside a `longtable` is typeset in
+a box that wide regardless of how wide the table actually is. In a 500pt table
+that renders as a narrow box centred inside it — the caption's left edge lines up
+with neither the table nor the body text. Set it in the preamble:
+
+```latex
+\setlength{\LTcapwidth}{\textwidth}
+```
+
+**A caption that fits on one line is centred.** `\LT@makecaption` measures
+`\wd\@tempboxa` and wraps the short case in `\hfil...\hfil`, so a one-line caption
+sits mid-page while the two-line caption on the next table starts at the margin.
+The standard `caption` package patches this; `singlelinecheck=false` turns the
+centring off:
+
+```latex
+\usepackage{caption}
+\captionsetup{labelfont=bf, labelsep=quad, justification=raggedright,
+              singlelinecheck=false}
+```
+
+Matching the paper's own caption style rather than ctex's default is worth the
+few lines — measure where the original's captions start and how wide they run.
+Common in published papers: bold label, no colon, `\quad` after the label.
+
+**Measure `\textwidth`, do not assume it.** Read it off the compiled PDF (page
+rect minus the geometry margins) before sizing anything against it. US Letter
+with 2cm margins is 498.6pt; A4 is 481.9pt. A table sized for the wrong width
+shows up as a mysterious new overfull box, and the 17pt difference is exactly the
+size of the problem.
+
+**A table narrower than the text block is centred by longtable.** So a table at
+75% of the width sits inset from both margins and aligns with neither its caption
+nor the body prose. Measure the original PDF's column positions and rescale them
+so the columns plus their gutter (2 × `\tabcolsep` per column) fill `\textwidth`.
+Give widths in `em` so they track the font size, or as `\linewidth` fractions so
+they survive a caption-size change.
+
+**Size commands go outside the longtable.** `\footnotesize` placed in the
+alignment preamble (after `\endlastfoot`) raises `Misplaced \noalign`; wrap the
+enclosing group instead.
+
 ## Cross-Validation with Source PDF
 
 Use pymupdf (fitz) to extract text from the source PDF for fact verification:

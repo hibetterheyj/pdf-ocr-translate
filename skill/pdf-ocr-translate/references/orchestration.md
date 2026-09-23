@@ -124,6 +124,29 @@ fi
 Fix the *source* for anything that must survive a rebuild; fix only merged output
 for things that are genuinely merge-time (like inserting the table of contents).
 
+### Keep every pass idempotent, and run it twice to prove it
+
+In practice the structural passes run in both places: on the source before
+splitting, and again on the merged file, because a translation may predate the
+fix. That makes idempotency a correctness property, not a nicety — and a pass
+that is only correct on its first run fails silently.
+
+A real one: the table-sizing pass found each table's wrapper by searching the
+whole file for the marker `{\def\LTcaptype{none}`. Every wrapper looked like that
+on a fresh import, so the first run was fine — but the pass *rewrites* the
+wrapper to `{\footnotesize\def\LTcaptype{none}`, so the second run searched past
+those, latched onto the previous un-sized table's wrapper, and re-emitted
+everything between the two tables. Seven tables became nine and one table
+silently inherited another's column widths. Nothing errored; the compile stayed
+green.
+
+The general rule: **anchor on the structure you are editing, not on text you
+have already rewritten.** Walk up from the table's own `\begin{longtable}` rather
+than searching for a marker string, and key passes on document order rather than
+on content that an earlier pass may have changed.
+
+Both fixes are cheap to validate — run the pass twice and diff.
+
 ## Keep a structure baseline
 
 Before translation, record the counts of `\label`, `\caption`, `\tag`,

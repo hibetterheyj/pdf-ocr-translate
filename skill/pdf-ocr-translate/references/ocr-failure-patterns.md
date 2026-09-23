@@ -1,24 +1,48 @@
 # MinerU OCR Failure Patterns & Cross-Validation Checklist
 
-Catalog of failure patterns observed across real MinerU runs (Kimi K3, DeepSeek V4, Spatiotemporal, MAI-Thinking-1). New patterns should be appended here after each translation project.
+Catalog of failure patterns observed across real MinerU runs (Kimi K3, DeepSeek V4, Spatiotemporal, MAI-Thinking-1, MiMo-V2.6). New patterns should be appended here after each translation project.
+
+## When you have two OCR passes
+
+If the PDF was OCR'd twice (typically a pipeline pass and a VLM pass), diff them
+before choosing a base — the winner is not predictable. DeepSeek-V4.1-Flash's two
+passes agreed 98.9% and were interchangeable; MiMo-V2.6's agreed only 87.8%, and
+each was better at something the other got wrong.
+
+| Divergence | What it looks like |
+|---|---|
+| `\multicolumn` spans dropped | `\multicolumn{2}{l@{}}{28/24/4}` collapses to a plain cell, so values that should straddle two columns get pushed into one. MiMo-V2.6's pipeline pass had 22 spans become 0 in Table 1 |
+| `-` placeholders lost | A results matrix's missing-measurement cells go blank. **The quietest one**: the table still compiles and reads as plausible, but a reader can no longer tell "not evaluated" from "evaluated, empty". MiMo-V2.6's pipeline pass kept 1 of 12 |
+| Column count wrong | A five-column table declared as six, with a value pushed into the phantom column |
+| Row split across lines | One data row emitted as several rows of a cell or two each |
+| Formula mangled | A double subscript (`\bigcup_{d}_{\mathcal{D}_d}`) is a **hard compile error**; a renamed variable (`o_i` → `\mathcal{D}_i`) compiles silently |
+| Word splitting | One pass inserts spaces inside words (`fur ther`, `sig nals`) — count tokens against the PDF text layer's vocabulary to compare objectively |
+
+Splice the better version of each table into the base, and keep the splice in a
+script so it is reviewable. Compare per-table rather than whole-file: on
+MiMo-V2.6 the pipeline pass had the cleaner prose and the VLM pass had every
+table intact.
 
 ## Text-level corruption
 
 | Pattern | Example | Fix |
 |---|---|---|
-| **fi/ff ligature loss** (systematic) | `eficiency→efficiency`, `diferent→different`, `ofer→offer`, `efort→effort`, `afected→affected`, `bufers→buffers`, `oficial→official`, `Jefrey→Jeffrey`, `Hofmann→Hoffmann`, `Muennighof→Muennighoff`, `coeficient→coefficient` | Translators fix per-occurrence against the source PDF page text. **Reference author names are not exempt** — MAI-Thinking-1 had ~30 corrupted author names. |
+| **fi/ff ligature loss** (systematic) | `eficiency→efficiency`, `diferent→different`, `ofer→offer`, `efort→effort`, `afected→affected`, `bufers→buffers`, `oficial→official`, `Jefrey→Jeffrey`, `Hofmann→Hoffmann`, `Muennighof→Muennighoff`, `coeficient→coefficient`, `ofline→offline` | Translators fix per-occurrence against the source PDF page text; or run `scripts/fix_ligatures.py`. **Reference author names are not exempt** — MAI-Thinking-1 had ~30 corrupted author names, MiMo-V2.6 had `Laufer→Lauffer`, `Sutclife→Sutcliffe`. **Detect with a two-sided PDF test, not a dictionary**: a candidate is real only if the broken spelling is absent from `pdf_pages/*.txt` *and* the repaired one is present. A `/usr/share/dict/words` pass fails both ways — it proposes repairs for surnames and acronyms that were never broken (`Guo→gulo`, `SFT→sift`), and it misses real losses whose repair is an inflected form the list lacks (`eforts→efforts`; the macOS list has no plurals). |
 | Word-join/space loss | `ofLiveCodeBench→of LiveCodeBench`, `domainspecific→domain-specific`, `ofthe→of the`, `vocab ulary→vocabulary` | Per-occurrence, check PDF. |
 | Hyphen loss | `crossreferences→cross-references`, `localitysensitive→locality-sensitive`, `singleturn→single-turn`, `failtopass→fail-to-pass` | Check PDF. |
 | Wrong word | `evalulation` (sometimes a genuine source typo — keep it if the PDF has it), `Ofice→Office`, `of-the-shelf→off-the-shelf` | PDF is the tiebreaker. |
 | Page-marker residue | Standalone digits (e.g. `108`) on their own line, flanked by blank lines, one per PDF page | `split_translation_chunks.py` removes these automatically. |
 | Footnote misplacement | `1Correspondence should be sent to ...` appears as body prose instead of a footnote | Convert to `\footnote{...}` anchored at its paragraph. |
+| **Footnote flattened into two pieces** | The marker digit is glued to the preceding word (`... using CyberGym (Wang et al., 2025)1,`) *and* the footnote text is emitted as its own paragraph at the page bottom, marker and all (`2https://huggingface.co/...`). Rendered, that is a stray `1` mid-sentence and a stray `2https://...` further down | Reattach the two into `\footnote{}`: replace `<word>N` with `<word>\footnote{<text>}` and delete the orphan paragraph. Find the insertion point by searching for the digit immediately after a `)` / `）` / `,`. MiMo-V2.6 had two such footnotes, on pages 21 and 33. Load `xurl` so a long URL in a footnote can break. |
 
 ## Structure-level corruption
 
 | Pattern | Example | Fix |
 |---|---|---|
 | Missing section heading | Section 6's `\subsection{6 Cluster Environment}` was emitted as plain text, not a heading command | Cross-check the PDF table of contents against the heading inventory; restore the command. |
-| Hand-built Contents | OCR emits a text `Contents` with stale English page numbers | Drop at merge; inject `\tableofcontents` + `\renewcommand{\contentsname}{目录}` **in the document body** (polyglossia resets `\contentsname` at language activation). |
+| Hand-built Contents | OCR emits a text `Contents` with stale English page numbers | Drop at merge; inject `\tableofcontents` + `\renewcommand{\contentsname}{中文目录名}` **in the document body** (polyglossia resets `\contentsname` at language activation). Note the list usually sits *mid-chunk* (right behind the abstract), so the splitter's `DROP_AT_MERGE` never flags it — delete it at the source (`scripts/strip_ocr_contents.py`). |
+| **Table caption emitted as prose** | `Table 4 Weighted SFT data composition. ...` as a normal body paragraph, **below** Table 4, with Table 5's caption immediately after it — so the two read as both annotating Table 5 | Move into a real `\caption` directly under `\begin{longtable}` and drop the `\def\LTcaptype{none}` that suppressed numbering (`scripts/fix_table_captions.py`). Longtable's caption box is `\LTcapwidth` wide — 4in by default — so also set that to `\textwidth` or the caption renders narrower than its own table. |
+| **Figure interiors leak into the prose** | Figure 17 is a grid of web-page screenshots; its column header (`Qwen3.5-9B | MiMo-V2.6-Distill-Qwen-9B SFT RL`) was emitted as two body paragraphs a *section later*, reading as orphaned model names | The re-rendered figure already carries that text, so the copies are duplication. Delete whole standalone lines matching the leaked labels (`scripts/strip_leaked_figure_labels.py`) — matching the whole line avoids catching a same-named table row label. |
 | Scrambled table rows | Table 12's data rows had doubled/merged cells | Rewrite the table cell-by-cell from the PDF page text; verify column counts per row with a script. |
 | Em dash → CJK 一 | `—` recognized as the Chinese character 一 inside tables | Replace with `---` (LaTeX em dash) when inside table cells. |
 | Split table header cells | `Down\nProj` merged across lines | Collapse to one line; keep `&` count consistent. |
