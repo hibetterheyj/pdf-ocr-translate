@@ -34,6 +34,24 @@ missfont.log
 # which symlinks images and re-runs xelatex into build/final/)
 build/
 
+# Never commit a nested repository.  Example directories belong to this repo and
+# carry no history of their own; if one is copied in from elsewhere, strip its
+# .git/ rather than committing it as a submodule-by-accident.
+**/.git/
+
+# Oversized binaries.  The per-example source and translated PDFs are 3-6MB and
+# ARE tracked, so *.pdf is deliberately not listed here -- but keep anything
+# over 10MB out, and these never belong in a translation example anyway.
+*.tar.gz
+*.tgz
+*.zip
+*.7z
+*.safetensors
+*.ckpt
+*.onnx
+*.pt
+*.pth
+
 # Editor / temp
 *.swp
 *.tmp
